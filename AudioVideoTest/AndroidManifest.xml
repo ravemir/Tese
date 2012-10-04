@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="pt.utl.ist.thesis"
+    android:versionCode="1"
+    android:versionName="1.0" >
+
+    <uses-sdk android:minSdkVersion="10" />
+
+    <uses-permission android:name="android.permission.INTERNET" />
+	<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+	<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    
+    <application
+        android:icon="@drawable/ic_launcher"
+        android:label="@string/app_name" android:name="pt.utl.ist.thesis.ThesisTestApplication">
+        <activity
+            android:name=".AudioVideoTestActivity"
+            android:label="@string/app_name" >
+            <intent-filter android:label="AudioVideoTest"></intent-filter>
+        </activity>
+        <activity android:name="CompassTestActivity">
+            <intent-filter android:label="CompassTest"></intent-filter>
+        </activity>
+        <activity android:name="AccelTestActivity">
+            <intent-filter android:label="AccelTestActivity"></intent-filter>
+        </activity>
+        <activity android:name="AccelGPSRecActivity">
+            <intent-filter android:label="AccelGPSRecActivity"></intent-filter>
+        </activity>
+        <activity android:name="pt.utl.ist.thesis.ThesisEntryActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>

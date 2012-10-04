@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
+
+    <TextView
+        android:id="@+id/netTestTextView"
+        android:layout_width="fill_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.14"
+        android:text="@string/hello" />
+
+    <LinearLayout
+        android:id="@+id/buttonLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+        <Button
+            android:id="@+id/soundButton"
+            android:layout_width="104dp"
+            android:layout_height="match_parent"
+            android:onClick="playSound"
+            android:text="@string/soundButtonText" />
+
+        <Button
+            android:id="@+id/nmeaButton"
+            android:layout_width="104dp"
+            android:layout_height="match_parent"
+            android:onClick="attachListener"
+            android:text="@string/buttonText" />
+    </LinearLayout>
+</LinearLayout>

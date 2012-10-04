@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
+    <TextView
+        android:id="@+id/recView"
+        android:layout_width="fill_parent"
+        android:layout_height="0dip"
+        android:layout_weight="0.04" />
+    
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="bottom" >
+        <ToggleButton
+            android:id="@+id/accelGPSRecToggle"
+            android:layout_width="154dip"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:onClick="toggleOnClick"
+            android:textOff="@string/recOffButtonText"
+            android:textOn="@string/recOnButtonText" />
+        
+        <ToggleButton
+            android:id="@+id/accelGPSMockToggle"
+            android:layout_width="154dip"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:onClick="toggleMockGPS"
+            android:textOff="@string/en_mock_gps"
+            android:textOn="@string/dis_mock_gps" />
+    </RelativeLayout>
+</LinearLayout>
