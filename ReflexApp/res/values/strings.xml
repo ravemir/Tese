@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="hello">Hello World, ReflexAppEntryActivity!</string>
+    <string name="app_name">Reflex App</string>
+    <string-array name="entryMenuItemsArray">
+        <item >Haptic</item>
+        <item >Sound</item>
+    </string-array>
+
+</resources>
