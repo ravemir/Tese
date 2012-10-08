@@ -68,8 +68,8 @@ public class AccelGPSRecActivity extends Activity {
                 // Write sensor values and the timestamp to the 'accelView'
                 float[] values = event.values;
                 Long timestamp = (new Date()).getTime() + ((event.timestamp - System.nanoTime()) / 1000000L);
-                String line = "[A:"+ timestamp +"]: ";
-                line += values[0] + ", " + values[1]+ ", " + values[2] + ";";
+                String line = "A, "+ timestamp +", ";															// TODO Write to location file
+                line += values[0] + ", " + values[1]+ ", " + values[2];
                 line += "\n";
 
                 // Write them to a file
@@ -97,10 +97,18 @@ public class AccelGPSRecActivity extends Activity {
             public void onLocationChanged(Location location) {
                 // Write the new coordinates to a file
                 long timestamp = location.getTime();
-                String line =   "[L:"+ timestamp +"]: " +               // TODO Convert to X,Y,Z
+//                String line =   "[L:"+ timestamp +"]: " +               // TODO Convert to X,Y,Z
+//                        location.getLatitude() + ", " + 
+//                        location.getLongitude() + ";\n";
+                Bundle extras = location.getExtras();
+				String line =   "L, "+ timestamp +", " +               // TODO Convert to X,Y,Z
                         location.getLatitude() + ", " + 
-                        location.getLongitude() + ";\n";
-                writeToFile(line);
+                        location.getLongitude() + ", " +
+                        location.getLatitude() + ", " +
+                        location.getLongitude() + ", " +
+                        extras.getInt("satellites") + ", " +
+                        location.getSpeed() + "\n";
+                writeToFile(line);										// TODO Write to location file
             }
             @Override public void onProviderEnabled(String provider) {}
             @Override public void onProviderDisabled(String provider) {}
@@ -117,7 +125,7 @@ public class AccelGPSRecActivity extends Activity {
     /**
      * This is the called function when the toggle button is pressed.
      * 
-     * @param v The view whose interactiong triggered this call (in this case, the toggle button).
+     * @param v The view whose interaction triggered this call (in this case, the toggle button).
      */
     public void toggleOnClick(View v) {
         // Test if the button was toggled on or off
