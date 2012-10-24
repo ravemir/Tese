@@ -20,7 +20,6 @@ public class ThesisEntryActivity extends Activity {
         // Obtain the 'ListView' and add the 'OnItemClick' listener
         ListView lv = (ListView) findViewById(R.id.testListView);
         lv.setOnItemClickListener(new OnItemClickListener() {
-            @Override
             public void onItemClick(AdapterView<?> parent, View view, int position,
                     long id) {
                 // Open new view, depending on selection

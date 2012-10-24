@@ -31,25 +31,20 @@ public class AudioVideoTestActivity extends Activity {
 
         lmng = (LocationManager) getSystemService(LOCATION_SERVICE);
         lmng.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, new LocationListener() { // This request must be here, or GPS will refuse to load
-            @Override
             public void onStatusChanged(String provider, int status, Bundle extras) {
                 // TODO Auto-generated method stub
             }
-            @Override
             public void onProviderEnabled(String provider) {
                 // TODO Auto-generated method stub
             }
-            @Override
             public void onProviderDisabled(String provider) {
                 // TODO Auto-generated method stub
             }
-            @Override
             public void onLocationChanged(Location location) {
                 // TODO Auto-generated method stub
             }
         });
         lmng.addNmeaListener(new NmeaListener() {
-            @Override
             public void onNmeaReceived(long timestamp, String nmea) {
                 TextView tv = ((TextView) findViewById(R.id.avTestTextView));
 
@@ -72,7 +67,6 @@ public class AudioVideoTestActivity extends Activity {
         // TODO Create and implement NMEAListener method 'onNMEAReceived()'
         // TODO Add NMEA Listener and make it write to the text view
         lmng.addNmeaListener(new NmeaListener() {
-            @Override
             public void onNmeaReceived(long timestamp, String nmea) {
                 TextView tv = ((TextView) findViewById(R.id.avTestTextView));
 
@@ -91,7 +85,6 @@ public class AudioVideoTestActivity extends Activity {
         mp.start();
         mp.setOnCompletionListener(new OnCompletionListener() {
 
-            @Override
             public void onCompletion(MediaPlayer mp) {
                 // Release the player
                 mp.release();

@@ -19,7 +19,6 @@ public class ReflexAppEntryActivity extends Activity {
         // Obtain the 'ListView' and add the 'OnItemClick' listener
         ListView lv = (ListView) findViewById(R.id.entryListView);
         lv.setOnItemClickListener(new OnItemClickListener() { // TODO View if this method of issuing listeners is still current
-            @Override
             public void onItemClick(AdapterView<?> parent, View view, int position,
                     long id) {
                 // Open new view, depending on selection

@@ -54,13 +54,11 @@ public class AccelTestActivity extends Activity implements SensorEventListener {
     }
 
     // Methods added in virtue of treating the Accelerometer events
-    @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
         // TODO Auto-generated method stub
 
     }
 
-    @Override
     public void onSensorChanged(SensorEvent event) {
         // Clear previously written text from 'accelView'
         accelTextView.setText("");

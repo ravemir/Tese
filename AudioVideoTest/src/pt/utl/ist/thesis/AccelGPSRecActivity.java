@@ -63,7 +63,6 @@ public class AccelGPSRecActivity extends Activity {
         // Define both the location and acceleromenter listeners
         sensorEventListener = new SensorEventListener() {
 
-            @Override
             public void onSensorChanged(SensorEvent event) {
                 // Write sensor values and the timestamp to the 'accelView'
                 float[] values = event.values;
@@ -76,10 +75,9 @@ public class AccelGPSRecActivity extends Activity {
                 writeToFile(line);
             }
 
-            @Override public void onAccuracyChanged(Sensor sensor, int accuracy) {}
+            public void onAccuracyChanged(Sensor sensor, int accuracy) {}
         };
         locationListener = new LocationListener() {
-            @Override
             public void onStatusChanged(String provider, int status, Bundle extras) {
                 // Write to file saying that the LocationProvider changed its status
                 int numSatell = extras.getInt("satellites");
@@ -93,7 +91,6 @@ public class AccelGPSRecActivity extends Activity {
                 }
             }
 
-            @Override
             public void onLocationChanged(Location location) {
                 // Write the new coordinates to a file
                 long timestamp = location.getTime();
@@ -110,8 +107,8 @@ public class AccelGPSRecActivity extends Activity {
                         location.getSpeed() + "\n";
                 writeToFile(line);										// TODO Write to location file
             }
-            @Override public void onProviderEnabled(String provider) {}
-            @Override public void onProviderDisabled(String provider) {}
+            public void onProviderEnabled(String provider) {}
+            public void onProviderDisabled(String provider) {}
         };
 
         // Create directories if necessary
