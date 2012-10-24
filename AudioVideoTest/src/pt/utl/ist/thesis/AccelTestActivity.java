@@ -65,7 +65,7 @@ public class AccelTestActivity extends Activity implements SensorEventListener {
 
         // Write sensor values and the timestamp to the 'accelView'
         float[] values = event.values;
-        Double timestamp = new Double(event.timestamp);
+        Double timestamp = Double.valueOf(event.timestamp);
         accelTextView.append(timestamp + "\n");
         for(float value : values) {
             accelTextView.append(value + ";\n");
