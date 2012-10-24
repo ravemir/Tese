@@ -27,7 +27,7 @@
             android:layout_width="154dip"
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
-            android:onClick="toggleMockGPS"
+            android:onClick="toggleMockGps"
             android:textOff="@string/en_mock_gps"
             android:textOn="@string/dis_mock_gps" />
     </RelativeLayout>

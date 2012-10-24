@@ -28,7 +28,62 @@ import android.widget.ToggleButton;
 
 public class AccelGPSRecActivity extends Activity {
 
-    // Sensor-related attributes
+	// Inner-class Listeners
+	private final class GPSLocationListener implements LocationListener {
+		public void onStatusChanged(String provider, int status, Bundle extras) {
+		    // Write to file saying that the LocationProvider changed its status
+		    int numSatell = extras.getInt("satellites");
+		    switch(status) { // TODO Obter o timestamp desta actualização
+		        case LocationProvider.AVAILABLE:
+		            writeToFile("[L:ts_unavail]: Provider is available, with " + numSatell + " satellites\n");break;
+		        case LocationProvider.TEMPORARILY_UNAVAILABLE:
+		            writeToFile("[L:ts_unavail]: Provider is temporarily unavailable\n");break;
+		        case LocationProvider.OUT_OF_SERVICE:
+		            writeToFile("[L:ts_unavail]: Provider is out of service\n");break;
+		    }
+		}
+
+		public void onLocationChanged(Location location) {
+		    // Write the new coordinates to a file
+		    long timestamp = location.getTime();
+		    int satelliteNo = location.getExtras().getInt("satellites");
+			String line =   "L"+ LOGSEPARATOR + timestamp + LOGSEPARATOR +               // TODO Convert to X,Y,Z
+		            location.getLatitude() + LOGSEPARATOR + 
+		            location.getLongitude() + LOGSEPARATOR +
+		            location.getAltitude() + LOGSEPARATOR +
+		            location.getBearing() + LOGSEPARATOR +
+		            location.getSpeed() +  LOGSEPARATOR +
+		            satelliteNo + LOGSEPARATOR +
+		            location.getAccuracy() + "\n";
+		    writeToFile(line);										// TODO Write to location file
+		}
+
+		public void onProviderEnabled(String provider) {}
+
+		public void onProviderDisabled(String provider) {}
+	}
+	private final class AccelerometerSensorEventListener implements SensorEventListener {
+		public void onSensorChanged(SensorEvent event) {
+		    // Write sensor values and the timestamp to the 'accelView'
+		    float[] values = event.values;
+		    int accuracy = event.accuracy;
+		    Long timestamp = (new Date()).getTime() + 
+		    		((event.timestamp - System.nanoTime()) / 1000000L);
+		    String line = "A" + LOGSEPARATOR +				// TODO Write to accelerometer file 
+		    		timestamp + LOGSEPARATOR + 
+		    		values[0] + LOGSEPARATOR + 
+		    		values[1] + LOGSEPARATOR + 
+		    		values[2] + LOGSEPARATOR +
+		    		accuracy + "\n";
+
+		    // Write them to a file
+		    writeToFile(line);
+		}
+
+		public void onAccuracyChanged(Sensor sensor, int accuracy) {}
+	}
+
+	// Sensor-related attributes
     private SensorManager mSensorManager;
     private Sensor mAccelerometer;
     private SensorEventListener sensorEventListener;
@@ -40,7 +95,11 @@ public class AccelGPSRecActivity extends Activity {
     // External storage attributes
     private boolean mExternalStorageAvailable;
     private boolean mExternalStorageWriteable;
+    private String folder;
     private String filename;
+    
+    // Log attributes
+    private static final String LOGSEPARATOR = ",";
 
     // Interface attributes
     private TextView recView;
@@ -59,61 +118,15 @@ public class AccelGPSRecActivity extends Activity {
 
         // Fill the storage state details
         updateStorageState();
+        
+        String sdcardPath = Environment.getExternalStorageDirectory().getAbsolutePath();
+        folder = sdcardPath + File.separator + "AccelGPS" + File.separator + "logs" + File.separator;
 
         // Define both the location and acceleromenter listeners
-        sensorEventListener = new SensorEventListener() {
-
-            public void onSensorChanged(SensorEvent event) {
-                // Write sensor values and the timestamp to the 'accelView'
-                float[] values = event.values;
-                Long timestamp = (new Date()).getTime() + ((event.timestamp - System.nanoTime()) / 1000000L);
-                String line = "A, "+ timestamp +", ";															// TODO Write to location file
-                line += values[0] + ", " + values[1]+ ", " + values[2];
-                line += "\n";
-
-                // Write them to a file
-                writeToFile(line);
-            }
-
-            public void onAccuracyChanged(Sensor sensor, int accuracy) {}
-        };
-        locationListener = new LocationListener() {
-            public void onStatusChanged(String provider, int status, Bundle extras) {
-                // Write to file saying that the LocationProvider changed its status
-                int numSatell = extras.getInt("satellites");
-                switch(status) { // TODO Obter o timestamp desta actualização
-                    case LocationProvider.AVAILABLE:
-                        writeToFile("[L:ts_unavail]: Provider is available, with " + numSatell + " satellites\n");break;
-                    case LocationProvider.TEMPORARILY_UNAVAILABLE:
-                        writeToFile("[L:ts_unavail]: Provider is temporarily unavailable\n");break;
-                    case LocationProvider.OUT_OF_SERVICE:
-                        writeToFile("[L:ts_unavail]: Provider is out of service\n");break;
-                }
-            }
-
-            public void onLocationChanged(Location location) {
-                // Write the new coordinates to a file
-                long timestamp = location.getTime();
-//                String line =   "[L:"+ timestamp +"]: " +               // TODO Convert to X,Y,Z
-//                        location.getLatitude() + ", " + 
-//                        location.getLongitude() + ";\n";
-                Bundle extras = location.getExtras();
-				String line =   "L, "+ timestamp +", " +               // TODO Convert to X,Y,Z
-                        location.getLatitude() + ", " + 
-                        location.getLongitude() + ", " +
-                        location.getLatitude() + ", " +
-                        location.getLongitude() + ", " +
-                        extras.getInt("satellites") + ", " +
-                        location.getSpeed() + "\n";
-                writeToFile(line);										// TODO Write to location file
-            }
-            public void onProviderEnabled(String provider) {}
-            public void onProviderDisabled(String provider) {}
-        };
+        sensorEventListener = new AccelerometerSensorEventListener();
+        locationListener = new GPSLocationListener();
 
         // Create directories if necessary
-        String sdcardPath = Environment.getExternalStorageDirectory().getAbsolutePath();
-        String folder = sdcardPath + File.separator + "AccelGPS" + File.separator + "logs" + File.separator;
         File f = new File(folder);
         if(f.mkdirs())
             recView.append("Created application folder ("+ folder +")");
@@ -131,10 +144,9 @@ public class AccelGPSRecActivity extends Activity {
             // Attach Location and Sensor listeners
             attachListeners();
 
-            // Get date from system
+            // Get date from system and set the file name to save
             String date = getDateForFilename();
-            String sdcardPath = Environment.getExternalStorageDirectory().getAbsolutePath();
-            filename = sdcardPath + File.separator + "AccelGPS" + File.separator + date + ".log";
+            filename = folder + date + ".log";
 
             // Display toast message with the filename being written
             String message = "Saving log to file \"" + filename + "\"";
