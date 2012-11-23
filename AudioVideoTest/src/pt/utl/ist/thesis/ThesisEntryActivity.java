@@ -33,8 +33,11 @@ public class ThesisEntryActivity extends Activity {
                     // Open the accelerometer test activity
                     intent.setClass(ThesisEntryActivity.this, AccelTestActivity.class);break;
                 case 3: 
-                    // Open the Reaction Time activity (...)
+                    // Open Acelerometer and GPS recording activity (...)
                     intent.setClass(ThesisEntryActivity.this, AccelGPSRecActivity.class);break;
+                case 4: 
+                    // Open the Stereo Sound test activity (...)
+                    intent.setClass(ThesisEntryActivity.this, StereoSoundTestActivity.class);break;
                 default:
                     return;
                 }

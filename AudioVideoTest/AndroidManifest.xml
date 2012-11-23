@@ -7,40 +7,58 @@
     <uses-sdk android:minSdkVersion="10" />
 
     <uses-permission android:name="android.permission.INTERNET" />
-	<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-	<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
     <application
+        android:name="pt.utl.ist.thesis.ThesisTestApplication"
         android:icon="@drawable/ic_launcher"
-        android:label="@string/app_name" android:name="pt.utl.ist.thesis.ThesisTestApplication">
+        android:label="@string/app_name" >
         <activity
             android:name=".AudioVideoTestActivity"
-            android:label="@string/app_name"
-            android:exported="false" >
-            <intent-filter android:label="AudioVideoTest"></intent-filter>
+            android:exported="false"
+            android:label="@string/app_name" >
+            <intent-filter android:label="AudioVideoTest" >
+            </intent-filter>
         </activity>
         <activity
             android:name="CompassTestActivity"
             android:exported="false" >
-            <intent-filter android:label="CompassTest"></intent-filter>
+            <intent-filter android:label="CompassTest" >
+            </intent-filter>
         </activity>
         <activity
             android:name="AccelTestActivity"
             android:exported="false" >
-            <intent-filter android:label="AccelTestActivity"></intent-filter>
-        </activity>
-        <activity 
-            android:name="AccelGPSRecActivity"
-            android:exported="false" >
-            <intent-filter android:label="AccelGPSRecActivity"></intent-filter>
-        </activity>
-        <activity android:name="pt.utl.ist.thesis.ThesisEntryActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
+            <intent-filter android:label="AccelTestActivity" >
             </intent-filter>
         </activity>
+        <activity
+            android:name="AccelGPSRecActivity"
+            android:exported="false" >
+            <intent-filter android:label="AccelGPSRecActivity" >
+            </intent-filter>
+        </activity>
+        <activity android:name="pt.utl.ist.thesis.ThesisEntryActivity" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".StereoSoundTestActivity"
+            android:label="@string/title_activity_stereo_sound_test" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="pt.utl.ist.thesis.ThesisEntryActivity" />
+        </activity>
+
+        <service
+            android:name=".BlindInterfaceService"
+            android:enabled="true"
+            android:exported="false" >
+        </service>
     </application>
 
 </manifest>
