@@ -21,13 +21,12 @@ import android.location.LocationManager;
 import android.location.LocationProvider;
 import android.os.Bundle;
 import android.os.Environment;
-import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
-public class AccelGPSRecActivity extends Activity {
+public class SensorRecActivity extends Activity {
 
 	// Inner-class Listeners
 	private final class GPSLocationListener implements LocationListener {
@@ -64,43 +63,25 @@ public class AccelGPSRecActivity extends Activity {
 		public void onProviderDisabled(String provider) {}
 	}
 	private final class AccelerometerSensorEventListener implements SensorEventListener {
-		private float[] accel = new float[3];
-		private float[] magnet = new float[3];
-		
 		public void onSensorChanged(SensorEvent event) {
 		    // Write sensor values and the timestamp to the 'accelView'
 		    float[] values = event.values;
 		    int accuracy = event.accuracy;
 		    Long timestamp = (new Date()).getTime() + 
 		    		((event.timestamp - System.nanoTime()) / 1000000L);
-		    switch(event.sensor.getType()){
-		    case Sensor.TYPE_ACCELEROMETER:
-		    	accel = event.values.clone();
-			    String line = "A" + LOGSEPARATOR +				// TODO Write to accelerometer file 
-			    		timestamp + LOGSEPARATOR + 
-			    		values[0] + LOGSEPARATOR + 
-			    		values[1] + LOGSEPARATOR + 
-			    		values[2] + LOGSEPARATOR +
-			    		accuracy + "\n";
-	
-			    // Write them to a file
-			    writeToFile(line);
-			    break;
-		    case Sensor.TYPE_MAGNETIC_FIELD:
-		    	magnet = event.values.clone();
-		    	break;
-		    }
+		    String line = "A" + LOGSEPARATOR +				// TODO Write to accelerometer file 
+		    		timestamp + LOGSEPARATOR + 
+		    		values[0] + LOGSEPARATOR + 
+		    		values[1] + LOGSEPARATOR + 
+		    		values[2] + LOGSEPARATOR +
+		    		accuracy + "\n";
+
+		    // Write them to a file
+		    writeToFile(line);
+		    
 		    // TODO Test line, remove after used
-		    float[] R = new float[9], I = new float[9];
-		    SensorManager.getRotationMatrix(R, I, accel, magnet);
-		    Log.v(SENSOR_SERVICE, "Rotation: " 
-		    		+ R[0] + ", " + R[1] + ", " + R[2] + ", "
-		    		+ R[3] + ", " + R[4] + ", " + R[5] + ", " 
-		    		+ R[6] + ", " + R[7] + ", "  + R[8]);
-		    Log.v(SENSOR_SERVICE, "Inclination: " 
-		    		+ I[0] + ", " + I[1] + ", " + I[2] + ", "
-		    		+ I[3] + ", " + I[4] + ", " + I[5] + ", " 
-		    		+ I[6] + ", " + I[7] + ", " + I[8]);
+		    float[] R = new float[9], I = new float[9], gravity = new float[9], geomagnetic = new float[9];
+		    SensorManager.getRotationMatrix(R, I, gravity, geomagnetic);
 		}
 
 		public void onAccuracyChanged(Sensor sensor, int accuracy) {}
@@ -110,7 +91,6 @@ public class AccelGPSRecActivity extends Activity {
     private SensorManager mSensorManager;
     private Sensor mAccelerometer;
     private SensorEventListener sensorEventListener;
-    private Sensor mMagnetometer;
 
     // Location-related attributes
     private LocationManager mLocationManager;
@@ -279,12 +259,10 @@ public class AccelGPSRecActivity extends Activity {
      * It also defines the behavior of both those listeners.
      */
     private void attachListeners() {
-        // Listen to accelerometer and magnetometer events
+        // Listen to accelerometer events
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         mSensorManager.registerListener(sensorEventListener, mAccelerometer, SensorManager.SENSOR_DELAY_FASTEST);
-        mMagnetometer = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
-        mSensorManager.registerListener(sensorEventListener, mMagnetometer, SensorManager.SENSOR_DELAY_FASTEST);
 
         // Listen to GPS events
         mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
