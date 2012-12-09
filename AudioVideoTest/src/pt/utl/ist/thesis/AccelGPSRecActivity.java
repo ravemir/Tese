@@ -11,6 +11,7 @@ import pt.utl.ist.thesis.exception.ExternalStorageWriteProtectedException;
 import pt.utl.ist.thesis.R;
 
 import android.app.Activity;
+import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -21,6 +22,8 @@ import android.location.LocationManager;
 import android.location.LocationProvider;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.PowerManager;
+import android.os.PowerManager.WakeLock;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
@@ -71,10 +74,11 @@ public class AccelGPSRecActivity extends Activity {
 		    // Write sensor values and the timestamp to the 'accelView'
 		    float[] values = event.values;
 		    int accuracy = event.accuracy;
-		    Long timestamp = (new Date()).getTime() + 
-		    		((event.timestamp - System.nanoTime()) / 1000000L);
+		    Double timestamp = (new Date().getTime()) +					// TODO Change back to nanos 
+		    		((event.timestamp - System.nanoTime()) / 1000000D);
 		    switch(event.sensor.getType()){
 		    case Sensor.TYPE_ACCELEROMETER:
+//		    case Sensor.TYPE_LINEAR_ACCELERATION:
 		    	accel = event.values.clone();
 			    String line = "A" + LOGSEPARATOR +				// TODO Write to accelerometer file 
 			    		timestamp + LOGSEPARATOR + 
@@ -82,6 +86,9 @@ public class AccelGPSRecActivity extends Activity {
 			    		values[1] + LOGSEPARATOR + 
 			    		values[2] + LOGSEPARATOR +
 			    		accuracy + "\n";
+			    
+//			    Log.v(SENSOR_SERVICE, "Gravity: " 
+//			    		+ values[0] + ", " + values[1] + ", " + values[2]);
 	
 			    // Write them to a file
 			    writeToFile(line);
@@ -91,16 +98,16 @@ public class AccelGPSRecActivity extends Activity {
 		    	break;
 		    }
 		    // TODO Test line, remove after used
-		    float[] R = new float[9], I = new float[9];
-		    SensorManager.getRotationMatrix(R, I, accel, magnet);
-		    Log.v(SENSOR_SERVICE, "Rotation: " 
-		    		+ R[0] + ", " + R[1] + ", " + R[2] + ", "
-		    		+ R[3] + ", " + R[4] + ", " + R[5] + ", " 
-		    		+ R[6] + ", " + R[7] + ", "  + R[8]);
-		    Log.v(SENSOR_SERVICE, "Inclination: " 
-		    		+ I[0] + ", " + I[1] + ", " + I[2] + ", "
-		    		+ I[3] + ", " + I[4] + ", " + I[5] + ", " 
-		    		+ I[6] + ", " + I[7] + ", " + I[8]);
+//		    float[] R = new float[9], I = new float[9];
+//		    SensorManager.getRotationMatrix(R, I, accel, magnet);
+//		    Log.v(SENSOR_SERVICE, "Rotation: " 
+//		    		+ R[0] + ", " + R[1] + ", " + R[2] + ", "
+//		    		+ R[3] + ", " + R[4] + ", " + R[5] + ", " 
+//		    		+ R[6] + ", " + R[7] + ", "  + R[8]);
+//		    Log.v(SENSOR_SERVICE, "Inclination: " 
+//		    		+ I[0] + ", " + I[1] + ", " + I[2] + ", "
+//		    		+ I[3] + ", " + I[4] + ", " + I[5] + ", " 
+//		    		+ I[6] + ", " + I[7] + ", " + I[8]);
 		}
 
 		public void onAccuracyChanged(Sensor sensor, int accuracy) {}
@@ -121,6 +128,9 @@ public class AccelGPSRecActivity extends Activity {
     private boolean mExternalStorageWriteable;
     private String folder;
     private String filename;
+    
+    // Application attributes
+    private WakeLock mWakeLock;
     
     // Log attributes
     private static final String LOGSEPARATOR = ",";
@@ -154,6 +164,10 @@ public class AccelGPSRecActivity extends Activity {
         File f = new File(folder);
         if(f.mkdirs())
             recView.append("Created application folder ("+ folder +")");
+        
+        // Obtain screen-on lock, without acquiring it
+        PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "[AccelGPSRec]: Wake lock");
     }
 
     /**
@@ -175,10 +189,16 @@ public class AccelGPSRecActivity extends Activity {
             // Display toast message with the filename being written
             String message = "Saving log to file \"" + filename + "\"";
             displayToast(message);
+            
+            // Acquire partial wake-lock
+            mWakeLock.acquire();
         } else {
             // Detach listeners
             mSensorManager.unregisterListener(sensorEventListener);
             mLocationManager.removeUpdates(locationListener);
+            
+            // Release the wake-lock
+            mWakeLock.release();
         }
     }
 
@@ -281,7 +301,8 @@ public class AccelGPSRecActivity extends Activity {
     private void attachListeners() {
         // Listen to accelerometer and magnetometer events
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-        mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+//        mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
         mSensorManager.registerListener(sensorEventListener, mAccelerometer, SensorManager.SENSOR_DELAY_FASTEST);
         mMagnetometer = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
         mSensorManager.registerListener(sensorEventListener, mMagnetometer, SensorManager.SENSOR_DELAY_FASTEST);
