@@ -3,8 +3,11 @@ package pt.utl.ist.thesis;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
 
 import pt.utl.ist.thesis.exception.ExternalStorageUnavailableException;
 import pt.utl.ist.thesis.exception.ExternalStorageWriteProtectedException;
@@ -24,6 +27,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
+import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
@@ -77,25 +81,25 @@ public class AccelGPSRecActivity extends Activity {
 		    Double timestamp = (new Date().getTime()) +					// TODO Change back to nanos 
 		    		((event.timestamp - System.nanoTime()) / 1000000D);
 		    switch(event.sensor.getType()){
-		    case Sensor.TYPE_ACCELEROMETER:
-//		    case Sensor.TYPE_LINEAR_ACCELERATION:
-		    	accel = event.values.clone();
-			    String line = "A" + LOGSEPARATOR +				// TODO Write to accelerometer file 
-			    		timestamp + LOGSEPARATOR + 
-			    		values[0] + LOGSEPARATOR + 
-			    		values[1] + LOGSEPARATOR + 
-			    		values[2] + LOGSEPARATOR +
-			    		accuracy + "\n";
-			    
-//			    Log.v(SENSOR_SERVICE, "Gravity: " 
-//			    		+ values[0] + ", " + values[1] + ", " + values[2]);
-	
-			    // Write them to a file
-			    writeToFile(line);
-			    break;
-		    case Sensor.TYPE_MAGNETIC_FIELD:
-		    	magnet = event.values.clone();
-		    	break;
+			    case Sensor.TYPE_LINEAR_ACCELERATION:
+			    case Sensor.TYPE_ACCELEROMETER:
+			    	accel = event.values.clone();
+				    String line = "A" + LOGSEPARATOR +				// TODO Write to accelerometer file 
+				    		timestamp + LOGSEPARATOR + 
+				    		values[0] + LOGSEPARATOR + 
+				    		values[1] + LOGSEPARATOR + 
+				    		values[2] + LOGSEPARATOR +
+				    		accuracy + "\n";
+				    
+//				    Log.v(SENSOR_SERVICE, "Gravity: " 
+//				    		+ values[0] + ", " + values[1] + ", " + values[2]);
+		
+				    // Write them to a file
+				    writeToFile(line);
+				    break;
+			    case Sensor.TYPE_MAGNETIC_FIELD:
+			    	magnet = event.values.clone();
+			    	break;
 		    }
 		    // TODO Test line, remove after used
 //		    float[] R = new float[9], I = new float[9];
@@ -115,9 +119,10 @@ public class AccelGPSRecActivity extends Activity {
 
 	// Sensor-related attributes
     private SensorManager mSensorManager;
-    private Sensor mAccelerometer;
     private SensorEventListener sensorEventListener;
+    private Sensor mAccelerometer;
     private Sensor mMagnetometer;
+    private Sensor mLinearAcceleration;
 
     // Location-related attributes
     private LocationManager mLocationManager;
@@ -137,6 +142,7 @@ public class AccelGPSRecActivity extends Activity {
 
     // Interface attributes
     private TextView recView;
+	
 
     /**
      * Called when the activity is first created. 
@@ -167,7 +173,8 @@ public class AccelGPSRecActivity extends Activity {
         
         // Obtain screen-on lock, without acquiring it
         PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-        mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "[AccelGPSRec]: Wake lock");
+        mWakeLock = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK,
+        		"[AccelGPSRec]: Screen Dim Wake Lock created");
     }
 
     /**
@@ -224,11 +231,15 @@ public class AccelGPSRecActivity extends Activity {
      */
     private String getDateForFilename() {
         Calendar c = Calendar.getInstance();
-        String date = c.get(Calendar.YEAR) + "-"
-                + c.get(Calendar.MONTH) + "-"
-                + c.get(Calendar.DAY_OF_MONTH) + "_" 
-                + c.get(Calendar.HOUR_OF_DAY) + "h"
-                + c.get(Calendar.MINUTE);
+//        String date = c.get(Calendar.YEAR) + "-"
+//                + (c.get(Calendar.MONTH) + 1) + "-"
+//                + c.get(Calendar.DAY_OF_MONTH) + "_" 
+//                + c.get(Calendar.HOUR_OF_DAY) + "h"
+//                + c.get(Calendar.MINUTE);
+        SimpleDateFormat sdf = (SimpleDateFormat) java.text.DateFormat.getDateTimeInstance();// new SimpleDateFormat("yyyy-MM-dd_HH'h'mm");
+        sdf.applyPattern("yyyy-MM-dd_HH'h'mm");
+        String date = sdf.format(c.getTime());
+        
         return date;
     }
 
@@ -299,11 +310,12 @@ public class AccelGPSRecActivity extends Activity {
      * It also defines the behavior of both those listeners.
      */
     private void attachListeners() {
-        // Listen to accelerometer and magnetometer events
+        // Listen to accelerometer (Raw and Acceleration filtered) and magnetometer events
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-//        mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
+        mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         mSensorManager.registerListener(sensorEventListener, mAccelerometer, SensorManager.SENSOR_DELAY_FASTEST);
+        mLinearAcceleration = mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
+//        mSensorManager.registerListener(sensorEventListener, mLinearAcceleration, SensorManager.SENSOR_DELAY_FASTEST);
         mMagnetometer = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
         mSensorManager.registerListener(sensorEventListener, mMagnetometer, SensorManager.SENSOR_DELAY_FASTEST);
 
