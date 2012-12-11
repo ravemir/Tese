@@ -156,22 +156,21 @@ public class AccelGPSRecActivity extends Activity {
         // Get UI references
         recView = (TextView) findViewById(R.id.recView);
 
+        // (Re)Initialize the Listener-related activity attributes
+        initializeListeners();
+        
         // Fill the storage state details
         updateStorageState();
         
         String sdcardPath = Environment.getExternalStorageDirectory().getAbsolutePath();
         folder = sdcardPath + File.separator + "AccelGPS" + File.separator + "logs" + File.separator;
 
-        // Define both the location and acceleromenter listeners
-        sensorEventListener = new AccelerometerSensorEventListener();
-        locationListener = new GPSLocationListener();
-
         // Create directories if necessary
         File f = new File(folder);
         if(f.mkdirs())
             recView.append("Created application folder ("+ folder +")");
         
-        // Obtain screen-on lock, without acquiring it
+        // Obtain screen-on lock, acquiring it
         PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
         mWakeLock = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK,
         		"[AccelGPSRec]: Screen Dim Wake Lock created");
@@ -196,16 +195,10 @@ public class AccelGPSRecActivity extends Activity {
             // Display toast message with the filename being written
             String message = "Saving log to file \"" + filename + "\"";
             displayToast(message);
-            
-            // Acquire partial wake-lock
-            mWakeLock.acquire();
         } else {
             // Detach listeners
             mSensorManager.unregisterListener(sensorEventListener);
             mLocationManager.removeUpdates(locationListener);
-            
-            // Release the wake-lock
-            mWakeLock.release();
         }
     }
 
@@ -306,21 +299,48 @@ public class AccelGPSRecActivity extends Activity {
     }
 
     /**
+     * Method that initializes the Listener-related Activity attributes
+     * (to be called on the activity's first run or on orientation changes)
+     */
+    private void initializeListeners(){
+    	// Initialize manager and sensor attributes
+    	mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        mMagnetometer = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+        mLinearAcceleration = mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
+        mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        
+        // Define both the location and accelerometer listeners
+        sensorEventListener = new AccelerometerSensorEventListener();
+        locationListener = new GPSLocationListener();
+    }
+    /**
      * This function attaches the listeners to both the sensors and location services.
      * It also defines the behavior of both those listeners.
      */
     private void attachListeners() {
         // Listen to accelerometer (Raw and Acceleration filtered) and magnetometer events
-        mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-        mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         mSensorManager.registerListener(sensorEventListener, mAccelerometer, SensorManager.SENSOR_DELAY_FASTEST);
-        mLinearAcceleration = mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
-//        mSensorManager.registerListener(sensorEventListener, mLinearAcceleration, SensorManager.SENSOR_DELAY_FASTEST);
-        mMagnetometer = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
         mSensorManager.registerListener(sensorEventListener, mMagnetometer, SensorManager.SENSOR_DELAY_FASTEST);
+//      mSensorManager.registerListener(sensorEventListener, mLinearAcceleration, SensorManager.SENSOR_DELAY_FASTEST);
 
         // Listen to GPS events
-        mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
     }
+
+	@Override
+	protected void onPause() {
+		super.onPause();
+		
+        // Release the wake-lock
+        mWakeLock.release();
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+		
+        // Acquire partial wake-lock
+        mWakeLock.acquire();
+	}
 }
