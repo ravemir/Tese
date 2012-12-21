@@ -3,6 +3,8 @@ package pt.utl.ist.thesis;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -78,18 +80,26 @@ public class AccelGPSRecActivity extends Activity {
 		    // Write sensor values and the timestamp to the 'accelView'
 		    float[] values = event.values;
 		    int accuracy = event.accuracy;
-		    Double timestamp = (new Date().getTime()) +					// TODO Change back to nanos 
-		    		((event.timestamp - System.nanoTime()) / 1000000D);
+		    
+		    // Compute decimal value
+		    long javaTime = new Date().getTime();
+			long nanoTime = System.nanoTime();
+		    long newtimestamp = javaTime * 1000000 + 						// Compute the timestamp
+		    		(event.timestamp - nanoTime);							// in nanos first
+		    String longStr = Long.valueOf(newtimestamp).toString();
+			String tsString = longStr.substring(0, longStr.length()-6) + 	// Format the output string
+					"." + longStr.substring(longStr.length()-6);			// to have the comma in the
+		    																// correct space.
 		    switch(event.sensor.getType()){
 			    case Sensor.TYPE_LINEAR_ACCELERATION:
 			    case Sensor.TYPE_ACCELEROMETER:
-			    	accel = event.values.clone();
-				    String line = "A" + LOGSEPARATOR +				// TODO Write to accelerometer file 
-				    		timestamp + LOGSEPARATOR + 
-				    		values[0] + LOGSEPARATOR + 
-				    		values[1] + LOGSEPARATOR + 
-				    		values[2] + LOGSEPARATOR +
-				    		accuracy + "\n";
+			    	accel = event.values.clone();	
+					String line = "A" + LOGSEPARATOR +				// TODO Write to accelerometer file 
+					    		tsString + LOGSEPARATOR + 
+					    		values[0] + LOGSEPARATOR + 
+					    		values[1] + LOGSEPARATOR + 
+					    		values[2] + LOGSEPARATOR +
+					    		accuracy + "\n";
 				    
 //				    Log.v(SENSOR_SERVICE, "Gravity: " 
 //				    		+ values[0] + ", " + values[1] + ", " + values[2]);
