@@ -1,0 +1,32 @@
+<resources>
+
+    <string name="app_name">Data Collector</string>
+    
+    <!-- Data copied -->
+    <string name="hello">Hello World, chefe!\n</string>
+    <string name="buttonText">Attach NMEA Listener</string>
+    <string name="recOnButtonText">Recording Sensor Data&#8230;</string>
+    <string name="recOffButtonText">Record Sensor Data</string>
+    <string name="newlinetext">Inserting newline!</string>
+    <string name="soundButtonText">Play Sound</string>
+    <string name="pingButtonText">Ping PC</string>
+    <string name="hostIP">172.20.23.53</string>
+    <string name="AudVidTest">Perform some Audiovisual tests</string>
+
+    <string-array name="mainMenuArray">
+        <item id="0">Audio Video Test</item>
+        <item id="1">Compass Test</item>
+        <item id="2">Accelerometer Test</item>
+        <item id="3">Accelerometer+GPS Record</item>
+        <item id="4">Stereo Sound Test</item>
+    </string-array>
+
+    <string name="ext_store_unavail">External Storage is unavailable</string>
+    <string name="ext_store_wprotect">External Storage is write-protected</string>
+    <string name="en_mock_gps">Activate Mock GPS</string>
+    <string name="dis_mock_gps">Disable Mock GPS</string>
+    <string name="accelgpsmocktoggle">accelGPSMockToggle</string>
+    <string name="menu_settings">Settings</string>
+    <string name="title_activity_stereo_sound_test">StereoSoundTestActivity</string>
+
+</resources>
