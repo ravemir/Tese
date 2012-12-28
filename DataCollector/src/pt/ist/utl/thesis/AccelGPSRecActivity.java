@@ -304,8 +304,7 @@ public class AccelGPSRecActivity extends Activity {
             displayToast(message);
         } else {
             // Detach listeners
-            mSensorManager.unregisterListener(sensorEventListener);
-            mLocationManager.removeUpdates(locationListener);
+            detachListeners();
         }
     }
 
@@ -440,6 +439,16 @@ public class AccelGPSRecActivity extends Activity {
     	mSensorManager.registerListener(mAccelGPSListener, mMagnetometer, SensorManager.SENSOR_DELAY_FASTEST);
     	mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, mAccelGPSListener);
     }
+    
+    /**
+     * This function detaches the previously attached listeners for sensor
+     * and location services.
+     */
+    private void detachListeners() {
+		// Detach both Sensor and GPS listeners
+		mSensorManager.unregisterListener(mAccelGPSListener);
+		mLocationManager.removeUpdates(mAccelGPSListener);
+	}
 
 	@Override
 	protected void onPause() {
