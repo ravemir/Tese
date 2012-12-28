@@ -32,11 +32,107 @@ import android.widget.ToggleButton;
 public class AccelGPSRecActivity extends Activity {
 
 	// Inner-class Listeners
+	private final class AccelGPSListener implements LocationListener, SensorEventListener{
+		// Sensor-related attributes and methods
+		// FIXME Figure out if we need these for the rotation matrix
+		@SuppressWarnings("unused") private float[] accel = new float[3];
+		@SuppressWarnings("unused") private float[] magnet = new float[3];
+		
+		@Override
+		public void onSensorChanged(SensorEvent event) {
+			// Write sensor values and the timestamp to the 'accelView'
+		    float[] values = event.values;
+		    int accuracy = event.accuracy;
+		    
+		    // Compute decimal value
+		    long javaTime = new Date().getTime();
+			long nanoTime = System.nanoTime();
+		    long newtimestamp = javaTime * 1000000 + 						// Compute the timestamp
+		    		(event.timestamp - nanoTime);							// in nanos first
+		    String longStr = Long.valueOf(newtimestamp).toString();
+			String tsString = longStr.substring(0, longStr.length()-6) + 	// Format the output string
+					"." + longStr.substring(longStr.length()-6);			// to have the comma in the
+		    																// correct space.
+		    switch(event.sensor.getType()){
+			    case Sensor.TYPE_LINEAR_ACCELERATION:
+			    case Sensor.TYPE_ACCELEROMETER:
+			    	accel = event.values.clone();	
+					String line = "A" + LOGSEPARATOR +				// TODO Write to accelerometer file 
+					    		tsString + LOGSEPARATOR + 
+					    		values[0] + LOGSEPARATOR + 
+					    		values[1] + LOGSEPARATOR + 
+					    		values[2] + LOGSEPARATOR +
+					    		accuracy + "\n";
+				    
+//				    Log.v(SENSOR_SERVICE, "Gravity: " 
+//				    		+ values[0] + ", " + values[1] + ", " + values[2]);
+		
+				    // Write them to a file
+				    writeToFile(line);
+				    break;
+			    case Sensor.TYPE_MAGNETIC_FIELD:
+			    	magnet = event.values.clone();
+			    	break;
+		    }
+		    // TODO Test line, remove after used
+//		    float[] R = new float[9], I = new float[9];
+//		    SensorManager.getRotationMatrix(R, I, accel, magnet);
+//		    Log.v(SENSOR_SERVICE, "Rotation: " 
+//		    		+ R[0] + ", " + R[1] + ", " + R[2] + ", "
+//		    		+ R[3] + ", " + R[4] + ", " + R[5] + ", " 
+//		    		+ R[6] + ", " + R[7] + ", "  + R[8]);
+//		    Log.v(SENSOR_SERVICE, "Inclination: " 
+//		    		+ I[0] + ", " + I[1] + ", " + I[2] + ", "
+//		    		+ I[3] + ", " + I[4] + ", " + I[5] + ", " 
+//		    		+ I[6] + ", " + I[7] + ", " + I[8]);
+		}
+		
+		@Override
+		public void onAccuracyChanged(Sensor sensor, int accuracy) {}
+		
+		// Location related methods
+		@Override
+		public void onLocationChanged(Location location) {
+		    // Write the new coordinates to a file
+		    long timestamp = location.getTime();
+		    int satelliteNo = location.getExtras().getInt("satellites");
+			String line =   "L"+ LOGSEPARATOR + timestamp + LOGSEPARATOR +               // TODO Convert to X,Y,Z
+		            location.getLatitude() + LOGSEPARATOR + 
+		            location.getLongitude() + LOGSEPARATOR +
+		            location.getAltitude() + LOGSEPARATOR +
+		            location.getBearing() + LOGSEPARATOR +
+		            location.getSpeed() +  LOGSEPARATOR +
+		            satelliteNo + LOGSEPARATOR +
+		            location.getAccuracy() + "\n";
+		    writeToFile(line);										// TODO Write to location file
+		}
+
+		@Override
+		public void onStatusChanged(String provider, int status, Bundle extras) {
+		    // Write to file saying that the LocationProvider changed its status
+		    int numSatell = extras.getInt("satellites");
+		    switch(status) { // TODO Get the timestamp for this update
+		        case LocationProvider.AVAILABLE:
+		            writeToFile("[L:ts_unavail]: Provider is available, with " + numSatell + " satellites\n");break;
+		        case LocationProvider.TEMPORARILY_UNAVAILABLE:
+		            writeToFile("[L:ts_unavail]: Provider is temporarily unavailable\n");break;
+		        case LocationProvider.OUT_OF_SERVICE:
+		            writeToFile("[L:ts_unavail]: Provider is out of service\n");break;
+		    }
+		}
+
+		@Override
+		public void onProviderDisabled(String provider) {}
+
+		@Override
+		public void onProviderEnabled(String provider) {}
+	}
+	
 	private final class GPSLocationListener implements LocationListener {
 		public void onStatusChanged(String provider, int status, Bundle extras) {
 		    // Write to file saying that the LocationProvider changed its status
 		    int numSatell = extras.getInt("satellites");
-		    switch(status) { // TODO Obter o timestamp desta actualização
+		    switch(status) { // TODO Get the timestamp for this update
 		        case LocationProvider.AVAILABLE:
 		            writeToFile("[L:ts_unavail]: Provider is available, with " + numSatell + " satellites\n");break;
 		        case LocationProvider.TEMPORARILY_UNAVAILABLE:
@@ -122,15 +218,22 @@ public class AccelGPSRecActivity extends Activity {
 	}
 
 	// Sensor-related attributes
-    private SensorManager mSensorManager;
+//    private SensorManager mSensorManager;
     private SensorEventListener sensorEventListener;
-    private Sensor mAccelerometer;
-    private Sensor mMagnetometer;
+//    private Sensor mAccelerometer;
+//    private Sensor mMagnetometer;
     @SuppressWarnings("unused")	private Sensor mLinearAcceleration; // FIXME Figure out if this will be used or not
 
     // Location-related attributes
-    private LocationManager mLocationManager;
+//    private LocationManager mLocationManager;
     private LocationListener locationListener;
+    
+    // Managers, sensors and listeners
+    private SensorManager mSensorManager;
+    private LocationManager mLocationManager;
+    private Sensor mAccelerometer;
+    private Sensor mMagnetometer;
+    private AccelGPSListener mAccelGPSListener;
 
     // External storage attributes
     private boolean mExternalStorageAvailable;
@@ -315,8 +418,9 @@ public class AccelGPSRecActivity extends Activity {
         mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         
         // Define both the location and accelerometer listeners
-        sensorEventListener = new AccelerometerSensorEventListener();
-        locationListener = new GPSLocationListener();
+//        sensorEventListener = new AccelerometerSensorEventListener();
+//        locationListener = new GPSLocationListener();
+        mAccelGPSListener = new AccelGPSListener();
     }
     /**
      * This function attaches the listeners to both the sensors and location services.
@@ -324,12 +428,17 @@ public class AccelGPSRecActivity extends Activity {
      */
     private void attachListeners() {
         // Listen to accelerometer (Raw and Acceleration filtered) and magnetometer events
-        mSensorManager.registerListener(sensorEventListener, mAccelerometer, SensorManager.SENSOR_DELAY_FASTEST);
-        mSensorManager.registerListener(sensorEventListener, mMagnetometer, SensorManager.SENSOR_DELAY_FASTEST);
+//        mSensorManager.registerListener(sensorEventListener, mAccelerometer, SensorManager.SENSOR_DELAY_FASTEST);
+//        mSensorManager.registerListener(sensorEventListener, mMagnetometer, SensorManager.SENSOR_DELAY_FASTEST);
 //      mSensorManager.registerListener(sensorEventListener, mLinearAcceleration, SensorManager.SENSOR_DELAY_FASTEST);
 
         // Listen to GPS events
-        mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
+//        mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
+    	
+    	// Listen do Accelerometer, Magnetometer and GPS events
+    	mSensorManager.registerListener(mAccelGPSListener, mAccelerometer, SensorManager.SENSOR_DELAY_FASTEST);
+    	mSensorManager.registerListener(mAccelGPSListener, mMagnetometer, SensorManager.SENSOR_DELAY_FASTEST);
+    	mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, mAccelGPSListener);
     }
 
 	@Override
