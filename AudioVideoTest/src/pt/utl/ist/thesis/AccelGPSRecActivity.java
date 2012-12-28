@@ -3,18 +3,12 @@ package pt.utl.ist.thesis;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Locale;
-import java.util.TimeZone;
 
 import pt.utl.ist.thesis.exception.ExternalStorageUnavailableException;
 import pt.utl.ist.thesis.exception.ExternalStorageWriteProtectedException;
-import pt.utl.ist.thesis.R;
-
 import android.app.Activity;
 import android.content.Context;
 import android.hardware.Sensor;
@@ -29,8 +23,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
-import android.text.format.DateFormat;
-import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -73,8 +65,9 @@ public class AccelGPSRecActivity extends Activity {
 		public void onProviderDisabled(String provider) {}
 	}
 	private final class AccelerometerSensorEventListener implements SensorEventListener {
-		private float[] accel = new float[3];
-		private float[] magnet = new float[3];
+		// FIXME Figure out if we need these for the rotation matrix
+		@SuppressWarnings("unused") private float[] accel = new float[3];
+		@SuppressWarnings("unused") private float[] magnet = new float[3];
 		
 		public void onSensorChanged(SensorEvent event) {
 		    // Write sensor values and the timestamp to the 'accelView'
@@ -132,7 +125,7 @@ public class AccelGPSRecActivity extends Activity {
     private SensorEventListener sensorEventListener;
     private Sensor mAccelerometer;
     private Sensor mMagnetometer;
-    private Sensor mLinearAcceleration;
+    @SuppressWarnings("unused")	private Sensor mLinearAcceleration; // FIXME Figure out if this will be used or not
 
     // Location-related attributes
     private LocationManager mLocationManager;

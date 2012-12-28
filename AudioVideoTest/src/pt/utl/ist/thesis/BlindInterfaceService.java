@@ -1,10 +1,5 @@
 package pt.utl.ist.thesis;
 
-import java.util.ArrayList;
-
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.media.AudioManager;
@@ -114,6 +109,7 @@ public class BlindInterfaceService extends Service {
 				}
 				
 				// Play sound
+				@SuppressWarnings("unused") // FIXME This was used before. Why isn't it now?
 				int streamID = sPool.play(soundChannel, (float) (left*0.01), (float) (right*0.01), 0, 0, 1);
 
 				// Hold execution for some time

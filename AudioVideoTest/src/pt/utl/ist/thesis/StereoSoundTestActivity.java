@@ -2,25 +2,18 @@ package pt.utl.ist.thesis;
 
 import java.util.ArrayList;
 
-import com.sun.script.util.BindingsImpl;
-import com.sun.xml.internal.org.jvnet.staxex.NamespaceContextEx.Binding;
-
-import android.media.AudioManager;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.IBinder;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.os.Bundle;
+import android.os.IBinder;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.TextView;
-import android.support.v4.app.NavUtils;
 
 public class StereoSoundTestActivity extends Activity {
 
