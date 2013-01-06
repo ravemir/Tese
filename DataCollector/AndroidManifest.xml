@@ -1,31 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="pt.utl.ist.thesis.datacollector"
     android:versionCode="1"
-    android:versionName="1.0" >
+    android:versionName="1.0" android:installLocation="auto">
 
     <uses-sdk
         android:minSdkVersion="8"
         android:targetSdkVersion="10" />
-    
+
     <!-- Permissions -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <!-- Device power -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.USES_POLICY_FORCE_LOCK" />
+
+    <supports-screens android:smallScreens="true"
+    		android:normalScreens="true" android:largeScreens="true"
+    		android:anyDensity="true" />
     
     <application
+        android:name="pt.ist.utl.thesis.DataCollectorApplication"
         android:allowBackup="true"
+        android:enabled="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme" 
-        android:name="pt.ist.utl.thesis.DataCollectorApplication" android:debuggable="true" android:enabled="true">
-        
-        <activity android:name="pt.ist.utl.thesis.AccelGPSRecActivity">
+        android:theme="@style/AppTheme" >
+        <activity android:name="pt.ist.utl.thesis.CollectionEntryActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="pt.utl.ist.thesis.datacollector.CollectionActivity"
+            android:label="@string/title_activity_collection" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="pt.ist.utl.thesis.AccelGPSRecActivity" />
         </activity>
     </application>
 
