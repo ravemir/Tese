@@ -260,7 +260,7 @@ public class CollectionActivity extends Activity {
 		super.onResume();
 
 		// Write to file pause error
-		writeToFile(getString(R.string.activity_resumed_message));
+		writeToFile(getString(R.string.activity_resumed_log));
 		
 		// Reattach listeners
 		attachListeners();
