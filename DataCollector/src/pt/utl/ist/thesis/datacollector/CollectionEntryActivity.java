@@ -1,9 +1,8 @@
-package pt.ist.utl.thesis;
+package pt.utl.ist.thesis.datacollector;
 
 import java.io.File;
 import java.util.ArrayList;
 
-import pt.utl.ist.thesis.datacollector.CollectionActivity;
 import pt.utl.ist.thesis.datacollector.R;
 import pt.utl.ist.thesis.exception.ExternalStorageUnavailableException;
 import pt.utl.ist.thesis.exception.ExternalStorageWriteProtectedException;

@@ -176,7 +176,7 @@ public class CollectionActivity extends Activity {
 		     @Override 
 		     public void run() {
 		          updateUI();
-		          mHandler.postDelayed(this, mInterval);
+		          mHandler.postDelayed(this, UPDATE_INTERVAL);
 		     }
 		};
 		
@@ -317,9 +317,9 @@ public class CollectionActivity extends Activity {
 	}
 	
 	// UI updater
-	private int mInterval = 2000;
 	private Handler mHandler;
 	private Runnable mStatusChecker;
+	private final int UPDATE_INTERVAL = 2000;
 
 	private void updateUI() {
 		// Get values
