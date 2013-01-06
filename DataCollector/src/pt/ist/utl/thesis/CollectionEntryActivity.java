@@ -70,7 +70,7 @@ public class CollectionEntryActivity extends Activity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.accel_gps_rec);
+		setContentView(R.layout.activity_collection_entry);
 
 		// Fill the log directory attribute
 		String sdcardPath = Environment.getExternalStorageDirectory()

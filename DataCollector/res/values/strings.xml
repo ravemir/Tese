@@ -28,7 +28,7 @@
     <string name="external_storage_unavailable_message">External storage unavailable.\nDo you have an SD Card installed?</string>
     <string name="external_storage_unwritable_message">External storage unwritable.\nIs it full or write-protected?</string>
     <string name="activity_paused_log">Activity Paused.</string>
-    <string name="twice_to_exit_message">Press again to exit.</string>
+    <string name="twice_to_exit_message">Press again to stop capture.</string>
     <string name="activity_resumed_message">Activity Resumed.</string>
     <string name="log_file_message">Saving log to file \"</string>
     <string name="wake_lock_log">[AccelGPSRec]: \"Screen Dim\" Wake Lock created</string>
