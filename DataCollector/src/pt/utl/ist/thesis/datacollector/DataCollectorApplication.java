@@ -1,4 +1,4 @@
-package pt.ist.utl.thesis.datacollector;
+package pt.utl.ist.thesis.datacollector;
 
 import android.app.Application;
 
