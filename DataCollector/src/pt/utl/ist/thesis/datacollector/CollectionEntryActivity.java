@@ -1,6 +1,11 @@
 package pt.utl.ist.thesis.datacollector;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 
 import pt.utl.ist.thesis.datacollector.R;
@@ -17,6 +22,9 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.SystemClock;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 
 public class CollectionEntryActivity extends Activity {
@@ -62,9 +70,10 @@ public class CollectionEntryActivity extends Activity {
 	// External storage attributes
 	private boolean mExternalStorageAvailable;
 	private boolean mExternalStorageWriteable;
-	private String logFolder;
+	private String logsFolder;
 	private LocationManager lm;
 	private GPSStatusChecker gpsc;
+	private String archiveFolder;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -74,13 +83,14 @@ public class CollectionEntryActivity extends Activity {
 		// Fill the log directory attribute
 		String sdcardPath = Environment.getExternalStorageDirectory()
 				.getAbsolutePath();
-		logFolder = sdcardPath + File.separator + "AccelGPS" + 
+		logsFolder = sdcardPath + File.separator + "AccelGPS" + 
 				File.separator + "logs" + File.separator;
+		archiveFolder = logsFolder + "archive" + File.separator;
 
 		// Create directories if necessary
-		File f = new File(logFolder);
-		if(f.mkdirs()) {
-			String message = getString(R.string.created_application_folder_message) + logFolder + ").";
+		File a = new File(archiveFolder);
+		if(a.mkdirs()) {
+			String message = getString(R.string.created_application_folder_message) + archiveFolder + ").";
 			CollectionActivity.displayToast(getApplicationContext(), message);
 		}
 
@@ -112,6 +122,7 @@ public class CollectionEntryActivity extends Activity {
 		lm.removeUpdates(gpsc);
 	}
 
+	// Button-handling related methods
 	/**
 	 * This is the called function when the toggle button is pressed.
 	 * 
@@ -140,7 +151,7 @@ public class CollectionEntryActivity extends Activity {
 			checkExternalStore();
 
 			Intent i = new Intent(CollectionEntryActivity.this, CollectionActivity.class);
-			i.putExtra("logFolder", logFolder);
+			i.putExtra("logFolder", logsFolder);
 			startActivity(i);
 		} catch (ExternalStorageUnavailableException esue) {
 			CollectionActivity.displayToast(getApplicationContext(),
@@ -156,7 +167,7 @@ public class CollectionEntryActivity extends Activity {
 	public void prepareEmail(View v){
 		// Get the log folder's file URI's
 		ArrayList<Uri> fileUri = new ArrayList<Uri>();
-		File folder = new File(logFolder);
+		File folder = new File(logsFolder);
 		for(File f : folder.listFiles()){
 			if(f.isFile())
 				fileUri.add(Uri.fromFile(f));
@@ -194,9 +205,61 @@ public class CollectionEntryActivity extends Activity {
 		emailIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, fileURIs);
 		context.startActivity(Intent.createChooser(emailIntent, "Send mail...")
 				.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+		
+		// TODO Read if e-mail was successful, and archive the logs acoordingly
 	}
 
+	public boolean onCreateOptionsMenu(Menu menu) {
+	    MenuInflater inflater = getMenuInflater();
+	    inflater.inflate(R.menu.activity_collection, menu);
+	    return true;
+	}
+	
+	public boolean onOptionsItemSelected(MenuItem item) {
+		File dir = new File(logsFolder);
+		switch (item.getItemId()) {
+		    case R.id.menu_clear_logs:
+		    	// TODO Refactor into method
+		    	for(File f : dir.listFiles()){
+		    		if(f.isFile()){
+		    			f.delete();
+		    		}
+		    	}
+		    	break;
+		    case R.id.menu_archive_logs:
+		    	// TODO Refactor into method
+		    	for(File f : dir.listFiles()){
+		    		if(f.isFile()){
+		    			try {
+							copy(f, new File(archiveFolder + f.getName()));
+							f.delete();
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+		    			
+		    		}
+		    	}
+		    	break;
+		    default: return super.onOptionsItemSelected(item);
+		}
+		return true;
+	}
 
+	// TODO Move this method to the appropriate spot inside this class
+	public static void copy(File src, File dst) throws IOException {
+	    InputStream in = new FileInputStream(src);
+	    OutputStream out = new FileOutputStream(dst);
+
+	    // Transfer bytes from in to out
+	    byte[] buf = new byte[1024];
+	    int len;
+	    while ((len = in.read(buf)) > 0) {
+	        out.write(buf, 0, len);
+	    }
+	    in.close();
+	    out.close();
+	}
+	
 	/**
 	 * Method called to check for the availability of the external storage.
 	 * 

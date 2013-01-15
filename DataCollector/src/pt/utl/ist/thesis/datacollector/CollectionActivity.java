@@ -6,6 +6,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
+import pt.utl.ist.thesis.util.UIUpdater;
 import android.app.Activity;
 import android.content.Context;
 import android.hardware.Sensor;
@@ -17,9 +18,9 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.LocationProvider;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.Window;
@@ -141,9 +142,30 @@ public class CollectionActivity extends Activity {
 
 	// Application attributes
 	private WakeLock mWakeLock;
+	private UIUpdater mUIUpdater;
 
 	// Log attributes
 	private static final String LOGSEPARATOR = ",";
+	
+	// Class runnables
+	private final Runnable uiUpdaterRunnable = new Runnable() {
+	     @Override 
+	     public void run() {
+	 		// Get values
+	 		float[] accel = mAccelGPSListener.getAccel();
+	 		Location loc = mAccelGPSListener.getLoc();
+	 		
+	 		// Update Accelerometer Views
+	 		((TextView) findViewById(R.id.XValue)).setText(Float.valueOf(accel[0]).toString());
+	 		((TextView) findViewById(R.id.YValue)).setText(Float.valueOf(accel[1]).toString());
+	 		((TextView) findViewById(R.id.ZValue)).setText(Float.valueOf(accel[2]).toString());
+	 		
+	 		// Update Location Views
+	 		((TextView) findViewById(R.id.LatValue)).setText(Double.valueOf(loc.getLatitude()).toString());
+	 		((TextView) findViewById(R.id.LongValue)).setText(Double.valueOf(loc.getLongitude()).toString());
+	 		((TextView) findViewById(R.id.SpeedValue)).setText(Double.valueOf(loc.getSpeed()).toString());
+	     }
+	};
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -170,15 +192,7 @@ public class CollectionActivity extends Activity {
 		String message = getString(R.string.log_file_message) + filename + "\"";
 		displayToast(getApplicationContext(), message);
 
-		// Create Handler for UI updates and start it
-		mHandler =  new Handler();
-		mStatusChecker = new Runnable() {
-		     @Override 
-		     public void run() {
-		          updateUI();
-		          mHandler.postDelayed(this, UPDATE_INTERVAL);
-		     }
-		};
+		mUIUpdater = new UIUpdater(this, uiUpdaterRunnable);
 		
 		// Obtain screen-on lock, acquiring it
 		PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
@@ -260,13 +274,15 @@ public class CollectionActivity extends Activity {
 		super.onResume();
 
 		// Write to file pause error
-		writeToFile(getString(R.string.activity_resumed_log));
+		long timestamp = new Date().getTime();
+		writeToFile("I" + LOGSEPARATOR + timestamp + LOGSEPARATOR + 
+				getString(R.string.activity_resumed_log));
 		
 		// Reattach listeners
 		attachListeners();
 		
-		// Restart the handler
-		mStatusChecker.run();
+		// Restart the UI updater
+		mUIUpdater.startUpdates();
 
 		// Acquire partial wake-lock
 		mWakeLock.acquire();
@@ -277,13 +293,16 @@ public class CollectionActivity extends Activity {
 		super.onPause();
 
 		// Write to file pause error
-		writeToFile(getString(R.string.activity_paused_log));
+		long timestamp = new Date().getTime();
+		writeToFile("I" + LOGSEPARATOR + timestamp + LOGSEPARATOR + 
+				getString(R.string.activity_paused_log));
+		Log.e(AUDIO_SERVICE, getString(R.string.activity_paused_log));
 
 		// Detach listeners
 		detachListeners();
 		
-		// Stop the handler
-		mHandler.removeCallbacks(mStatusChecker);
+		// Stop the UI updater
+		mUIUpdater.stopUpdates();
 
 		// Release the wake-lock
 		mWakeLock.release();
@@ -302,39 +321,18 @@ public class CollectionActivity extends Activity {
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		if (event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
 			switch (event.getAction()) {
-			case KeyEvent.ACTION_DOWN:
-				if (event.getDownTime() - lastPressedTime < PERIOD) {
-					finish();
-				} else {
-					Toast.makeText(getApplicationContext(), R.string.twice_to_exit_message,
-							Toast.LENGTH_SHORT).show();
-					lastPressedTime = event.getEventTime();
+				case KeyEvent.ACTION_DOWN:
+					if (event.getDownTime() - lastPressedTime < PERIOD) {
+						finish();
+					} else {
+						Toast.makeText(getApplicationContext(), R.string.twice_to_exit_message,
+								Toast.LENGTH_SHORT).show();
+						lastPressedTime = event.getEventTime();
+					}
+					return true;
 				}
-				return true;
-			}
 		}
 		return false;
-	}
-	
-	// UI updater
-	private Handler mHandler;
-	private Runnable mStatusChecker;
-	private final int UPDATE_INTERVAL = 2000;
-
-	private void updateUI() {
-		// Get values
-		float[] accel = mAccelGPSListener.getAccel();
-		Location loc = mAccelGPSListener.getLoc();
-		
-		// Update Accelerometer Views
-		((TextView) findViewById(R.id.XValue)).setText(Float.valueOf(accel[0]).toString());
-		((TextView) findViewById(R.id.YValue)).setText(Float.valueOf(accel[1]).toString());
-		((TextView) findViewById(R.id.ZValue)).setText(Float.valueOf(accel[2]).toString());
-		
-		// Update Location Views
-		((TextView) findViewById(R.id.LatValue)).setText(Double.valueOf(loc.getLatitude()).toString());
-		((TextView) findViewById(R.id.LongValue)).setText(Double.valueOf(loc.getLongitude()).toString());
-		((TextView) findViewById(R.id.SpeedValue)).setText(Double.valueOf(loc.getSpeed()).toString());
 	}
 	
 	// Assorted functions

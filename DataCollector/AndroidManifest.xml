@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="pt.utl.ist.thesis.datacollector"
-    android:versionCode="4"
-    android:versionName="1.0.3" android:installLocation="auto">
+    android:versionCode="5"
+    android:versionName="1.0.4" 
+    android:installLocation="auto">
 
     <uses-sdk
         android:minSdkVersion="8"
@@ -13,12 +14,13 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <!-- Device power -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
-    <supports-screens android:smallScreens="true"
-    		android:normalScreens="true" android:largeScreens="true"
-    		android:anyDensity="true" />
+    <supports-screens
+        android:anyDensity="true" 
+        android:smallScreens="true"
+   		android:largeScreens="true"
+   		android:normalScreens="true" />
     
     <application
         android:name="pt.utl.ist.thesis.datacollector.DataCollectorApplication"
@@ -35,10 +37,11 @@
         </activity>
         <activity
             android:name="pt.utl.ist.thesis.datacollector.CollectionActivity"
-            android:label="@string/title_activity_collection" >
+            android:label="@string/title_activity_collection"
+            android:screenOrientation="portrait" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="pt.ist.utl.thesis.AccelGPSRecActivity" />
+                android:value="CollectionEntryActivity" />
         </activity>
     </application>
 </manifest>

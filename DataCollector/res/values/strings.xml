@@ -27,9 +27,10 @@
     <string name="instructions_label">Instructions:</string>
     <string name="instructions_text">When you are ready to start collecting values, press the \'Start Collection\' button. While on the next screen, the application will record both accelerometer and GPS (if locked) values.\n\nYou should then place the mobile phone either in your trouser pocket or sock and either walk or run for as long as you wish (prefferably in a straight line).\n\nWhen done, press the back button twice to end the collection and return to this screen. When you are done, you should press the \'Send Logs by E-mail\' button, write a short description (optional) about the the events in the recoveries you made and send it (you may send it offline in GMail and it will be delivered the next time you have connectivity).\n\nPS: You should only start the collection once the GPS has obtained a fix (the icon will be fixed, not flashing).</string>
     <string name="rate_label">"Update rate (Hz): "</string>
+    <string name="exit_reminder">Remember: to exit back to the initial screen, you should press the back button twice</string>
 
     <!-- Toast messages resources -->
-    <string name="created_application_folder_message">Created application folder (</string>
+    <string name="created_application_folder_message">Created application folders (</string>
     <string name="no_fix_message">Please wait for a GPS fix before starting the data collection .</string>
     <string name="log_file_message">Saving log to file \"</string>
     <string name="twice_to_exit_message">Press again to stop capture.</string>
@@ -37,8 +38,9 @@
     <string name="external_storage_unwritable_message">External storage unwritable.\nIs it full or write-protected?</string>
 
     <!-- Log file and LogCat resources -->
-    <string name="activity_resumed_log">Activity Resumed.</string>
-    <string name="activity_paused_log">Activity Paused.</string>
+    <string name="log_separator">,</string>
+    <string name="activity_resumed_log">Activity Resumed.\n</string>
+    <string name="activity_paused_log">Activity Paused.\n</string>
     <string name="wake_lock_log">[AccelGPSRec]: \"Screen Dim\" Wake Lock created</string>
     <string name="provider_available_log">"Provider is available, with "</string>
     <string name="provider_temporarily_unavailable_log">Provider is temporarily unavailable\n</string>
@@ -48,5 +50,5 @@
     <string name="email_to_text">carlos.simoes@ist.utl.pt</string>
     <string name="email_subject_text">[Tese] Dados recolhidos</string>
     <string name="email_body_text">Hooray! Mais dados!\nAgora, se possível, deveria escrever em baixo detalhes acerca de como fiz o teste:\n\n</string>
-
+    
 </resources>
