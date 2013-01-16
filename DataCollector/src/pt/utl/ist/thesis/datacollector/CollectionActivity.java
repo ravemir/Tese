@@ -18,6 +18,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.LocationProvider;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.util.Log;
@@ -314,25 +315,25 @@ public class CollectionActivity extends Activity {
 	}
 
 	// Back-button functionality
-	private long lastPressedTime;
 	private static final int PERIOD = 2000;
-
+	private Boolean backWasPressed = false;
+	
 	@Override
-	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		if (event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
-			switch (event.getAction()) {
-				case KeyEvent.ACTION_DOWN:
-					if (event.getDownTime() - lastPressedTime < PERIOD) {
-						finish();
-					} else {
-						Toast.makeText(getApplicationContext(), R.string.twice_to_exit_message,
-								Toast.LENGTH_SHORT).show();
-						lastPressedTime = event.getEventTime();
-					}
-					return true;
-				}
+	public void onBackPressed() {
+		// Check if the button had already been pressed
+		if(backWasPressed){
+			// Perform expected functionality (exit)
+			super.onBackPressed();
+		} else {
+			// Register the press and display message
+			backWasPressed = true;
+			displayToast(getApplicationContext(), 
+					getString(R.string.twice_to_exit_message));
+			
+			// Schedule a regiter reset
+			new Handler().postDelayed(new Runnable() {
+				@Override public void run() {backWasPressed = false;}}, PERIOD);
 		}
-		return false;
 	}
 	
 	// Assorted functions
