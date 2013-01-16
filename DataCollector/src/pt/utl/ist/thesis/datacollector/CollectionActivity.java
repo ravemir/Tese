@@ -7,6 +7,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 import pt.utl.ist.thesis.util.UIUpdater;
+import pt.utl.ist.util.AndroidUtils;
 import android.app.Activity;
 import android.content.Context;
 import android.hardware.Sensor;
@@ -26,7 +27,6 @@ import android.view.Menu;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.TextView;
-import android.widget.Toast;
 
 public class CollectionActivity extends Activity {
 
@@ -190,7 +190,7 @@ public class CollectionActivity extends Activity {
 
 		// Display toast message with the filename being written to
 		String message = getString(R.string.log_file_message) + filename + "\"";
-		displayToast(getApplicationContext(), message);
+		AndroidUtils.displayToast(getApplicationContext(), message);
 
 		mUIUpdater = new UIUpdater(this, uiUpdaterRunnable);
 		
@@ -333,7 +333,7 @@ public class CollectionActivity extends Activity {
 		} else {
 			// Register the press and display message
 			backWasPressed = true;
-			displayToast(getApplicationContext(), 
+			AndroidUtils.displayToast(getApplicationContext(), 
 					getString(R.string.twice_to_exit_message));
 			
 			// Schedule a regiter reset
@@ -367,17 +367,6 @@ public class CollectionActivity extends Activity {
 		}
 
 		return tsString;
-	}
-
-	/**
-	 * This function displays a toast containing the given message.
-	 * 
-	 * @param context The context where this message will be displayed
-	 * @param message The message to be displayed as a toast.
-	 */
-	public static void displayToast(Context context, String message) {
-		Toast toast = Toast.makeText(context, message, Toast.LENGTH_LONG);
-		toast.show();
 	}
 
 	/**

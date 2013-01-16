@@ -36,6 +36,8 @@
     <string name="twice_to_exit_message">Press again to stop capture.</string>
     <string name="external_storage_unavailable_message">External storage unavailable.\nDo you have an SD Card installed?</string>
     <string name="external_storage_unwritable_message">External storage unwritable.\nIs it full or write-protected?</string>
+    <string name="logs_cleared_message">All non-archived logs cleared</string>
+    <string name="logs_archived_message">All logs archived. You can access them in \'</string>
 
     <!-- Log file and LogCat resources -->
     <string name="log_separator">,</string>

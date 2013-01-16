@@ -1,16 +1,12 @@
 package pt.utl.ist.thesis.datacollector;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 
-import pt.utl.ist.thesis.datacollector.R;
 import pt.utl.ist.thesis.exception.ExternalStorageUnavailableException;
 import pt.utl.ist.thesis.exception.ExternalStorageWriteProtectedException;
+import pt.utl.ist.util.AndroidUtils;
+import pt.utl.ist.util.FileUtils;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -97,7 +93,7 @@ public class CollectionEntryActivity extends Activity {
 		File a = new File(archiveFolder);
 		if(a.mkdirs()) {
 			String message = getString(R.string.created_application_folder_message) + archiveFolder + ").";
-			CollectionActivity.displayToast(getApplicationContext(), message);
+			AndroidUtils.displayToast(getApplicationContext(), message);
 		}
 
 		// Fill the storage state details
@@ -142,7 +138,7 @@ public class CollectionEntryActivity extends Activity {
 			startCollectionActivity();
 		} else {
 			// Display an error
-			CollectionActivity.displayToast(getApplicationContext(),
+			AndroidUtils.displayToast(getApplicationContext(),
 					getString(R.string.no_fix_message));
 		}
 	}
@@ -159,11 +155,11 @@ public class CollectionEntryActivity extends Activity {
 			i.putExtra("logFolder", logsFolder);
 			startActivity(i);
 		} catch (ExternalStorageUnavailableException esue) {
-			CollectionActivity.displayToast(getApplicationContext(),
+			AndroidUtils.displayToast(getApplicationContext(),
 					getString(R.string.external_storage_unavailable_message));
 			esue.printStackTrace();
 		} catch (ExternalStorageWriteProtectedException eswpe) {
-			CollectionActivity.displayToast(getApplicationContext(),
+			AndroidUtils.displayToast(getApplicationContext(),
 					getString(R.string.external_storage_unwritable_message));
 			eswpe.printStackTrace();
 		}
@@ -211,7 +207,7 @@ public class CollectionEntryActivity extends Activity {
 		context.startActivity(Intent.createChooser(emailIntent, "Send mail...")
 				.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
 		
-		// TODO Read if e-mail was successful, and archive the logs acoordingly
+		// TODO Read if e-mail was successful, and archive the logs accordingly
 	}
 
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -224,47 +220,22 @@ public class CollectionEntryActivity extends Activity {
 		File dir = new File(logsFolder);
 		switch (item.getItemId()) {
 		    case R.id.menu_clear_logs:
-		    	// TODO Refactor into method
-		    	for(File f : dir.listFiles()){
-		    		if(f.isFile()){
-		    			f.delete();
-		    		}
-		    	}
+		    	// Delete all the files in the folder
+		    	FileUtils.deleteFilesFromDir(dir);
+		    	AndroidUtils.displayToast(getApplicationContext(),
+		    			getString(R.string.logs_cleared_message));
 		    	break;
 		    case R.id.menu_archive_logs:
-		    	// TODO Refactor into method
-		    	for(File f : dir.listFiles()){
-		    		if(f.isFile()){
-		    			try {
-							copy(f, new File(archiveFolder + f.getName()));
-							f.delete();
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
-		    			
-		    		}
-		    	}
+		    	// Archive all files in the folder
+		    	FileUtils.moveAllFilesToDir(dir, archiveFolder);
+		    	AndroidUtils.displayToast(getApplicationContext(),
+		    			getString(R.string.logs_archived_message) + archiveFolder + "'");
 		    	break;
 		    default: return super.onOptionsItemSelected(item);
 		}
 		return true;
 	}
 
-	// TODO Move this method to the appropriate spot inside this class
-	public static void copy(File src, File dst) throws IOException {
-	    InputStream in = new FileInputStream(src);
-	    OutputStream out = new FileOutputStream(dst);
-
-	    // Transfer bytes from in to out
-	    byte[] buf = new byte[1024];
-	    int len;
-	    while ((len = in.read(buf)) > 0) {
-	        out.write(buf, 0, len);
-	    }
-	    in.close();
-	    out.close();
-	}
-	
 	/**
 	 * Method called to check for the availability of the external storage.
 	 * 
