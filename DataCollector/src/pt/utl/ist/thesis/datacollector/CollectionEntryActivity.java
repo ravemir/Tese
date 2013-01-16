@@ -22,10 +22,12 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.SystemClock;
+import android.text.method.ScrollingMovementMethod;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 
 public class CollectionEntryActivity extends Activity {
 
@@ -79,6 +81,10 @@ public class CollectionEntryActivity extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_collection_entry);
+		
+		// Set scrollbar movement method for the TextView
+		((TextView)findViewById(R.id.instructionsValue))
+			.setMovementMethod(new ScrollingMovementMethod());
 
 		// Fill the log directory attribute
 		String sdcardPath = Environment.getExternalStorageDirectory()
@@ -97,8 +103,8 @@ public class CollectionEntryActivity extends Activity {
 		// Fill the storage state details
 		updateStorageState();
 
-		// Add a GPS status listener
-//		attachFixListeners();
+		// Create the GPS status listener
+		gpsc = new GPSStatusChecker();
 	}
 
 	/**
@@ -107,7 +113,7 @@ public class CollectionEntryActivity extends Activity {
 	 */
 	private void attachFixListeners() {
 		lm = (LocationManager) getSystemService(LOCATION_SERVICE);
-		gpsc = new GPSStatusChecker();
+//		gpsc = new GPSStatusChecker();
 		lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, gpsc);
 		lm.addGpsStatusListener(gpsc);
 	}

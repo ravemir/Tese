@@ -18,6 +18,9 @@
         android:layout_height="wrap_content"
         android:layout_weight="0.00"
         android:singleLine="false"
+        android:maxLines="16"
+        android:scrollbars="vertical"
+        android:fadeScrollbars="false"
         android:text="@string/instructions_text" />
 
     <RelativeLayout
