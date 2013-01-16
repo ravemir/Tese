@@ -29,7 +29,7 @@ import android.view.View;
 
 public class CollectionEntryActivity extends Activity {
 
-	private class GPSStatusChecker implements GpsStatus.Listener, LocationListener{
+	private class GPSStatusChecker implements GpsStatus.Listener, LocationListener {
 
 		private Boolean isGPSFix = false;
 		private Location mLastLocation;
@@ -98,7 +98,7 @@ public class CollectionEntryActivity extends Activity {
 		updateStorageState();
 
 		// Add a GPS status listener
-		attachFixListeners();
+//		attachFixListeners();
 	}
 
 	/**
@@ -138,7 +138,6 @@ public class CollectionEntryActivity extends Activity {
 			// Display an error
 			CollectionActivity.displayToast(getApplicationContext(),
 					getString(R.string.no_fix_message));
-			
 		}
 	}
 

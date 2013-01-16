@@ -22,7 +22,6 @@ import android.os.Handler;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.Window;
 import android.view.WindowManager;
@@ -297,7 +296,6 @@ public class CollectionActivity extends Activity {
 		long timestamp = new Date().getTime();
 		writeToFile("I" + LOGSEPARATOR + timestamp + LOGSEPARATOR + 
 				getString(R.string.activity_paused_log));
-		Log.e(AUDIO_SERVICE, getString(R.string.activity_paused_log));
 
 		// Detach listeners
 		detachListeners();
@@ -307,6 +305,14 @@ public class CollectionActivity extends Activity {
 
 		// Release the wake-lock
 		mWakeLock.release();
+	}
+
+	
+	
+	@Override
+	protected void onStop() {
+		Log.e(STORAGE_SERVICE, "onStop");
+		super.onStop();
 	}
 
 	@Override
