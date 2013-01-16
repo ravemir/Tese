@@ -22,7 +22,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
-import android.util.Log;
 import android.view.Menu;
 import android.view.Window;
 import android.view.WindowManager;
@@ -194,7 +193,7 @@ public class CollectionActivity extends Activity {
 
 		mUIUpdater = new UIUpdater(this, uiUpdaterRunnable);
 		
-		// Obtain screen-on lock, acquiring it
+		// Create screen-dim wake lock
 		PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
 		mWakeLock = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK,
 				getString(R.string.wake_lock_log));
@@ -306,20 +305,7 @@ public class CollectionActivity extends Activity {
 		// Release the wake-lock
 		mWakeLock.release();
 	}
-
 	
-	
-	@Override
-	protected void onStop() {
-		Log.e(STORAGE_SERVICE, "onStop");
-		super.onStop();
-	}
-
-	@Override
-	protected void onDestroy() {
-		super.onDestroy();
-	}
-
 	// Back-button functionality
 	private static final int PERIOD = 2000;
 	private Boolean backWasPressed = false;
