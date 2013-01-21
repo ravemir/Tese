@@ -78,7 +78,7 @@ public class CollectionActivity extends Activity {
 					if (success) {
 						float orientation[] = new float[3];
 						SensorManager.getOrientation(R, orientation);
-						magnetLine = "O" + LOGSEPARATOR +
+						magnetLine += "O" + LOGSEPARATOR +
 								orientation[0] + LOGSEPARATOR +			// Azimuth
 								orientation[1] + LOGSEPARATOR +			// Pitch
 								orientation[2] + LOGSEPARATOR + "\n";	// Roll
@@ -202,13 +202,13 @@ public class CollectionActivity extends Activity {
 		// Get extra attributes from extras bundle
 		logFolder = (String) getIntent().getExtras().get("logFolder");
 
-		// Initialize and attach the Listener-related activity attributes
-		initializeListeners();
-		attachListeners();
-
 		// Get date from system and set the file name to save
 		String date = getDateForFilename();
 		filename = logFolder + date + ".log";
+		
+		// Initialize and attach the Listener-related activity attributes
+		initializeListeners();
+		attachListeners();
 
 		// Display toast message with the filename being written to
 		String message = getString(R.string.log_file_message) + filename + "\"";
