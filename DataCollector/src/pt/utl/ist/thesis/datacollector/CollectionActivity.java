@@ -52,7 +52,7 @@ public class CollectionActivity extends Activity {
 			case Sensor.TYPE_LINEAR_ACCELERATION:
 			case Sensor.TYPE_ACCELEROMETER:
 				accel = event.values.clone();	
-				String line = "A" + LOGSEPARATOR +				// TODO Write to accelerometer file 
+				String accelLine = "A" + LOGSEPARATOR +				// TODO Write to accelerometer file 
 						tsString + LOGSEPARATOR + 
 						values[0] + LOGSEPARATOR + 
 						values[1] + LOGSEPARATOR + 
@@ -60,10 +60,19 @@ public class CollectionActivity extends Activity {
 						accuracy + "\n";
 
 				// Write them to a file
-				writeToFile(line);
+				writeToFile(accelLine);
 				break;
 			case Sensor.TYPE_MAGNETIC_FIELD:
 				magnet = event.values.clone();
+				String magnetLine = "M" + LOGSEPARATOR +				// TODO Write to magnetometer file 
+						tsString + LOGSEPARATOR + 
+						values[0] + LOGSEPARATOR + 
+						values[1] + LOGSEPARATOR + 
+						values[2] + LOGSEPARATOR +
+						accuracy + "\n";
+
+				// Write them to a file
+				writeToFile(magnetLine);
 				break;
 			}
 		}
@@ -109,7 +118,7 @@ public class CollectionActivity extends Activity {
 			// Write to file saying that the LocationProvider changed its status
 			int numSatell = extras.getInt("satellites");
 			long timestamp = new Date().getTime();
-			String lineHeader = "L" + LOGSEPARATOR + timestamp + LOGSEPARATOR;
+			String lineHeader = "I" + LOGSEPARATOR + timestamp + LOGSEPARATOR;
 			switch(status) {
 				case LocationProvider.AVAILABLE:
 					writeToFile(lineHeader + getString(R.string.provider_available_log)
