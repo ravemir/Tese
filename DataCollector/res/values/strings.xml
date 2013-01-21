@@ -52,5 +52,8 @@
     <string name="email_to_text">carlos.simoes@ist.utl.pt</string>
     <string name="email_subject_text">[Tese] Dados recolhidos</string>
     <string name="email_body_text">Hooray! Mais dados!\nAgora, se possível, deveria escrever em baixo detalhes acerca de como fiz o teste:\n\n</string>
+    <string name="accel_magnet_listeners_dettached">Accelerometer and Magnetometer listeners dettached.</string>
+    <string name="magnet_listener_attached">Magnetometer listener attached.</string>
+    <string name="accel_listener_attached">Accelerometer listener attached.</string>
     
 </resources>

@@ -33,7 +33,7 @@ public class CollectionActivity extends Activity {
 	private final class AccelGPSListener implements LocationListener, SensorEventListener {
 		// Sensor-related attributes and methods
 		private float[] accel = new float[3];
-		@SuppressWarnings("unused") private float[] magnet = new float[3];
+		private float[] magnet = new float[3];
 
 		@Override
 		public void onSensorChanged(SensorEvent event) {
@@ -71,6 +71,20 @@ public class CollectionActivity extends Activity {
 						values[2] + LOGSEPARATOR +
 						accuracy + "\n";
 
+				if (mAccelerometer != null && mMagnetometer != null) {
+					float R[] = new float[9];
+					float I[] = new float[9];
+					boolean success = SensorManager.getRotationMatrix(R, I, accel, magnet);
+					if (success) {
+						float orientation[] = new float[3];
+						SensorManager.getOrientation(R, orientation);
+						magnetLine = "O" + LOGSEPARATOR +
+								orientation[0] + LOGSEPARATOR +			// Azimuth
+								orientation[1] + LOGSEPARATOR +			// Pitch
+								orientation[2] + LOGSEPARATOR + "\n";	// Roll
+					}
+				}
+
 				// Write them to a file
 				writeToFile(magnetLine);
 				break;
@@ -82,7 +96,7 @@ public class CollectionActivity extends Activity {
 
 		// Location related attributes methods
 		private Location loc;
-		
+
 		@Override
 		public void onLocationChanged(Location location) {
 			// Write the new coordinates to a file
@@ -97,7 +111,7 @@ public class CollectionActivity extends Activity {
 					satelliteNo + LOGSEPARATOR +
 					location.getAccuracy() + "\n";
 			writeToFile(line);										// TODO Write to location file
-			
+
 			loc = location;
 		}
 
@@ -120,13 +134,13 @@ public class CollectionActivity extends Activity {
 			long timestamp = new Date().getTime();
 			String lineHeader = "I" + LOGSEPARATOR + timestamp + LOGSEPARATOR;
 			switch(status) {
-				case LocationProvider.AVAILABLE:
-					writeToFile(lineHeader + getString(R.string.provider_available_log)
-							+ numSatell + " satellites\n");break;
-				case LocationProvider.TEMPORARILY_UNAVAILABLE:
-					writeToFile(lineHeader + getString(R.string.provider_temporarily_unavailable_log));break;
-				case LocationProvider.OUT_OF_SERVICE:
-					writeToFile(lineHeader + getString(R.string.provider_out_of_service_log));break;
+			case LocationProvider.AVAILABLE:
+				writeToFile(lineHeader + getString(R.string.provider_available_log)
+						+ numSatell + " satellites\n");break;
+			case LocationProvider.TEMPORARILY_UNAVAILABLE:
+				writeToFile(lineHeader + getString(R.string.provider_temporarily_unavailable_log));break;
+			case LocationProvider.OUT_OF_SERVICE:
+				writeToFile(lineHeader + getString(R.string.provider_out_of_service_log));break;
 			}
 		}
 
@@ -154,25 +168,25 @@ public class CollectionActivity extends Activity {
 
 	// Log attributes
 	private static final String LOGSEPARATOR = ",";
-	
+
 	// Class runnables
 	private final Runnable uiUpdaterRunnable = new Runnable() {
-	     @Override 
-	     public void run() {
-	 		// Get values
-	 		float[] accel = mAccelGPSListener.getAccel();
-	 		Location loc = mAccelGPSListener.getLoc();
-	 		
-	 		// Update Accelerometer Views
-	 		((TextView) findViewById(R.id.XValue)).setText(Float.valueOf(accel[0]).toString());
-	 		((TextView) findViewById(R.id.YValue)).setText(Float.valueOf(accel[1]).toString());
-	 		((TextView) findViewById(R.id.ZValue)).setText(Float.valueOf(accel[2]).toString());
-	 		
-	 		// Update Location Views
-	 		((TextView) findViewById(R.id.LatValue)).setText(Double.valueOf(loc.getLatitude()).toString());
-	 		((TextView) findViewById(R.id.LongValue)).setText(Double.valueOf(loc.getLongitude()).toString());
-	 		((TextView) findViewById(R.id.SpeedValue)).setText(Double.valueOf(loc.getSpeed()).toString());
-	     }
+		@Override 
+		public void run() {
+			// Get values
+			float[] accel = mAccelGPSListener.getAccel();
+			Location loc = mAccelGPSListener.getLoc();
+
+			// Update Accelerometer Views
+			((TextView) findViewById(R.id.XValue)).setText(Float.valueOf(accel[0]).toString());
+			((TextView) findViewById(R.id.YValue)).setText(Float.valueOf(accel[1]).toString());
+			((TextView) findViewById(R.id.ZValue)).setText(Float.valueOf(accel[2]).toString());
+
+			// Update Location Views
+			((TextView) findViewById(R.id.LatValue)).setText(Double.valueOf(loc.getLatitude()).toString());
+			((TextView) findViewById(R.id.LongValue)).setText(Double.valueOf(loc.getLongitude()).toString());
+			((TextView) findViewById(R.id.SpeedValue)).setText(Double.valueOf(loc.getSpeed()).toString());
+		}
 	};
 
 	@Override
@@ -181,7 +195,7 @@ public class CollectionActivity extends Activity {
 
 		// Set it as a fullscreen activity
 		setFullScreen();
-		
+
 		// Set the View content
 		setContentView(R.layout.activity_collection);
 
@@ -201,7 +215,7 @@ public class CollectionActivity extends Activity {
 		AndroidUtils.displayToast(getApplicationContext(), message);
 
 		mUIUpdater = new UIUpdater(this, uiUpdaterRunnable);
-		
+
 		// Create screen-dim wake lock
 		PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
 		mWakeLock = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK,
@@ -262,8 +276,15 @@ public class CollectionActivity extends Activity {
 	 */
 	private void attachListeners() {
 		// Listen to Accelerometer, Magnetometer and GPS events
-		mSensorManager.registerListener(mAccelGPSListener, mAccelerometer, SensorManager.SENSOR_DELAY_FASTEST);
-		mSensorManager.registerListener(mAccelGPSListener, mMagnetometer, SensorManager.SENSOR_DELAY_FASTEST);
+		if(mAccelerometer != null){
+			mSensorManager.registerListener(mAccelGPSListener, mAccelerometer, SensorManager.SENSOR_DELAY_FASTEST);
+			writeToFile("I" + LOGSEPARATOR + getString(R.string.accel_listener_attached));
+		}
+		if(mMagnetometer != null){
+			mSensorManager.registerListener(mAccelGPSListener, mMagnetometer, SensorManager.SENSOR_DELAY_FASTEST);
+			writeToFile("I" + LOGSEPARATOR + getString(R.string.magnet_listener_attached));
+		}
+
 		mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, mAccelGPSListener);
 	}
 
@@ -273,7 +294,10 @@ public class CollectionActivity extends Activity {
 	 */
 	private void detachListeners() {
 		// Detach both Sensor and GPS listeners
-		mSensorManager.unregisterListener(mAccelGPSListener);
+		if(mAccelGPSListener != null) {
+			mSensorManager.unregisterListener(mAccelGPSListener);
+			writeToFile("I" + LOGSEPARATOR + getString(R.string.accel_magnet_listeners_dettached));
+		}
 		mLocationManager.removeUpdates(mAccelGPSListener);
 	}
 
@@ -285,10 +309,10 @@ public class CollectionActivity extends Activity {
 		long timestamp = new Date().getTime();
 		writeToFile("I" + LOGSEPARATOR + timestamp + LOGSEPARATOR + 
 				getString(R.string.activity_resumed_log));
-		
+
 		// Reattach listeners
 		attachListeners();
-		
+
 		// Restart the UI updater
 		mUIUpdater.startUpdates();
 
@@ -307,18 +331,18 @@ public class CollectionActivity extends Activity {
 
 		// Detach listeners
 		detachListeners();
-		
+
 		// Stop the UI updater
 		mUIUpdater.stopUpdates();
 
 		// Release the wake-lock
 		mWakeLock.release();
 	}
-	
+
 	// Back-button functionality
 	private static final int PERIOD = 2000;
 	private Boolean backWasPressed = false;
-	
+
 	@Override
 	public void onBackPressed() {
 		// Check if the button had already been pressed
@@ -330,13 +354,13 @@ public class CollectionActivity extends Activity {
 			backWasPressed = true;
 			AndroidUtils.displayToast(getApplicationContext(), 
 					getString(R.string.twice_to_exit_message));
-			
+
 			// Schedule a regiter reset
 			new Handler().postDelayed(new Runnable() {
 				@Override public void run() {backWasPressed = false;}}, PERIOD);
 		}
 	}
-	
+
 	// Assorted functions
 	/**
 	 * Prints out the millisecond form of the provided 
