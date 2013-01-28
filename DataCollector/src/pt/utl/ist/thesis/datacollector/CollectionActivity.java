@@ -275,14 +275,17 @@ public class CollectionActivity extends Activity {
 	 * It also defines the behavior of both those listeners.
 	 */
 	private void attachListeners() {
+		// Get the timestamp
+		long timestamp = new Date().getTime();
+		
 		// Listen to Accelerometer, Magnetometer and GPS events
 		if(mAccelerometer != null){
 			mSensorManager.registerListener(mAccelGPSListener, mAccelerometer, SensorManager.SENSOR_DELAY_FASTEST);
-			writeToFile("I" + LOGSEPARATOR + getString(R.string.accel_listener_attached));
+			writeToFile("I" + LOGSEPARATOR + timestamp + LOGSEPARATOR + getString(R.string.accel_listener_attached));
 		}
 		if(mMagnetometer != null){
 			mSensorManager.registerListener(mAccelGPSListener, mMagnetometer, SensorManager.SENSOR_DELAY_FASTEST);
-			writeToFile("I" + LOGSEPARATOR + getString(R.string.magnet_listener_attached));
+			writeToFile("I" + LOGSEPARATOR + timestamp + LOGSEPARATOR + getString(R.string.magnet_listener_attached));
 		}
 
 		mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, mAccelGPSListener);
@@ -293,10 +296,13 @@ public class CollectionActivity extends Activity {
 	 * and location services.
 	 */
 	private void detachListeners() {
+		// Get the timestamp
+		long timestamp = new Date().getTime();
+		
 		// Detach both Sensor and GPS listeners
 		if(mAccelGPSListener != null) {
 			mSensorManager.unregisterListener(mAccelGPSListener);
-			writeToFile("I" + LOGSEPARATOR + getString(R.string.accel_magnet_listeners_dettached));
+			writeToFile("I" + LOGSEPARATOR + timestamp + LOGSEPARATOR + getString(R.string.accel_magnet_listeners_dettached));
 		}
 		mLocationManager.removeUpdates(mAccelGPSListener);
 	}
