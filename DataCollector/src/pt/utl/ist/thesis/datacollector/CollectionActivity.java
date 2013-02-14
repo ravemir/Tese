@@ -81,7 +81,7 @@ public class CollectionActivity extends Activity {
 						magnetLine += "O" + LOGSEPARATOR +
 								orientation[0] + LOGSEPARATOR +			// Azimuth
 								orientation[1] + LOGSEPARATOR +			// Pitch
-								orientation[2] + LOGSEPARATOR + "\n";	// Roll
+								orientation[2] + "\n";	// Roll
 					}
 				}
 
