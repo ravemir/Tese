@@ -3,11 +3,14 @@ package pt.utl.ist.thesis.datacollector;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 import pt.utl.ist.thesis.util.UIUpdater;
 import pt.utl.ist.util.AndroidUtils;
+import pt.utl.ist.util.classes.AccelReading;
 import android.app.Activity;
 import android.content.Context;
 import android.hardware.Sensor;
@@ -31,9 +34,16 @@ public class CollectionActivity extends Activity {
 
 	// Inner-class Listeners
 	private final class AccelGPSListener implements LocationListener, SensorEventListener {
+		private static final double KFACTOR = 10.5;
+		private static final double PEAKTHRESHFACTOR = 0.7;
+		private static final int CIRCBUFFSIZE = 100;
 		// Sensor-related attributes and methods
 		private float[] accel = new float[3];
 		private float[] magnet = new float[3];
+		
+		private int accelI = 0;
+		private AccelReading[] accelReadings = new AccelReading[100];
+		private List<AccelReading> peakList = new ArrayList<AccelReading>();
 
 		@Override
 		public void onSensorChanged(SensorEvent event) {
@@ -51,14 +61,44 @@ public class CollectionActivity extends Activity {
 			switch(event.sensor.getType()){
 			case Sensor.TYPE_LINEAR_ACCELERATION:
 			case Sensor.TYPE_ACCELEROMETER:
-				accel = event.values.clone();	
+				accel = event.values.clone();
+				accelReadings[accelI] = new AccelReading(Double.valueOf(tsString), accel);
 				String accelLine = "A" + LOGSEPARATOR +				// TODO Write to accelerometer file 
 						tsString + LOGSEPARATOR + 
 						values[0] + LOGSEPARATOR + 
 						values[1] + LOGSEPARATOR + 
 						values[2] + LOGSEPARATOR +
 						accuracy + "\n";
-
+				
+				// TODO Detect peak
+				double forwardSlope = computeFwdSlope(accelI);
+				double backwardSlope = computeBwdSlope(accelI);
+				if(forwardSlope > 0 && backwardSlope < 0){
+					// TODO Store peak timestamp and value
+					peakList.add(accelReadings[accelI-1]);
+					
+					// TODO Compute average values
+					accelReadings[accelI-1].getAccelerationNorm();
+				}
+				
+				// TODO If buffer has filled...
+				if(accelI == CIRCBUFFSIZE - 1){
+					// TODO Count steps
+					double peakAverage = 0 / CIRCBUFFSIZE;
+					for(AccelReading ard : peakList){
+						// TODO Print them
+						if(ard.getAccelerationNorm() > peakAverage * PEAKTHRESHFACTOR &&
+								ard.getAccelerationNorm() > KFACTOR){
+							accelLine += "S" + LOGSEPARATOR + 
+									ard.getTimestamp() + LOGSEPARATOR + 
+									ard.getAccelerationNorm() + "\n";
+						}
+					}
+				}
+				
+				// Increment circular buffer index
+				accelI = (accelI + 1) % CIRCBUFFSIZE;
+				
 				// Write them to a file
 				writeToFile(accelLine);
 				break;
@@ -91,6 +131,32 @@ public class CollectionActivity extends Activity {
 			}
 		}
 
+		
+		/**
+		 * Computes the forward slope on the appropriate
+		 * range of acceleration values.
+		 * 
+		 * @return The slope value.
+		 */
+		private double computeFwdSlope(int index) {
+			return accelReadings[index].getAccelerationNorm() - 
+					accelReadings[index-1].getAccelerationNorm();
+		}
+		
+		/**
+		 * Computes the backward slope on the appropriate
+		 * range of acceleration values.
+		 * 
+		 * @param index Index pointing to the end of the
+		 * 				backward slope. 
+		 * @return The slope value.
+		 */
+		private double computeBwdSlope(int index) {
+			return accelReadings[index-1].getAccelerationNorm() - 
+					accelReadings[index-2].getAccelerationNorm();
+		}
+
+
 		@Override
 		public void onAccuracyChanged(Sensor sensor, int accuracy) {}
 
@@ -115,7 +181,7 @@ public class CollectionActivity extends Activity {
 			loc = location;
 		}
 
-		public float[] getAccel() {
+		public float[] getLatestAccel() {
 			return accel;
 		}
 
@@ -174,7 +240,7 @@ public class CollectionActivity extends Activity {
 		@Override 
 		public void run() {
 			// Get values
-			float[] accel = mAccelGPSListener.getAccel();
+			float[] accel = mAccelGPSListener.getLatestAccel();
 			Location loc = mAccelGPSListener.getLoc();
 
 			// Update Accelerometer Views
