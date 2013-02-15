@@ -34,14 +34,16 @@ public class CollectionActivity extends Activity {
 
 	// Inner-class Listeners
 	private final class AccelGPSListener implements LocationListener, SensorEventListener {
-		private static final double KFACTOR = 10.5;
-		private static final double PEAKTHRESHFACTOR = 0.7;
-		private static final int CIRCBUFFSIZE = 100;
+		
 		// Sensor-related attributes and methods
 		private float[] accel = new float[3];
 		private float[] magnet = new float[3];
 		
+		private static final double KFACTOR = 10.5; // TODO Chosen heuristically. Should be computed?
+		private static final double PEAKTHRESHFACTOR = 0.7; // Multiplication factor to lower the step threshold
+		private static final int CIRCBUFFSIZE = 100; // Circular buffer size
 		private int accelI = 0;
+		private double acum = 0;
 		private AccelReading[] accelReadings = new AccelReading[100];
 		private List<AccelReading> peakList = new ArrayList<AccelReading>();
 
@@ -63,7 +65,7 @@ public class CollectionActivity extends Activity {
 			case Sensor.TYPE_ACCELEROMETER:
 				accel = event.values.clone();
 				accelReadings[accelI] = new AccelReading(Double.valueOf(tsString), accel);
-				String accelLine = "A" + LOGSEPARATOR +				// TODO Write to accelerometer file 
+				String accelLine = "A" + LOGSEPARATOR + 
 						tsString + LOGSEPARATOR + 
 						values[0] + LOGSEPARATOR + 
 						values[1] + LOGSEPARATOR + 
@@ -77,14 +79,14 @@ public class CollectionActivity extends Activity {
 					// TODO Store peak timestamp and value
 					peakList.add(accelReadings[accelI-1]);
 					
-					// TODO Compute average values
-					accelReadings[accelI-1].getAccelerationNorm();
+					// TODO Acumulate peak value
+					acum += accelReadings[accelI-1].getAccelerationNorm();
 				}
 				
 				// TODO If buffer has filled...
 				if(accelI == CIRCBUFFSIZE - 1){
 					// TODO Count steps
-					double peakAverage = 0 / CIRCBUFFSIZE;
+					double peakAverage = acum/CIRCBUFFSIZE;
 					for(AccelReading ard : peakList){
 						// TODO Print them
 						if(ard.getAccelerationNorm() > peakAverage * PEAKTHRESHFACTOR &&
@@ -94,6 +96,9 @@ public class CollectionActivity extends Activity {
 									ard.getAccelerationNorm() + "\n";
 						}
 					}
+					
+					// Reset acumulator
+					acum = 0;
 				}
 				
 				// Increment circular buffer index
@@ -104,7 +109,7 @@ public class CollectionActivity extends Activity {
 				break;
 			case Sensor.TYPE_MAGNETIC_FIELD:
 				magnet = event.values.clone();
-				String magnetLine = "M" + LOGSEPARATOR +				// TODO Write to magnetometer file 
+				String magnetLine = "M" + LOGSEPARATOR + 
 						tsString + LOGSEPARATOR + 
 						values[0] + LOGSEPARATOR + 
 						values[1] + LOGSEPARATOR + 
@@ -168,7 +173,7 @@ public class CollectionActivity extends Activity {
 			// Write the new coordinates to a file
 			long timestamp = location.getTime();
 			int satelliteNo = location.getExtras().getInt("satellites");
-			String line =   "L"+ LOGSEPARATOR + timestamp + LOGSEPARATOR +               // TODO Convert to X,Y,Z
+			String line =   "L"+ LOGSEPARATOR + timestamp + LOGSEPARATOR +
 					location.getLatitude() + LOGSEPARATOR + 
 					location.getLongitude() + LOGSEPARATOR +
 					location.getAltitude() + LOGSEPARATOR +
@@ -176,7 +181,7 @@ public class CollectionActivity extends Activity {
 					location.getSpeed() +  LOGSEPARATOR +
 					satelliteNo + LOGSEPARATOR +
 					location.getAccuracy() + "\n";
-			writeToFile(line);										// TODO Write to location file
+			writeToFile(line);
 
 			loc = location;
 		}
