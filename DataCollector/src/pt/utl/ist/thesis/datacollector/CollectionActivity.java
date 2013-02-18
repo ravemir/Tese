@@ -44,7 +44,8 @@ public class CollectionActivity extends Activity {
 		private static final int CIRCBUFFSIZE = 100; // Circular buffer size
 		private int accelI = 0;
 		private double acum = 0;
-		private AccelReading[] accelReadings = new AccelReading[100];
+		private boolean bufferIsWarm = false;
+		private AccelReading[] accelReadings = new AccelReading[CIRCBUFFSIZE];
 		private List<AccelReading> peakList = new ArrayList<AccelReading>();
 
 		@Override
@@ -73,14 +74,17 @@ public class CollectionActivity extends Activity {
 						accuracy + "\n";
 				
 				// TODO Detect peak
-				double forwardSlope = computeFwdSlope(accelI);
-				double backwardSlope = computeBwdSlope(accelI);
-				if(forwardSlope > 0 && backwardSlope < 0){
-					// TODO Store peak timestamp and value
-					peakList.add(accelReadings[accelI-1]);
-					
-					// TODO Acumulate peak value
-					acum += accelReadings[accelI-1].getAccelerationNorm();
+				if(bufferIsWarm){
+					double forwardSlope = computeFwdSlope(accelI);
+					double backwardSlope = computeBwdSlope(accelI);
+					if(forwardSlope > 0 && backwardSlope < 0){
+						// TODO Store peak timestamp and value
+						int peakIndex = (accelI == 0 ? CIRCBUFFSIZE-1 : accelI-1);
+						peakList.add(accelReadings[peakIndex]);
+						
+						// TODO Acumulate peak value
+						acum += accelReadings[peakIndex].getAccelerationNorm();
+					}
 				}
 				
 				// TODO If buffer has filled...
@@ -97,8 +101,10 @@ public class CollectionActivity extends Activity {
 						}
 					}
 					
-					// Reset acumulator
+					// Reset acumulator and peak list
 					acum = 0;
+					peakList.clear();
+					bufferIsWarm = true;
 				}
 				
 				// Increment circular buffer index
@@ -107,6 +113,7 @@ public class CollectionActivity extends Activity {
 				// Write them to a file
 				writeToFile(accelLine);
 				break;
+				
 			case Sensor.TYPE_MAGNETIC_FIELD:
 				magnet = event.values.clone();
 				String magnetLine = "M" + LOGSEPARATOR + 
@@ -144,8 +151,9 @@ public class CollectionActivity extends Activity {
 		 * @return The slope value.
 		 */
 		private double computeFwdSlope(int index) {
+			int prev = (index == 0 ? CIRCBUFFSIZE-1 : index-1);
 			return accelReadings[index].getAccelerationNorm() - 
-					accelReadings[index-1].getAccelerationNorm();
+					accelReadings[prev].getAccelerationNorm();
 		}
 		
 		/**
@@ -157,10 +165,10 @@ public class CollectionActivity extends Activity {
 		 * @return The slope value.
 		 */
 		private double computeBwdSlope(int index) {
-			return accelReadings[index-1].getAccelerationNorm() - 
-					accelReadings[index-2].getAccelerationNorm();
+			int prev = (index <= 1 ? CIRCBUFFSIZE-1 : index-1);
+			return accelReadings[prev].getAccelerationNorm() - 
+					accelReadings[prev-1].getAccelerationNorm();
 		}
-
 
 		@Override
 		public void onAccuracyChanged(Sensor sensor, int accuracy) {}
