@@ -72,6 +72,7 @@ public class CollectionEntryActivity extends Activity {
 	private LocationManager lm;
 	private GPSStatusChecker gpsc;
 	private String archiveFolder;
+	private Boolean isGPSFixDisabled;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -98,6 +99,10 @@ public class CollectionEntryActivity extends Activity {
 
 		// Fill the storage state details
 		updateStorageState();
+		
+		// Retrieve preferences
+		isGPSFixDisabled = !this.getPreferences(MODE_PRIVATE).
+				getBoolean(getString(R.string.disable_gps_fix_preference), false);
 
 		// Create the GPS status listener
 		gpsc = new GPSStatusChecker();
@@ -131,9 +136,11 @@ public class CollectionEntryActivity extends Activity {
 	 * @param v The view whose interaction triggered this call (in this case, the button).
 	 */
 	public void toggleOnClick(View v) {
-		// If we have a GPS Fix..
+		// If we have a GPS Fix...
 		Boolean isGPSFix = gpsc.getIsGPSFix();
-		if(isGPSFix){
+		
+		// ...or the GPS fix requirement is disabled
+		if(isGPSFix || isGPSFixDisabled){
 			// Start the collection activity
 			startCollectionActivity();
 		} else {
@@ -219,6 +226,15 @@ public class CollectionEntryActivity extends Activity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		File dir = new File(logsFolder);
 		switch (item.getItemId()) {
+			case R.id.menu_toggle_gps_fix:
+		    	// Toggle the requirement of a GPS fix to start a capture
+				isGPSFixDisabled ^= true;
+				getPreferences(MODE_PRIVATE).edit().
+					putBoolean(getString(R.string.disable_gps_fix_preference), isGPSFixDisabled).commit();
+		    	AndroidUtils.displayToast(getApplicationContext(),
+		    			getString(R.string.toggle_gps_fix_requirement_message) + 
+		    			(isGPSFixDisabled ? "disabled" : "enabled"));
+		    	break;
 		    case R.id.menu_clear_logs:
 		    	// Delete all the files in the folder
 		    	FileUtils.deleteFilesFromDir(dir);

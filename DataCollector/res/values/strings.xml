@@ -50,10 +50,14 @@
     <string name="magnet_listener_attached">Magnetometer listener attached.\n</string>
     <string name="accel_listener_attached">Accelerometer listener attached.\n</string>
     <string name="accel_magnet_listeners_dettached">Accelerometer and Magnetometer listeners dettached.\n</string>
+    <string name="toggle_gps_fix_requirement_message">"GPS fix requirement "</string>
 
     <!-- E-mail related resources -->
     <string name="email_to_text">carlos.simoes@ist.utl.pt</string>
     <string name="email_subject_text">[Tese] Dados recolhidos</string>
     <string name="email_body_text">Hooray! Mais dados!\nAgora, se possível, deveria escrever em baixo detalhes acerca de como fiz o teste:\n\n</string>
+    
+    <!-- Shared preferences variables -->
+    <string name="disable_gps_fix_preference">disable_gps_fix</string>
     
 </resources>
