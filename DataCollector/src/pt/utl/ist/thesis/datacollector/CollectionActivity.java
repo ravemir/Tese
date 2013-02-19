@@ -90,7 +90,7 @@ public class CollectionActivity extends Activity {
 				// TODO If buffer has filled...
 				if(accelI == CIRCBUFFSIZE - 1){
 					// TODO Count steps
-					double peakAverage = acum/CIRCBUFFSIZE;
+					double peakAverage = acum/peakList.size();
 					for(AccelReading ard : peakList){
 						// TODO Print them
 						if(ard.getAccelerationNorm() > peakAverage * PEAKTHRESHFACTOR &&
