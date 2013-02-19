@@ -65,7 +65,7 @@ public class CollectionActivity extends Activity {
 			case Sensor.TYPE_LINEAR_ACCELERATION:
 			case Sensor.TYPE_ACCELEROMETER:
 				accel = event.values.clone();
-				accelReadings[accelI] = new AccelReading(Double.valueOf(tsString), accel);
+				accelReadings[accelI] = new AccelReading(tsString, accel);
 				String accelLine = "A" + LOGSEPARATOR + 
 						tsString + LOGSEPARATOR + 
 						values[0] + LOGSEPARATOR + 
@@ -73,30 +73,33 @@ public class CollectionActivity extends Activity {
 						values[2] + LOGSEPARATOR +
 						accuracy + "\n";
 				
-				// TODO Detect peak
+				// Detect peak
 				if(bufferIsWarm){
 					double forwardSlope = computeFwdSlope(accelI);
 					double backwardSlope = computeBwdSlope(accelI);
 					if(forwardSlope > 0 && backwardSlope < 0){
-						// TODO Store peak timestamp and value
+						// Store peak timestamp and value
 						int peakIndex = (accelI == 0 ? CIRCBUFFSIZE-1 : accelI-1);
 						peakList.add(accelReadings[peakIndex]);
 						
-						// TODO Acumulate peak value
+						// Acumulate peak value
 						acum += accelReadings[peakIndex].getAccelerationNorm();
 					}
 				}
 				
-				// TODO If buffer has filled...
+				// If buffer has filled...
 				if(accelI == CIRCBUFFSIZE - 1){
-					// TODO Count steps
+					// Count steps
 					double peakAverage = acum/peakList.size();
 					for(AccelReading ard : peakList){
-						// TODO Print them
+						// Print them
 						if(ard.getAccelerationNorm() > peakAverage * PEAKTHRESHFACTOR &&
 								ard.getAccelerationNorm() > KFACTOR){
 							accelLine += "S" + LOGSEPARATOR + 
-									ard.getTimestamp() + LOGSEPARATOR + 
+									ard.getTimestamp() + LOGSEPARATOR +
+									ard.getAcceleration()[0] + LOGSEPARATOR +
+									ard.getAcceleration()[1] + LOGSEPARATOR +
+									ard.getAcceleration()[2] + LOGSEPARATOR +
 									ard.getAccelerationNorm() + "\n";
 						}
 					}
