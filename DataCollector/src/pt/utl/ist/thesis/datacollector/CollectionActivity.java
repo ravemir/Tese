@@ -79,7 +79,7 @@ public class CollectionActivity extends Activity {
 					double backwardSlope = computeBwdSlope(accelI);
 					if(forwardSlope > 0 && backwardSlope < 0){
 						// Store peak timestamp and value
-						int peakIndex = (accelI == 0 ? CIRCBUFFSIZE-1 : accelI-1);
+						int peakIndex = previousIndex(accelI, CIRCBUFFSIZE);
 						peakList.add(accelReadings[peakIndex]);
 						
 						// Acumulate peak value
@@ -96,7 +96,7 @@ public class CollectionActivity extends Activity {
 						if(ard.getAccelerationNorm() > peakAverage * PEAKTHRESHFACTOR &&
 								ard.getAccelerationNorm() > KFACTOR){
 							accelLine += "S" + LOGSEPARATOR + 
-									ard.getTimestamp() + LOGSEPARATOR +
+									ard.getTimestampString() + LOGSEPARATOR +
 									ard.getAcceleration()[0] + LOGSEPARATOR +
 									ard.getAcceleration()[1] + LOGSEPARATOR +
 									ard.getAcceleration()[2] + LOGSEPARATOR +
@@ -146,6 +146,16 @@ public class CollectionActivity extends Activity {
 			}
 		}
 
+
+		/**
+		 * @param index TODO
+		 * @param bufferSize TODO
+		 * @return
+		 */
+		private int previousIndex(int index, int bufferSize) {
+			return index == 0 ? bufferSize-1 : index-1;
+		}
+
 		
 		/**
 		 * Computes the forward slope on the appropriate
@@ -154,7 +164,7 @@ public class CollectionActivity extends Activity {
 		 * @return The slope value.
 		 */
 		private double computeFwdSlope(int index) {
-			int prev = (index == 0 ? CIRCBUFFSIZE-1 : index-1);
+			int prev = previousIndex(index, CIRCBUFFSIZE);
 			return accelReadings[index].getAccelerationNorm() - 
 					accelReadings[prev].getAccelerationNorm();
 		}
@@ -168,9 +178,10 @@ public class CollectionActivity extends Activity {
 		 * @return The slope value.
 		 */
 		private double computeBwdSlope(int index) {
-			int prev = (index <= 1 ? CIRCBUFFSIZE-1 : index-1);
+			int prev = previousIndex(index, CIRCBUFFSIZE);
+			int beforeLast = previousIndex(prev, CIRCBUFFSIZE);
 			return accelReadings[prev].getAccelerationNorm() - 
-					accelReadings[prev-1].getAccelerationNorm();
+					accelReadings[beforeLast].getAccelerationNorm();
 		}
 
 		@Override

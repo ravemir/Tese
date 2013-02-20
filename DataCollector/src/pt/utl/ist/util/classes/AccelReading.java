@@ -50,9 +50,8 @@ public class AccelReading extends SensorReading {
 	public float[] getReading() {
 		return getAcceleration();
 	}
-	
-	@Override
-	public String toString() {
+		
+	public String getTimestampString() {
 		return formattedTs;
 	}
 
