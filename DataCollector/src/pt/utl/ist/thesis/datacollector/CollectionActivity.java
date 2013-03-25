@@ -40,8 +40,15 @@ public class CollectionActivity extends Activity {
 		private float[] magnet = new float[3];
 		
 		private static final double KFACTOR = 10.5; // TODO Chosen heuristically. Should be computed?
+													// 		Value before which a peak is always discarded.
+													//		Gravity magnitude is a good pick.
 		private static final double PEAKTHRESHFACTOR = 0.7; // Multiplication factor to lower the step threshold
-		private static final int CIRCBUFFSIZE = 100; // Circular buffer size
+															// Depends on the variance of intensity of each step
+															// i.e. if a step is a lot smaller than the previous,
+															// this value should be lower to accommodate it.
+		
+		private static final int CIRCBUFFSIZE = 50; // FIXME Circular buffer size (should be computed according to
+													//		 sampling rate)
 		private int accelI = 0;
 		private double acum = 0;
 		private boolean bufferIsWarm = false;
@@ -73,10 +80,12 @@ public class CollectionActivity extends Activity {
 						values[2] + LOGSEPARATOR +
 						accuracy + "\n";
 				
-				// Detect peak
+				// If the buffer has filled once...
 				if(bufferIsWarm){
 					double forwardSlope = computeFwdSlope(accelI);
 					double backwardSlope = computeBwdSlope(accelI);
+					
+					// Detect peak
 					if(forwardSlope > 0 && backwardSlope < 0){
 						// Store peak timestamp and value
 						int peakIndex = previousIndex(accelI, CIRCBUFFSIZE);
@@ -85,6 +94,8 @@ public class CollectionActivity extends Activity {
 						// Acumulate peak value
 						acum += accelReadings[peakIndex].getAccelerationNorm();
 					}
+					
+					// TODO Detect "zero" crossings or some other peak validating mechanism
 				}
 				
 				// If buffer has filled...
