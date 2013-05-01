@@ -10,7 +10,7 @@ import java.util.List;
 
 import pt.utl.ist.thesis.util.UIUpdater;
 import pt.utl.ist.util.AndroidUtils;
-import pt.utl.ist.util.classes.AccelReading;
+import pt.utl.ist.util.sensor.reading.AccelReading;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
