@@ -1,8 +1,12 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
     <item
         android:id="@+id/menu_toggle_gps_fix"
-        android:orderInCategory="99"
+        android:orderInCategory="98"
         android:title="Toggle GPS Fix Requirement" />
+    <item
+        android:id="@+id/menu_calibrate_sensors"
+        android:orderInCategory="99"
+        android:title="Launch Calibration procedure" />
     <item
         android:id="@+id/menu_clear_logs"
         android:orderInCategory="100"

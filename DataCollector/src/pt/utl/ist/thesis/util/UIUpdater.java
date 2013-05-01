@@ -6,7 +6,7 @@ import android.os.Handler;
  * A class used to perform updates on an Android UI,
  * specified inside a runnable object. An update interval
  * may be specified (otherwise, the class will update the 
- * UI every 2 seconds).
+ * UI every 1,5 seconds).
  * 
  * @author Carlos Simões
  */

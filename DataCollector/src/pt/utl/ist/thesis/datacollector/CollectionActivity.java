@@ -11,6 +11,7 @@ import java.util.List;
 import pt.utl.ist.thesis.util.UIUpdater;
 import pt.utl.ist.util.AndroidUtils;
 import pt.utl.ist.util.classes.AccelReading;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.hardware.Sensor;
@@ -21,6 +22,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.LocationProvider;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.PowerManager;
@@ -35,9 +37,12 @@ public class CollectionActivity extends Activity {
 	// Inner-class Listeners
 	private final class AccelGPSListener implements LocationListener, SensorEventListener {
 		
-		// Sensor-related attributes and methods
-		private float[] accel = new float[3];
-		private float[] magnet = new float[3];
+		// Sensor-related attributes and methods (sized 4 to be compatible with 4x4 matrices)
+		private float[] accel = new float[4];
+		private float[] gravity = new float[4];
+		private float[] magnet = new float[4];
+		private float[] orientations = new float[3];
+		private float wAccels[] = new float[4];
 		
 		private static final double KFACTOR = 10.5; // TODO Chosen heuristically. Should be computed?
 													// 		Value before which a peak is always discarded.
@@ -54,24 +59,24 @@ public class CollectionActivity extends Activity {
 		private boolean bufferIsWarm = false;
 		private AccelReading[] accelReadings = new AccelReading[CIRCBUFFSIZE];
 		private List<AccelReading> peakList = new ArrayList<AccelReading>();
+		
+		private float rot[] = new float[16];
+		private float incl[] = null;
 
 		@Override
 		public void onSensorChanged(SensorEvent event) {
 			// Write sensor values and the timestamp to the 'accelView'
-			float[] values = event.values;
+			float[] values = event.values; // FIXME This should be removed, as there is no reason to use the copied values or event.values
 			int accuracy = event.accuracy;
 
 			// Compute the timestamp in nanos first
-			long javaTime = new Date().getTime();
-			long nanoTime = System.nanoTime();
-			long newtimestamp = javaTime * 1000000 + 						
-					(event.timestamp - nanoTime);
-			String tsString = printNanosToMilis(newtimestamp);
+			long newtimestamp = AndroidUtils.computeJavaTimeStamp(event.timestamp);
+			String tsString = AndroidUtils.printNanosToMilis(newtimestamp);
 
 			switch(event.sensor.getType()){
 			case Sensor.TYPE_LINEAR_ACCELERATION:
 			case Sensor.TYPE_ACCELEROMETER:
-				accel = event.values.clone();
+				System.arraycopy(event.values, 0, accel, 0, 3);
 				accelReadings[accelI] = new AccelReading(tsString, accel);
 				String accelLine = "A" + LOGSEPARATOR + 
 						tsString + LOGSEPARATOR + 
@@ -127,9 +132,11 @@ public class CollectionActivity extends Activity {
 				// Write them to a file
 				writeToFile(accelLine);
 				break;
-				
+			case Sensor.TYPE_GRAVITY:
+				System.arraycopy(event.values, 0, gravity, 0, 3);
+				break;
 			case Sensor.TYPE_MAGNETIC_FIELD:
-				magnet = event.values.clone();
+				System.arraycopy(event.values, 0, magnet, 0, 3);
 				String magnetLine = "M" + LOGSEPARATOR + 
 						tsString + LOGSEPARATOR + 
 						values[0] + LOGSEPARATOR + 
@@ -138,16 +145,26 @@ public class CollectionActivity extends Activity {
 						accuracy + "\n";
 
 				if (mAccelerometer != null && mMagnetometer != null) {
-					float R[] = new float[9];
-					float I[] = new float[9];
-					boolean success = SensorManager.getRotationMatrix(R, I, accel, magnet);
+					incl = null;
+					boolean success = SensorManager.getRotationMatrix(rot, incl, gravity, magnet);
+					//SensorManager.remapCoordinateSystem(rot, SensorManager.AXIS_X, SensorManager.AXIS_Z, rot);
 					if (success) {
-						float orientation[] = new float[3];
-						SensorManager.getOrientation(R, orientation);
+						// TODO Create temporary rotation matrix to optimize speed
+						SensorManager.getOrientation(rot, orientations);
 						magnetLine += "O" + LOGSEPARATOR +
-								orientation[0] + LOGSEPARATOR +			// Azimuth
-								orientation[1] + LOGSEPARATOR +			// Pitch
-								orientation[2] + "\n";	// Roll
+								tsString + LOGSEPARATOR +
+								orientations[0] + LOGSEPARATOR +			// Azimuth
+								orientations[1] + LOGSEPARATOR +			// Pitch
+								orientations[2] + "\n";						// Roll
+						
+						// Copy acceleration values into bigger array for multiplication
+						android.opengl.Matrix.multiplyMV(wAccels, 0, rot, 0, gravity, 0);
+//						android.opengl.Matrix.multiplyMV(wAccels, 0, rot, 0, accel, 0);
+						magnetLine += "W" + LOGSEPARATOR +
+								tsString + LOGSEPARATOR +
+								wAccels[0] + LOGSEPARATOR +
+								wAccels[1] + LOGSEPARATOR +
+								wAccels[2] + "\n";
 					}
 				}
 
@@ -259,6 +276,7 @@ public class CollectionActivity extends Activity {
 	private SensorManager mSensorManager;
 	private LocationManager mLocationManager;
 	private Sensor mAccelerometer;
+	private Sensor mGravity;
 	private Sensor mMagnetometer;
 	private AccelGPSListener mAccelGPSListener;
 
@@ -364,14 +382,36 @@ public class CollectionActivity extends Activity {
 	 * (to be called on the activity's first run or on orientation changes)
 	 */
 	private void initializeListeners(){
-		// Initialize manager and sensor attributes
+		// Initialize sensor and location manager and magnetometer sensor
 		mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-		mMagnetometer = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
 		mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+		mMagnetometer = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+		
+		// Gravity and LinearAcceleration sensors only available from Gingerbread and up
+		if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD)
+			initializeAcceleration();
+		else
+			initializeAccelerationPreGingerbread();
 
 		// Define both the location and accelerometer listeners
 		mAccelGPSListener = new AccelGPSListener();
+	}
+
+	/**
+	 * Initialize acceleration sensors on pre-Gingerbread phones.
+	 */
+	public void initializeAccelerationPreGingerbread() {
+		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+		mGravity = mAccelerometer;
+	}
+
+	/**
+	 * Initialize acceleration sensors on Gingerbread+ phones.
+	 */
+	@TargetApi(Build.VERSION_CODES.GINGERBREAD)
+	public void initializeAcceleration() {
+		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
+		mGravity = mSensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
 	}
 
 	/**
@@ -382,16 +422,16 @@ public class CollectionActivity extends Activity {
 		// Get the timestamp
 		long timestamp = new Date().getTime();
 		
-		// Listen to Accelerometer, Magnetometer and GPS events
-		if(mAccelerometer != null){
+		// Listen to accelerometer, magnetometer and GPS events
+		if(mAccelerometer != null && mGravity != null){
 			mSensorManager.registerListener(mAccelGPSListener, mAccelerometer, SensorManager.SENSOR_DELAY_FASTEST);
+			mSensorManager.registerListener(mAccelGPSListener, mGravity, SensorManager.SENSOR_DELAY_FASTEST);
 			writeToFile("I" + LOGSEPARATOR + timestamp + LOGSEPARATOR + getString(R.string.accel_listener_attached));
 		}
 		if(mMagnetometer != null){
 			mSensorManager.registerListener(mAccelGPSListener, mMagnetometer, SensorManager.SENSOR_DELAY_FASTEST);
 			writeToFile("I" + LOGSEPARATOR + timestamp + LOGSEPARATOR + getString(R.string.magnet_listener_attached));
 		}
-
 		mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, mAccelGPSListener);
 	}
 
@@ -434,7 +474,7 @@ public class CollectionActivity extends Activity {
 	protected void onPause() {
 		super.onPause();
 
-		// Write to file pause error
+		// Write to file pause message
 		long timestamp = new Date().getTime();
 		writeToFile("I" + LOGSEPARATOR + timestamp + LOGSEPARATOR + 
 				getString(R.string.activity_paused_log));
@@ -469,33 +509,6 @@ public class CollectionActivity extends Activity {
 			new Handler().postDelayed(new Runnable() {
 				@Override public void run() {backWasPressed = false;}}, PERIOD);
 		}
-	}
-
-	// Assorted functions
-	/**
-	 * Prints out the millisecond form of the provided 
-	 * nanosecond timestamp.
-	 * 
-	 * @param nanosTimestamp The timestamp, in nanosecond units
-	 * @return A String containing the millisecond form of the timestamp
-	 */
-	private static String printNanosToMilis(long nanosTimestamp) {
-		// Convert to String type 
-		String longStr = Long.valueOf(nanosTimestamp).toString();
-
-		String tsString = null;
-
-		// Format the output String to have the comma in the correct place
-		if(nanosTimestamp >= 1000000){
-			// ...if it has an integer part
-			tsString = longStr.substring(0, longStr.length()-6) + 	
-					"." + longStr.substring(longStr.length()-6);
-		} else {
-			// ...or if doesn't, return a string specifying the occurence
-			tsString = "[< 1ms]";
-		}
-
-		return tsString;
 	}
 
 	/**

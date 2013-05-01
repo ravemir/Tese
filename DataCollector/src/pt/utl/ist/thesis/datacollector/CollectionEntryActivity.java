@@ -27,6 +27,8 @@ import android.widget.TextView;
 
 public class CollectionEntryActivity extends Activity {
 
+	protected static final String COLLECTION_PREFERENCES = "collection_preferences";
+
 	private class GPSStatusChecker implements GpsStatus.Listener, LocationListener {
 
 		private Boolean isGPSFix = false;
@@ -101,7 +103,7 @@ public class CollectionEntryActivity extends Activity {
 		updateStorageState();
 		
 		// Retrieve preferences
-		isGPSFixDisabled = !this.getPreferences(MODE_PRIVATE).
+		isGPSFixDisabled = !getSharedPreferences(COLLECTION_PREFERENCES, MODE_PRIVATE).
 				getBoolean(getString(R.string.disable_gps_fix_preference), false);
 
 		// Create the GPS status listener
@@ -229,12 +231,17 @@ public class CollectionEntryActivity extends Activity {
 			case R.id.menu_toggle_gps_fix:
 		    	// Toggle the requirement of a GPS fix to start a capture
 				isGPSFixDisabled ^= true;
-				getPreferences(MODE_PRIVATE).edit().
+				getSharedPreferences(COLLECTION_PREFERENCES, MODE_PRIVATE).edit().
 					putBoolean(getString(R.string.disable_gps_fix_preference), isGPSFixDisabled).commit();
 		    	AndroidUtils.displayToast(getApplicationContext(),
 		    			getString(R.string.toggle_gps_fix_requirement_message) + 
 		    			(isGPSFixDisabled ? "disabled" : "enabled"));
 		    	break;
+			case R.id.menu_calibrate_sensors:
+				// Launch CalibrationActivity
+				Intent i = new Intent(CollectionEntryActivity.this, CalibrationActivity.class);
+				startActivity(i);
+				break;
 		    case R.id.menu_clear_logs:
 		    	// Delete all the files in the folder
 		    	FileUtils.deleteFilesFromDir(dir);
