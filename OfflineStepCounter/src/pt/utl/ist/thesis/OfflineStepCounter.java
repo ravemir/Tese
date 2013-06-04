@@ -1,0 +1,110 @@
+package pt.utl.ist.thesis;
+
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+
+import pt.utl.ist.thesis.signalprocessor.PeakAnalyser;
+import pt.utl.ist.util.sensor.reading.AccelReading;
+import pt.utl.ist.util.sensor.source.RawReadingSource;
+import pt.utl.ist.util.source.filters.ButterworthFilter;
+import pt.utl.ist.util.source.filters.GravityFilter;
+
+public class OfflineStepCounter {
+
+	public static final String baseFolder = "C:\\Users\\Carlos\\Dropbox\\Tese\\Dissertacao\\Dados\\06-03-2013\\logs\\conv\\";
+//	public static final String logName = "2013-03-06_18h17.log.accel";
+	public static final String logName = "2013-03-06_18h30.log.accel";
+	
+	/**
+	 * @param args
+	 */
+	public static void main(String[] args) {
+		// Grab log file reader
+		BufferedReader lineReader;
+		try {
+			lineReader = new BufferedReader(new FileReader(baseFolder + logName));
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return;
+		}
+		
+		// Create buffer w/two average observers
+		int size = 50;
+		RawReadingSource rs = new RawReadingSource(size);		
+		rs.attachFilter(new ButterworthFilter(10, 5, 50, true));
+		rs.attachFilter(new GravityFilter());
+		//rs.addMovingAverageFilter(1);
+		//rs.addMovingAverageFilter(25);
+		//rs.addMovingAverageFilter(50);
+		
+		// Create the filter analyser
+		PeakAnalyser fa = new PeakAnalyser(50);
+		rs.getFilters().get(0).attachAnalyser(fa);
+//		rs.attachAnalyser(fa);
+		
+		// Loop until end of file
+		String line = null;
+		try {
+			line = lineReader.readLine();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		while(line != null) {
+			// Parse String values
+			AccelReading reading = getAccelReadingFromLine(line);
+			
+			// Add sensor reading object to buffer
+			rs.pushReading(reading);
+			
+			// Compute averages, etc. (done in the background)
+			
+			// TODO Print current state
+			//System.out.println("Value:\t\t" + rs.getBuffer().getCurrentReading().getAccelerationNorm());
+			System.out.println("Time: " + reading.getTimestampString());
+			System.out.println("Filtered:\t" + ((ButterworthFilter) rs.getFilters().get(0)).getBuffer().getCurrentReading().getAccelerationNorm());
+			System.out.println("Gravity:\t" + ((GravityFilter) rs.getFilters().get(1)).getBuffer().getCurrentReading().getAccelerationNorm() + ", " 
+								+ ((GravityFilter) rs.getFilters().get(1)).getBuffer().getCurrentReading());
+
+			// Read new line
+			try {
+				line = lineReader.readLine();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+		// TODO Output relevant states
+		for(AccelReading a :  fa.getNormPeaks()){
+			System.out.println("Peak: " + a.getTimestampString() + ", " + a.getAccelerationNorm() + ", " + a);
+		}
+		for(AccelReading a :  fa.getSteps()){
+			System.out.println("Step: " + a.getTimestampString() + ", " + a.getAccelerationNorm() + ", " + a);
+		}
+		
+		// Close the line reader
+		try {
+			lineReader.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * @param line
+	 */
+	private static AccelReading getAccelReadingFromLine(String line) {
+		String[] bSplit = line.split(",");
+		float[] accel = {Float.parseFloat(bSplit[1]),
+				Float.parseFloat(bSplit[2]),
+				Float.parseFloat(bSplit[3])};
+		 return new AccelReading(bSplit[0], accel);
+	}
+
+}
