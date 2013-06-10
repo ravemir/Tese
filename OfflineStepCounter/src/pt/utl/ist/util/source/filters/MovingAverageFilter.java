@@ -43,6 +43,7 @@ public final class MovingAverageFilter extends Filter {
 	
 	/**
 	 * Returns the value of this {@link MovingAverageFilter}'s order.
+	 * 
 	 * @return The number of samples to average on each update.
 	 */
 	public int getAverageOrder() {

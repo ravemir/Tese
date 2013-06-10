@@ -218,11 +218,9 @@ public class GPSSegment extends ArrayList<GPSReading> {
 	}
 
 	public void computeStepFrequencyAndLength() {
-		// Get the step count
-		int stepCount = steps.size();
 		
 		// Compute average step length
-		Double stepLength = dist / stepCount;
+		Double stepLength = getAverageStepLength();
 		
 		// Update steps with computed length and average frequency
 		for(StepReading r : steps) {
@@ -232,7 +230,6 @@ public class GPSSegment extends ArrayList<GPSReading> {
 	}
 
 	public int getStepCount() {
-		// TODO Auto-generated method stub
 		return steps.size();
 	}
 	
@@ -249,5 +246,31 @@ public class GPSSegment extends ArrayList<GPSReading> {
 			result = cmp.get(i).equals(get(i));
 		
 		return result;
+	}
+	
+	/**
+	 * Returns the value of the average step length,
+	 * as described in the AutoGait paper ('B. Walking 
+	 * Profile Calibration', section 1).
+	 * 
+	 * @return The value of the average step length.
+	 */
+	public Double getAverageStepLength(){
+		// Get the step count
+		int stepCount = getStepCount();
+		
+		// Compute average step length
+		Double stepLength = dist / stepCount;
+		return stepLength;
+	}
+	
+	/**
+	 * Returns the current average step frequency value.
+	 * 
+	 * @return The value of the average step frequency.
+	 */
+	public Double getAverageStepFrequency() {
+		// Return the average step length value
+		return stepFreqAverage.getCurrentValue();
 	}
 }
