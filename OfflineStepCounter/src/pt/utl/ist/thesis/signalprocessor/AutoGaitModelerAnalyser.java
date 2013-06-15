@@ -21,13 +21,18 @@ import pt.utl.ist.util.sensor.reading.StepReading;
  */
 public class AutoGaitModelerAnalyser implements Observer {
 
-	private ArrayList<GPSSegment> segments = new ArrayList<GPSSegment>();
-	private GPSSegment currentSegment;
-	private ArrayList<StepReading> stepBuffer = new ArrayList<StepReading>();
-	
-	private SynchronizedSummaryStatistics speedStats = new SynchronizedSummaryStatistics();
+	// AutoGait model related attributes
+	private AutoGaitModel autoGaitModel;
 	private Double middleThreshold;
 	private Double endThreshold;
+	
+	// Buffers and lists
+	private ArrayList<GPSSegment> segments = new ArrayList<GPSSegment>();
+	private ArrayList<StepReading> stepBuffer = new ArrayList<StepReading>();
+	
+	// State and statistical variables
+	private GPSSegment currentSegment;
+	private SynchronizedSummaryStatistics speedStats = new SynchronizedSummaryStatistics();
 
 	/**
 	 * Builds a new {@link AutoGaitModelerAnalyser} object
@@ -51,6 +56,7 @@ public class AutoGaitModelerAnalyser implements Observer {
 		currentSegment = new GPSSegment();
 		middleThreshold = MT;
 		endThreshold = ET;
+		autoGaitModel = new AutoGaitModel();
 	}
 	
 	@Override
@@ -69,18 +75,7 @@ public class AutoGaitModelerAnalyser implements Observer {
 				boolean speedConditions = (gpsReading.getSpeed() > speedLimit);
 				boolean stepConditions = stepBuffer.isEmpty() && currentSegment.size() > 1;
 				if(stepConditions || speedConditions){
-					// If SLI conditions verify and segment 
-					// has more than one step and GPS reading
-					boolean isStraightLine = isCurrentSegmentSL();
-					if(isStraightLine && currentSegment.size() > 1 
-							&& currentSegment.getStepCount() > 1) {
-						// Compute step lengths and add currentSegment to array
-						currentSegment.computeStepFrequencyAndLength();
-						segments.add(currentSegment);
-					}
-					
-					// Create new GPSSegment
-					currentSegment = new GPSSegment();
+					segment();
 				}
 				
 				// Add value to currentSegment
@@ -107,6 +102,35 @@ public class AutoGaitModelerAnalyser implements Observer {
 						+ rs.getClass().getSimpleName() + "' observable type." );
 			}
 		}
+	}
+
+	/**
+	 * 
+	 */
+	private void segment() {
+		// If SLI conditions verify and segment 
+		// has more than one step and GPS reading
+		boolean isStraightLine = isCurrentSegmentSL();
+		if(isStraightLine && currentSegment.size() > 1 
+				&& currentSegment.getStepCount() > 1) {
+			processCurrentSegment();
+		}
+		
+		// Create new GPSSegment
+		currentSegment = new GPSSegment();
+	}
+
+	/**
+	 * 
+	 */
+	private void processCurrentSegment() {
+		// Compute step lengths and add currentSegment to array
+		currentSegment.computeStepFrequencyAndLength();
+		segments.add(currentSegment);
+		
+		// Add this segment's values to the model
+		autoGaitModel.addSampleToModel(currentSegment.getAverageStepFrequency(), 
+				currentSegment.getAverageStepLength());
 	}
 	
 	public void forceStepAdd(StepReading read){
