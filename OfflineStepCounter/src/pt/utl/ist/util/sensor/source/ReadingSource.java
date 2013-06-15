@@ -4,10 +4,11 @@ import java.util.Observable;
 
 import pt.utl.ist.thesis.util.buffers.ReadingCircularBuffer;
 import pt.utl.ist.util.sensor.reading.AccelReading;
+import pt.utl.ist.util.sensor.reading.SensorReading;
 
 public abstract class ReadingSource extends Observable {
 	// The buffer of pushed values
-	protected ReadingCircularBuffer buffer;
+	protected ReadingCircularBuffer buffer; // FIXME This circular buffer only supports AccelReadings
 	protected final Object bufferLock = new Object();
 
 	public ReadingSource(ReadingCircularBuffer rcb){
@@ -28,8 +29,9 @@ public abstract class ReadingSource extends Observable {
 	 * 
 	 * @param read The reading to be added.
 	 */
-	public void pushReading(AccelReading read){
-		buffer.addReading(read);
+	public void pushReading(SensorReading read){
+		// If a buffer was created, add the reading to it
+		if(buffer != null) buffer.addReading((AccelReading) read);
 		
 		// Notify the filters (observer pattern)
 		notifyFilters(read);
@@ -38,7 +40,7 @@ public abstract class ReadingSource extends Observable {
 	/**
 	 * @param read
 	 */
-	protected void notifyFilters(AccelReading read) {
+	protected void notifyFilters(SensorReading read) {
 		setChanged();
 		notifyObservers(read);
 	}

@@ -84,7 +84,7 @@ public class MathUtils {
 	 * @return
 	 */
 	public static double rangeTo180(Double angle) {
-		double tmp = angle + 180;
+//		double tmp = angle + 180;
 		return (angle < 180? angle : -180 + (angle-180));
 	}
 	/**

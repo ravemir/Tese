@@ -9,7 +9,7 @@ import org.junit.runners.Suite.SuiteClasses;
 		ButterworthCircularBufferTest.class, ButterworthDataTest.class,
 		GPSReadingTest.class, GPSSegmentTest.class, MathUtilsTest.class,
 		MovingAverageFilterTest.class, OrientationReadingTest.class,
-		PeakAnalyserTest.class, StandardAverageBufferTest.class,
+		StepAnalyserTest.class, StandardAverageBufferTest.class,
 		StepReadingTest.class })
 public class RunAllThesisTests {
 

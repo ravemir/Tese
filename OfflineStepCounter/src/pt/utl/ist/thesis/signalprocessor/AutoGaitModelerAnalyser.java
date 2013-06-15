@@ -17,9 +17,9 @@ import pt.utl.ist.util.sensor.reading.StepReading;
  * data for the AutoGait system: segmentation,
  * smoothing and Straight Line Identification.
  * 
- * @author Carlos
+ * @author Carlos Simões
  */
-public class GPSProcessingAnalyser implements Observer {
+public class AutoGaitModelerAnalyser implements Observer {
 
 	private ArrayList<GPSSegment> segments = new ArrayList<GPSSegment>();
 	private GPSSegment currentSegment;
@@ -30,24 +30,24 @@ public class GPSProcessingAnalyser implements Observer {
 	private Double endThreshold;
 
 	/**
-	 * Builds a new {@link GPSProcessingAnalyser} object
+	 * Builds a new {@link AutoGaitModelerAnalyser} object
 	 * with the default Middle-point and End-point
-	 * threshold values ({@link GPSProcessingAnalyser#middleThreshold} 
-	 * and {@link GPSProcessingAnalyser#endThreshold}).
+	 * threshold values ({@link AutoGaitModelerAnalyser#middleThreshold} 
+	 * and {@link AutoGaitModelerAnalyser#endThreshold}).
 	 */
-	public GPSProcessingAnalyser() {
+	public AutoGaitModelerAnalyser() {
 		this(35D, 10D);
 	}
 	
 	/**
-	 * Builds a new {@link GPSProcessingAnalyser} object
+	 * Builds a new {@link AutoGaitModelerAnalyser} object
 	 * while specifying the Middle-point and End-point
 	 * threshold values.
 	 * 
 	 * @param MT The value of the middle-point threshold.
 	 * @param ET The value of the end-point threshold.
 	 */
-	public GPSProcessingAnalyser(Double MT, Double ET){
+	public AutoGaitModelerAnalyser(Double MT, Double ET){
 		currentSegment = new GPSSegment();
 		middleThreshold = MT;
 		endThreshold = ET;

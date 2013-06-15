@@ -51,11 +51,11 @@ public final class MovingAverageFilter extends Filter {
 	}
 	
 	/**
-	 * Attaches a new {@link PeakAnalyser} object to this filter.
+	 * Attaches a new {@link StepAnalyser} object to this filter.
 	 * (part of the Observer pattern)
 	 */
 	
-//	public void attachAnalyser(PeakAnalyser fa){
+//	public void attachAnalyser(StepAnalyser fa){
 //		// Adds new FilterAnalyser
 //		addObserver(fa);
 //	}

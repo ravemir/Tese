@@ -3,7 +3,7 @@ package pt.utl.ist.util.sensor.source;
 import java.util.ArrayList;
 import java.util.List;
 
-import pt.utl.ist.thesis.signalprocessor.PeakAnalyser;
+import pt.utl.ist.thesis.signalprocessor.StepAnalyser;
 import pt.utl.ist.thesis.util.buffers.ReadingCircularBuffer;
 import pt.utl.ist.util.source.filters.Filter;
 import pt.utl.ist.util.source.filters.MovingAverageFilter;
@@ -14,7 +14,7 @@ public class RawReadingSource extends ReadingSource {
 	private List<Filter> filters = new ArrayList<Filter>();
 
 	// The FilterAnalyser attached, if it is present
-	private PeakAnalyser analyser;
+	private StepAnalyser analyser;
 	
 	/**
 	 * Creates a ReadingSource object, ready to
@@ -24,6 +24,10 @@ public class RawReadingSource extends ReadingSource {
 	 */
 	public RawReadingSource(int bufferSize){
 		super(new ReadingCircularBuffer(bufferSize));
+	}
+	
+	public RawReadingSource() {
+		super();
 	}
 	
 	/**
@@ -45,7 +49,7 @@ public class RawReadingSource extends ReadingSource {
 		return filters;
 	}
 	
-	public void attachAnalyser(PeakAnalyser fa){
+	public void attachAnalyser(StepAnalyser fa){
 		// TODO Checks to see if a previous filter existed (??)
 		
 		// Adds new FilterAnalyser
@@ -53,7 +57,7 @@ public class RawReadingSource extends ReadingSource {
 		analyser = fa;
 	}
 	
-	public PeakAnalyser getAnalyser(){
+	public StepAnalyser getAnalyser(){
 		return analyser;
 	}
 	

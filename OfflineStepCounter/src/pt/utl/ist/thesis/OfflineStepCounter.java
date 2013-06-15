@@ -5,7 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 
-import pt.utl.ist.thesis.signalprocessor.PeakAnalyser;
+import pt.utl.ist.thesis.signalprocessor.StepAnalyser;
 import pt.utl.ist.util.sensor.reading.AccelReading;
 import pt.utl.ist.util.sensor.source.RawReadingSource;
 import pt.utl.ist.util.source.filters.ButterworthFilter;
@@ -14,8 +14,8 @@ import pt.utl.ist.util.source.filters.GravityFilter;
 public class OfflineStepCounter {
 
 	public static final String baseFolder = "C:\\Users\\Carlos\\Dropbox\\Tese\\Dissertacao\\Dados\\06-03-2013\\logs\\conv\\";
-//	public static final String logName = "2013-03-06_18h17.log.accel";
-	public static final String logName = "2013-03-06_18h30.log.accel";
+//	public static final String accelLogName = "2013-03-06_18h17.log.accel";
+	public static final String accelLogName = "2013-03-06_18h30.log.accel";
 	
 	/**
 	 * @param args
@@ -24,7 +24,7 @@ public class OfflineStepCounter {
 		// Grab log file reader
 		BufferedReader lineReader;
 		try {
-			lineReader = new BufferedReader(new FileReader(baseFolder + logName));
+			lineReader = new BufferedReader(new FileReader(baseFolder + accelLogName));
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -41,7 +41,7 @@ public class OfflineStepCounter {
 		//rs.addMovingAverageFilter(50);
 		
 		// Create the filter analyser
-		PeakAnalyser fa = new PeakAnalyser(50);
+		StepAnalyser fa = new StepAnalyser(50);
 		rs.getFilters().get(0).attachAnalyser(fa);
 //		rs.attachAnalyser(fa);
 		

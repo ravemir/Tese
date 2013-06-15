@@ -9,11 +9,11 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import pt.utl.ist.thesis.signalprocessor.PeakAnalyser;
+import pt.utl.ist.thesis.signalprocessor.StepAnalyser;
 import pt.utl.ist.util.sensor.reading.AccelReading;
 import pt.utl.ist.util.sensor.source.RawReadingSource;
 
-public class PeakAnalyserTest {
+public class StepAnalyserTest {
 
 	private static RawReadingSource rs;
 
@@ -30,14 +30,14 @@ public class PeakAnalyserTest {
 	@Test
 	public void testFilterAnalyser() {
 		// Test argument constructor
-		PeakAnalyser faArgs = new PeakAnalyser(50);
+		StepAnalyser faArgs = new StepAnalyser(50);
 		assertNotNull(faArgs);
 	}
 
 	@Test
 	public void testGetPeaks() {
 		// Create analyser and attach it to the average filter
-		PeakAnalyser fa = new PeakAnalyser(50);
+		StepAnalyser fa = new StepAnalyser(50);
 		rs.getFilters().get(0).attachAnalyser(fa);
 		
 		// Add readings

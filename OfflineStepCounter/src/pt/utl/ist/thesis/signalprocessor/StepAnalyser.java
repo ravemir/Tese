@@ -14,7 +14,7 @@ import pt.utl.ist.util.source.filters.ButterworthFilter;
 import pt.utl.ist.util.source.filters.Filter;
 import pt.utl.ist.util.source.filters.MovingAverageFilter;
 
-public class PeakAnalyser implements Observer {
+public class StepAnalyser implements Observer {
 
 	private static final int _analysisBufferSize = 100;
 
@@ -35,8 +35,8 @@ public class PeakAnalyser implements Observer {
 
 	private StepReadingSource steps = new StepReadingSource();
 
-	public PeakAnalyser(int rate){
-		this.sampleRate = rate;
+	public StepAnalyser(int sampleRate){
+		this.sampleRate = sampleRate;
 	}
 	
 	public ArrayList<AccelReading> getNormPeaks() {

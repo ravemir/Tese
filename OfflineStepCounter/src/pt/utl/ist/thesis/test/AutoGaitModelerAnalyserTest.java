@@ -6,19 +6,19 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
 
-import pt.utl.ist.thesis.signalprocessor.GPSProcessingAnalyser;
+import pt.utl.ist.thesis.signalprocessor.AutoGaitModelerAnalyser;
 import pt.utl.ist.thesis.util.buffers.GPSSegment;
 import pt.utl.ist.util.sensor.reading.AccelReading;
 import pt.utl.ist.util.sensor.reading.GPSReading;
 import pt.utl.ist.util.sensor.reading.StepReading;
 
-public class GPSProcessingAnalyserTest {
+public class AutoGaitModelerAnalyserTest {
 
-	private GPSProcessingAnalyser gpa;
+	private AutoGaitModelerAnalyser gpa;
 
 	@Before
 	public void setUp() throws Exception {
-		gpa = new GPSProcessingAnalyser();
+		gpa = new AutoGaitModelerAnalyser();
 	}
 
 	@Test
