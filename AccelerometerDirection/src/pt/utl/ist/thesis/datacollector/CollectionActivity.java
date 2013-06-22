@@ -8,8 +8,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import pt.utl.ist.thesis.util.UIUpdater;
-import pt.utl.ist.util.AndroidUtils;
+import pt.utl.ist.thesis.datacollector.util.AndroidUtils;
+import pt.utl.ist.thesis.datacollector.util.UIUpdater;
 import pt.utl.ist.util.sensor.reading.AccelReading;
 import android.annotation.TargetApi;
 import android.app.Activity;

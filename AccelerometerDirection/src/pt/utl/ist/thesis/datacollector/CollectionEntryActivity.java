@@ -3,10 +3,10 @@ package pt.utl.ist.thesis.datacollector;
 import java.io.File;
 import java.util.ArrayList;
 
-import pt.utl.ist.thesis.exception.ExternalStorageUnavailableException;
-import pt.utl.ist.thesis.exception.ExternalStorageWriteProtectedException;
-import pt.utl.ist.util.AndroidUtils;
-import pt.utl.ist.util.FileUtils;
+import pt.utl.ist.thesis.datacollector.exception.ExternalStorageUnavailableException;
+import pt.utl.ist.thesis.datacollector.exception.ExternalStorageWriteProtectedException;
+import pt.utl.ist.thesis.datacollector.util.AndroidUtils;
+import pt.utl.ist.thesis.datacollector.util.FileUtils;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;

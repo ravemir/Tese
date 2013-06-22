@@ -1,4 +1,4 @@
-package pt.utl.ist.thesis.exception;
+package pt.utl.ist.thesis.datacollector.exception;
 
 public class ExternalStorageUnavailableException extends Exception {
 

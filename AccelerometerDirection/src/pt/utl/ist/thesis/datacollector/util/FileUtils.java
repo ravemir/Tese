@@ -1,4 +1,4 @@
-package pt.utl.ist.util;
+package pt.utl.ist.thesis.datacollector.util;
 
 import java.io.File;
 import java.io.FileInputStream;
