@@ -1,12 +1,11 @@
 package pt.utl.ist.thesis.signalprocessor;
 
 import java.util.ArrayList;
-import java.util.Observable;
-import java.util.Observer;
 import java.util.TreeMap;
 
 import pt.utl.ist.thesis.util.buffers.ReadingCircularBuffer;
 import pt.utl.ist.util.sensor.reading.AccelReading;
+import pt.utl.ist.util.sensor.reading.SensorReading;
 import pt.utl.ist.util.sensor.reading.StepReading;
 import pt.utl.ist.util.sensor.source.ReadingSource;
 import pt.utl.ist.util.sensor.source.StepReadingSource;
@@ -14,11 +13,10 @@ import pt.utl.ist.util.source.filters.ButterworthFilter;
 import pt.utl.ist.util.source.filters.Filter;
 import pt.utl.ist.util.source.filters.MovingAverageFilter;
 
-public class StepAnalyser implements Observer {
+public class StepAnalyser extends Analyser {
 
 	private static final int _analysisBufferSize = 100;
 
-	@SuppressWarnings("unused")
 	private final int sampleRate;
 	
 	private static final double KFACTOR = 10.5; // TODO Chosen heuristically. Should be computed?
@@ -36,6 +34,7 @@ public class StepAnalyser implements Observer {
 	private StepReadingSource steps = new StepReadingSource();
 
 	public StepAnalyser(int sampleRate){
+		super(new StepReadingSource());
 		this.sampleRate = sampleRate;
 	}
 	
@@ -44,7 +43,18 @@ public class StepAnalyser implements Observer {
 	}
 	
 	public ArrayList<StepReading> getSteps() {
-		return steps.getStepList();
+		// Obtain our reading
+		return getStepReadingSource().getStepList();
+	}
+
+	/**
+	 * Returns this {@link Analyser}'s {@link ReadingSource}, ~
+	 * which is a StepReadingSource.
+	 * 
+	 * @return	This Analyser's StepReadingSource.
+	 */
+	public StepReadingSource getStepReadingSource() {
+		return (StepReadingSource) getReadingSource();
 	}
 
 	/**
@@ -121,7 +131,7 @@ public class StepAnalyser implements Observer {
 			for(AccelReading r : unaveragedPeaks){
 				// If a peak is bigger than threshold...
 				if(r.getAccelerationNorm() > KFACTOR && 
-						r.getAccelerationNorm() > PEAKTHRESHFACTOR*peakMean){
+						r.getAccelerationNorm() > PEAKTHRESHFACTOR*peakMean) {
 					// Push a new StepReading object and add it to the list
 					steps.pushReading(new StepReading(r));
 				}				
@@ -178,11 +188,34 @@ public class StepAnalyser implements Observer {
 		return x / y;
 	}
 
+//	public void update(Observable rs, Object reading) {
+//		// Determine the type of ReadingSource/Filter that was pushed
+//		if(rs instanceof Filter)
+//			updateFromFilter((ReadingSource) rs, reading);
+//		else if(rs instanceof ReadingSource)
+//			updateFromRaw((ReadingSource) rs, reading);
+//		else {
+//			throw new UnsupportedOperationException("Tried to update Analyser from '"
+//					+ rs.getClass().getSimpleName() + "' observable type." );
+//		}
+//		
+//		// ...and Process the state
+//		processState();
+//	}
+	
+	
+	
+	private void addRawReading(AccelReading currentReading) {
+		rawBuffer.addReading(currentReading);
+	}
+
+	
+
 	@Override
-	public void update(Observable rs, Object reading) {
-		// TODO Determine the type of ReadingSource/Filter that updated
+	public void update(ReadingSource rs, SensorReading reading) {
+		// Determine the type of ReadingSource/Filter that was pushed
 		if(rs instanceof Filter)
-			updateFromFilter((Filter) rs, reading);
+			updateFromFilter((ReadingSource) rs, reading);
 		else if(rs instanceof ReadingSource)
 			updateFromRaw((ReadingSource) rs, reading);
 		else {
@@ -190,26 +223,11 @@ public class StepAnalyser implements Observer {
 					+ rs.getClass().getSimpleName() + "' observable type." );
 		}
 		
-		// TODO Maybe process the state?
+		// ...and Process the state
 		processState();
 	}
 	
-	public void updateFromRaw(ReadingSource rs, Object reading){
-		// TODO Untested
-		// Get this ReadingSource's latest reading
-		AccelReading currentReading = rs.getBuffer().getCurrentReading();
-
-		// Adds the reading to the buffer with the associated 
-		// order (adding to an AverageCircularBuffer should be
-		// the same thing)
-		addRawReading(currentReading);
-	}
-	
-	private void addRawReading(AccelReading currentReading) {
-		rawBuffer.addReading(currentReading);
-	}
-
-	public void updateFromFilter(Filter f, Object reading){
+	public void updateFromFilter(ReadingSource f, Object reading){
 		if(f instanceof MovingAverageFilter){
 			// Get this filter's order and the latest reading
 			int order = ((MovingAverageFilter) f).getAverageOrder();
@@ -229,5 +247,16 @@ public class StepAnalyser implements Observer {
 					+ f.getClass().getSimpleName() + "' filter type." );
 		}
 		
+	}
+	
+	public void updateFromRaw(ReadingSource rs, Object reading){
+		// TODO Untested?
+		// Get this ReadingSource's latest reading
+		AccelReading currentReading = rs.getBuffer().getCurrentReading();
+
+		// Adds the reading to the buffer with the associated 
+		// order (adding to an AverageCircularBuffer should be
+		// the same thing)
+		addRawReading(currentReading);
 	}
 }

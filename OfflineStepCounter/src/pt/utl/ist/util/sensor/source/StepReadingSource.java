@@ -2,7 +2,6 @@ package pt.utl.ist.util.sensor.source;
 
 import java.util.ArrayList;
 
-import pt.utl.ist.util.sensor.reading.AccelReading;
 import pt.utl.ist.util.sensor.reading.StepReading;
 
 public class StepReadingSource extends ReadingSource {
@@ -11,7 +10,6 @@ public class StepReadingSource extends ReadingSource {
 
 	// Contains the last step's timestamp
 	private Double previousTimestamp;
-	
 	ArrayList<StepReading> stepList = new ArrayList<StepReading>();
 
 	public StepReadingSource() {
@@ -24,14 +22,14 @@ public class StepReadingSource extends ReadingSource {
 	 * 
 	 * @param read The step reading object to add.
 	 */
-	public void pushReading(AccelReading read){
+	public void pushReading(StepReading read){
 		// See if there has been a previously recorded timestamp
 		if(previousTimestamp == null) {
 			previousTimestamp = read.getTimestamp() - INVERSEDEFAULTFREQUENCY;
 		}
 		
 		// Calculate the step's frequency
-		StepReading step = (StepReading) read;
+		StepReading step = read;
 		step.setStepFrequency(
 				1 / (step.getTimestamp() - previousTimestamp));
 		

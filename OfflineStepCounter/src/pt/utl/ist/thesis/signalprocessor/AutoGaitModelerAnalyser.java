@@ -2,7 +2,6 @@ package pt.utl.ist.thesis.signalprocessor;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Observable;
 import java.util.Observer;
 
 import org.apache.commons.math.stat.descriptive.SynchronizedSummaryStatistics;
@@ -10,7 +9,9 @@ import org.apache.commons.math.stat.descriptive.SynchronizedSummaryStatistics;
 import pt.utl.ist.thesis.util.buffers.GPSSegment;
 import pt.utl.ist.util.sensor.exception.StepOutsideSegmentBoundariesException;
 import pt.utl.ist.util.sensor.reading.GPSReading;
+import pt.utl.ist.util.sensor.reading.SensorReading;
 import pt.utl.ist.util.sensor.reading.StepReading;
+import pt.utl.ist.util.sensor.source.ReadingSource;
 
 /**
  * Handles all the required processing of the GPS
@@ -19,7 +20,7 @@ import pt.utl.ist.util.sensor.reading.StepReading;
  * 
  * @author Carlos Simões
  */
-public class AutoGaitModelerAnalyser implements Observer {
+public class AutoGaitModelerAnalyser extends Analyser implements Observer {
 
 	// AutoGait model related attributes
 	private AutoGaitModel autoGaitModel;
@@ -59,50 +60,7 @@ public class AutoGaitModelerAnalyser implements Observer {
 		autoGaitModel = new AutoGaitModel();
 	}
 	
-	@Override
-	public void update(Observable rs, Object reading) {
-		synchronized(this){
-			if(reading instanceof GPSReading){
-				// Perform updates referring to
-				// segmentation, smoothing and SLI.
-				
-				// Update mean and standard deviation
-				GPSReading gpsReading = (GPSReading) reading;
-				speedStats.addValue(gpsReading.getSpeed());
-				
-				// If segmentation conditions verify...
-				Double speedLimit = getCurrentSpeedLimit();
-				boolean speedConditions = (gpsReading.getSpeed() > speedLimit);
-				boolean stepConditions = stepBuffer.isEmpty() && currentSegment.size() > 1;
-				if(stepConditions || speedConditions){
-					segment();
-				}
-				
-				// Add value to currentSegment
-				currentSegment.addGPSReading(gpsReading);
-				
-				// Add all steps to the currentSegment
-				try {
-					for(StepReading step : stepBuffer)
-						currentSegment.addStepReading(step);
-				} catch(StepOutsideSegmentBoundariesException e) {
-					e.printStackTrace();
-				}
-				
-				// Clear the step buffer
-				stepBuffer.clear();
-			} else if (reading instanceof StepReading){
-				// TODO	Perform updates referring to
-				// 		segmentation, smoothing and SLI.
-				
-				// Add StepReading to buffer 
-				stepBuffer.add((StepReading) reading);
-			} else {
-				throw new UnsupportedOperationException("Tried to update Analyser from '"
-						+ rs.getClass().getSimpleName() + "' observable type." );
-			}
-		}
-	}
+
 
 	/**
 	 * 
@@ -257,4 +215,98 @@ public class AutoGaitModelerAnalyser implements Observer {
 	public Double getEndThreshold() {
 		return endThreshold;
 	}
+
+	@Override
+	public void update(ReadingSource readingSource, SensorReading reading) {
+		// TODO Auto-generated method stub
+		synchronized(this){
+			if(reading instanceof GPSReading){
+				// Perform updates referring to
+				// segmentation, smoothing and SLI.
+				
+				// Update mean and standard deviation
+				GPSReading gpsReading = (GPSReading) reading;
+				speedStats.addValue(gpsReading.getSpeed());
+				
+				// If segmentation conditions verify...
+				Double speedLimit = getCurrentSpeedLimit();
+				boolean speedConditions = (gpsReading.getSpeed() > speedLimit);
+				boolean stepConditions = stepBuffer.isEmpty() && currentSegment.size() > 1;
+				if(stepConditions || speedConditions){
+					segment();
+				}
+				
+				// Add value to currentSegment
+				currentSegment.addGPSReading(gpsReading);
+				
+				// Add all steps to the currentSegment
+				try {
+					for(StepReading step : stepBuffer)
+						currentSegment.addStepReading(step);
+				} catch(StepOutsideSegmentBoundariesException e) {
+					e.printStackTrace();
+				}
+				
+				// Clear the step buffer
+				stepBuffer.clear();
+			} else if (reading instanceof StepReading){
+				// TODO	Perform updates referring to
+				// 		segmentation, smoothing and SLI.
+				
+				// Add StepReading to buffer 
+				stepBuffer.add((StepReading) reading);
+			} else {
+				throw new UnsupportedOperationException("Tried to update Analyser from '" +
+						readingSource.getClass().getSimpleName() + "' observable type, with a '" +
+						reading.getClass().getSimpleName() +"' reading type." );
+			}
+		}
+	}
+	
+	// TODO	Delete this. Here for reference, to signal an important refactored method
+	// 		Code will be on update(RS,R)
+//	@Override
+//	public void update(Observable readingSource, Object reading) {
+//		synchronized(this){
+//			if(reading instanceof GPSReading){
+//				// Perform updates referring to
+//				// segmentation, smoothing and SLI.
+//				
+//				// Update mean and standard deviation
+//				GPSReading gpsReading = (GPSReading) reading;
+//				speedStats.addValue(gpsReading.getSpeed());
+//				
+//				// If segmentation conditions verify...
+//				Double speedLimit = getCurrentSpeedLimit();
+//				boolean speedConditions = (gpsReading.getSpeed() > speedLimit);
+//				boolean stepConditions = stepBuffer.isEmpty() && currentSegment.size() > 1;
+//				if(stepConditions || speedConditions){
+//					segment();
+//				}
+//				
+//				// Add value to currentSegment
+//				currentSegment.addGPSReading(gpsReading);
+//				
+//				// Add all steps to the currentSegment
+//				try {
+//					for(StepReading step : stepBuffer)
+//						currentSegment.addStepReading(step);
+//				} catch(StepOutsideSegmentBoundariesException e) {
+//					e.printStackTrace();
+//				}
+//				
+//				// Clear the step buffer
+//				stepBuffer.clear();
+//			} else if (reading instanceof StepReading){
+//				// TODO	Perform updates referring to
+//				// 		segmentation, smoothing and SLI.
+//				
+//				// Add StepReading to buffer 
+//				stepBuffer.add((StepReading) reading);
+//			} else {
+//				throw new UnsupportedOperationException("Tried to update Analyser from '"
+//						+ readingSource.getClass().getSimpleName() + "' observable type." );
+//			}
+//		}
+//	}
 }

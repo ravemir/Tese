@@ -9,6 +9,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import pt.utl.ist.thesis.signalprocessor.Analyser;
 import pt.utl.ist.thesis.signalprocessor.StepAnalyser;
 import pt.utl.ist.util.sensor.reading.AccelReading;
 import pt.utl.ist.util.sensor.source.RawReadingSource;
@@ -30,7 +31,7 @@ public class StepAnalyserTest {
 	@Test
 	public void testFilterAnalyser() {
 		// Test argument constructor
-		StepAnalyser faArgs = new StepAnalyser(50);
+		Analyser faArgs = new StepAnalyser(50);
 		assertNotNull(faArgs);
 	}
 
