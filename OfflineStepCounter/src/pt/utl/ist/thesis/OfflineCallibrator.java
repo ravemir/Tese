@@ -59,6 +59,7 @@ public class OfflineCallibrator {
 		// Create the AutoGaitModelerAnalyser and attach the StepAnalyser
 		AutoGaitModelerAnalyser agma = new AutoGaitModelerAnalyser();
 		sa.attachAnalyser(agma);
+		locRs.attachAnalyser(agma);
 
 		// Get the first lines
 		String accelLine = null; String gpsLine = null;
