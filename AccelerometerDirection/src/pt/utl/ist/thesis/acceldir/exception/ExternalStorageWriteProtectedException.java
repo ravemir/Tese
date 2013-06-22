@@ -1,4 +1,4 @@
-package pt.utl.ist.thesis.datacollector.exception;
+package pt.utl.ist.thesis.acceldir.exception;
 
 public class ExternalStorageWriteProtectedException extends Exception {
 

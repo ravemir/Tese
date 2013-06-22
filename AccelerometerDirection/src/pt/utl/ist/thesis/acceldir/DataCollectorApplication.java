@@ -1,4 +1,4 @@
-package pt.utl.ist.thesis.datacollector;
+package pt.utl.ist.thesis.acceldir;
 
 import android.app.Application;
 

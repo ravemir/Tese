@@ -1,4 +1,4 @@
-package pt.utl.ist.thesis.datacollector;
+package pt.utl.ist.thesis.acceldir;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -9,8 +9,8 @@ import java.util.Date;
 import java.util.List;
 
 import pt.utl.ist.thesis.acceldir.R;
-import pt.utl.ist.thesis.datacollector.util.AndroidUtils;
-import pt.utl.ist.thesis.datacollector.util.UIUpdater;
+import pt.utl.ist.thesis.acceldir.util.AndroidUtils;
+import pt.utl.ist.thesis.acceldir.util.UIUpdater;
 import pt.utl.ist.util.sensor.reading.AccelReading;
 import android.annotation.TargetApi;
 import android.app.Activity;

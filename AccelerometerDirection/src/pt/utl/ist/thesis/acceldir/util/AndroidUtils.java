@@ -1,4 +1,4 @@
-package pt.utl.ist.thesis.datacollector.util;
+package pt.utl.ist.thesis.acceldir.util;
 
 import java.util.Date;
 

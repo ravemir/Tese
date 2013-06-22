@@ -1,4 +1,4 @@
-package pt.utl.ist.thesis.datacollector;
+package pt.utl.ist.thesis.acceldir;
 
 import org.apache.commons.math.linear.Array2DRowRealMatrix;
 import org.apache.commons.math.linear.DecompositionSolver;
@@ -6,7 +6,7 @@ import org.apache.commons.math.linear.LUDecompositionImpl;
 import org.apache.commons.math.linear.RealMatrix;
 
 import pt.utl.ist.thesis.acceldir.R;
-import pt.utl.ist.thesis.datacollector.util.AndroidUtils;
+import pt.utl.ist.thesis.acceldir.util.AndroidUtils;
 import pt.utl.ist.util.sensor.reading.AccelReading;
 import pt.utl.ist.util.sensor.source.RawReadingSource;
 import pt.utl.ist.util.source.filters.MovingAverageFilter;

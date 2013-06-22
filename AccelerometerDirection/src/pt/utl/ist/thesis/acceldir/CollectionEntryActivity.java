@@ -1,13 +1,13 @@
-package pt.utl.ist.thesis.datacollector;
+package pt.utl.ist.thesis.acceldir;
 
 import java.io.File;
 import java.util.ArrayList;
 
 import pt.utl.ist.thesis.acceldir.R;
-import pt.utl.ist.thesis.datacollector.exception.ExternalStorageUnavailableException;
-import pt.utl.ist.thesis.datacollector.exception.ExternalStorageWriteProtectedException;
-import pt.utl.ist.thesis.datacollector.util.AndroidUtils;
-import pt.utl.ist.thesis.datacollector.util.FileUtils;
+import pt.utl.ist.thesis.acceldir.exception.ExternalStorageUnavailableException;
+import pt.utl.ist.thesis.acceldir.exception.ExternalStorageWriteProtectedException;
+import pt.utl.ist.thesis.acceldir.util.AndroidUtils;
+import pt.utl.ist.thesis.acceldir.util.FileUtils;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;

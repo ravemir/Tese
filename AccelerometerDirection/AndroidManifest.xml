@@ -23,13 +23,13 @@
         android:smallScreens="true" />
 
     <application
-        android:name="pt.utl.ist.thesis.datacollector.DataCollectorApplication"
+        android:name="pt.utl.ist.thesis.acceldir.DataCollectorApplication"
         android:allowBackup="true"
         android:enabled="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
-        <activity android:name="pt.utl.ist.thesis.datacollector.CollectionEntryActivity" >
+        <activity android:name="pt.utl.ist.thesis.acceldir.CollectionEntryActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -37,7 +37,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="pt.utl.ist.thesis.datacollector.CollectionActivity"
+            android:name="pt.utl.ist.thesis.acceldir.CollectionActivity"
             android:label="@string/title_activity_collection"
             android:screenOrientation="portrait" >
             <meta-data
@@ -45,7 +45,7 @@
                 android:value="CollectionEntryActivity" />
         </activity>
         <activity
-            android:name="pt.utl.ist.thesis.datacollector.CalibrationActivity"
+            android:name="pt.utl.ist.thesis.acceldir.CalibrationActivity"
             android:label="@string/title_activity_calibration" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
