@@ -3,6 +3,7 @@ package pt.utl.ist.thesis.datacollector;
 import java.io.File;
 import java.util.ArrayList;
 
+import pt.utl.ist.thesis.acceldir.R;
 import pt.utl.ist.thesis.datacollector.exception.ExternalStorageUnavailableException;
 import pt.utl.ist.thesis.datacollector.exception.ExternalStorageWriteProtectedException;
 import pt.utl.ist.thesis.datacollector.util.AndroidUtils;

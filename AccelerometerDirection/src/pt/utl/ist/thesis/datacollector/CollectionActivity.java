@@ -8,6 +8,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import pt.utl.ist.thesis.acceldir.R;
 import pt.utl.ist.thesis.datacollector.util.AndroidUtils;
 import pt.utl.ist.thesis.datacollector.util.UIUpdater;
 import pt.utl.ist.util.sensor.reading.AccelReading;
