@@ -228,7 +228,7 @@ public class CollectionEntryActivity extends Activity {
 	
 	public boolean onOptionsItemSelected(MenuItem item) {
 		File dir = new File(logsFolder);
-		switch (item.getItemId()) {
+		switch(item.getItemId()) {
 			case R.id.menu_toggle_gps_fix:
 		    	// Toggle the requirement of a GPS fix to start a capture
 				isGPSFixDisabled ^= true;
@@ -238,9 +238,10 @@ public class CollectionEntryActivity extends Activity {
 		    			getString(R.string.toggle_gps_fix_requirement_message) + 
 		    			(isGPSFixDisabled ? "disabled" : "enabled"));
 		    	break;
-			case R.id.menu_calibrate_sensors:
-				// Launch CalibrationActivity
-				Intent i = new Intent(CollectionEntryActivity.this, CalibrationActivity.class);
+			case R.id.menu_autogait_calibration:
+				// Launch AutoGaitCollectionActivity
+				Intent i = new Intent(CollectionEntryActivity.this,
+						AutoGaitCollectionActivity.class);
 				startActivity(i);
 				break;
 		    case R.id.menu_clear_logs:
