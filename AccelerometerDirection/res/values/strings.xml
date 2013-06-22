@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Exception message resources -->
+    <string name="ext_store_unavail">External Storage is unavailable</string>
+    <string name="ext_store_wprotect">External Storage is write-protected</string>
+
+    <!-- UI-related resources -->
+    <!-- Titles -->
+    <string name="app_name">Data Collector</string>
+    <string name="title_activity_collection">CollectionActivity</string>
+
+    <!-- Button and Menu text -->
+    <string name="start_collection">Start Collection</string>
+    <string name="sendMailText">Send Logs by E-Mail</string>
+    <string name="menu_clear_logs">Clear Logs</string>
+
+    <!-- TextView values -->
+    <string name="gps_data_label">GPS data:</string>
+    <string name="accelerometer_data_label">Accelerometer data:</string>
+    <string name="initial_value">0</string>
+    <string name="lat_label">"Lat. (deg): "</string>
+    <string name="long_label">"Long. (deg): "</string>
+    <string name="speed_label">"Speed (m/s): "</string>
+    <string name="x_label">"X: "</string>
+    <string name="y_label">", Y: "</string>
+    <string name="z_label">", Z: "</string>
+    <string name="instructions_label">Instructions:</string>
+    <string name="instructions_text">When you are ready to start collecting values, press the \'Start Collection\' button. While on the next screen, the application will record both accelerometer and GPS (if locked) values.\n\nYou should then place the mobile phone either in your trouser pocket or sock and either walk or run for as long as you wish (prefferably in a straight line).\n\nWhen done, press the back button twice to end the collection and return to this screen. When you are done, you should press the \'Send Logs by E-mail\' button, write a short description (optional) about the the events in the recoveries you made and send it (you may send it offline in GMail and it will be delivered the next time you have connectivity).\n\nPS: You should only start the collection once the GPS has obtained a fix (the icon will be fixed, not flashing).</string>
+    <string name="rate_label">"Update rate (Hz): "</string>
+    <string name="exit_reminder">Remember: to exit back to the initial screen, you should press the back button twice</string>
+
+    <!-- Toast messages resources -->
+    <string name="created_application_folder_message">Created application folders (</string>
+    <string name="no_fix_message">Please wait for a GPS fix before starting the data collection .</string>
+    <string name="log_file_message">Saving log to file \"</string>
+    <string name="twice_to_exit_message">Press again to stop capture.</string>
+    <string name="external_storage_unavailable_message">External storage unavailable.\nDo you have an SD Card installed?</string>
+    <string name="external_storage_unwritable_message">External storage unwritable.\nIs it full or write-protected?</string>
+    <string name="logs_cleared_message">All non-archived logs cleared</string>
+    <string name="logs_archived_message">All logs archived. You can access them in \'</string>
+
+    <!-- Log file and LogCat resources -->
+    <string name="log_separator">,</string>
+    <string name="activity_resumed_log">Activity Resumed.\n</string>
+    <string name="activity_paused_log">Activity Paused.\n</string>
+    <string name="wake_lock_log">[AccelGPSRec]: \"Screen Dim\" Wake Lock created</string>
+    <string name="provider_available_log">"Provider is available, with "</string>
+    <string name="provider_temporarily_unavailable_log">Provider is temporarily unavailable\n</string>
+    <string name="provider_out_of_service_log">Provider is out of service\n</string>
+    <string name="magnet_listener_attached">Magnetometer listener attached.\n</string>
+    <string name="accel_listener_attached">Accelerometer listener attached.\n</string>
+    <string name="accel_magnet_listeners_dettached">Accelerometer and Magnetometer listeners dettached.\n</string>
+    <string name="toggle_gps_fix_requirement_message">"GPS fix requirement "</string>
+
+    <!-- E-mail related resources -->
+    <string name="email_to_text">carlos.simoes@ist.utl.pt</string>
+    <string name="email_subject_text">[Tese] Dados recolhidos</string>
+    <string name="email_body_text">Hooray! Mais dados!\nAgora, se possível, deveria escrever em baixo detalhes acerca de como fiz o teste:\n\n</string>
+
+    <!-- Shared preferences variables -->
+    <string name="disable_gps_fix_preference">disable_gps_fix</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="menu_settings">Settings</string>
+    <string name="title_activity_calibration">CalibrationActivity</string>
+
+</resources>

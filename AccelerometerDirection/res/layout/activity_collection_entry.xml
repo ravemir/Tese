@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
+
+    <TextView
+        android:id="@+id/instructionsLabel"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.00"
+        android:text="@string/instructions_label"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+    <TextView
+        android:id="@+id/instructionsValue"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.00"
+        android:singleLine="false"
+        android:maxLines="16"
+        android:scrollbars="vertical"
+        android:fadeScrollbars="false"
+        android:text="@string/instructions_text" />
+
+    <RelativeLayout
+        android:id="@+id/RelativeLayout1"
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent"
+        android:layout_weight="0.00"
+        android:gravity="bottom|center_horizontal"
+        android:orientation="horizontal" >
+
+        <Button
+            android:id="@+id/accelGPSRecToggle"
+            android:layout_alignBaseline="@+id/sendMail"
+            android:layout_width="154dip"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:onClick="toggleOnClick"
+            android:text="@string/start_collection" />
+
+        <Button
+            android:id="@+id/sendMail"
+            android:layout_width="154dip"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_gravity="right"
+            android:onClick="prepareEmail"
+            android:text="@string/sendMailText" />
+
+    </RelativeLayout>
+
+</LinearLayout>
