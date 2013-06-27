@@ -17,7 +17,7 @@ public class StepAnalyser extends Analyser {
 
 	private static final int _analysisBufferSize = 100;
 
-	private final int sampleRate;
+//	private final int sampleRate;
 	
 	private static final double KFACTOR = 10.5; // TODO Chosen heuristically. Should be computed?
 												// 		Value before which a peak is always discarded.
@@ -35,7 +35,7 @@ public class StepAnalyser extends Analyser {
 
 	public StepAnalyser(int sampleRate){
 		super(new StepReadingSource());
-		this.sampleRate = sampleRate;
+//		this.sampleRate = sampleRate;
 	}
 	
 	public ArrayList<AccelReading> getNormPeaks() {
