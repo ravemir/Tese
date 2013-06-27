@@ -45,6 +45,14 @@
                 android:value="CollectionEntryActivity" />
         </activity>
         <activity
+            android:name="pt.utl.ist.thesis.acceldir.AutoGaitCollectionActivity"
+            android:label="@string/title_activity_collection"
+            android:screenOrientation="portrait" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="CollectionEntryActivity" />
+        </activity>
+        <activity
             android:name="pt.utl.ist.thesis.acceldir.CalibrationActivity"
             android:label="@string/title_activity_calibration" >
             <meta-data

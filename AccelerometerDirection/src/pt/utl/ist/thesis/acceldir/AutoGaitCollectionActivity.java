@@ -6,10 +6,12 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
+import pt.utl.ist.thesis.acceldir.sql.AutoGaitSegmentDataSource;
 import pt.utl.ist.thesis.acceldir.util.AndroidUtils;
 import pt.utl.ist.thesis.acceldir.util.UIUpdater;
 import pt.utl.ist.thesis.signalprocessor.AutoGaitModelerAnalyser;
 import pt.utl.ist.thesis.signalprocessor.StepAnalyser;
+import pt.utl.ist.thesis.util.SampleRunnable;
 import pt.utl.ist.util.sensor.reading.AccelReading;
 import pt.utl.ist.util.sensor.reading.GPSReading;
 import pt.utl.ist.util.sensor.source.RawReadingSource;
@@ -146,6 +148,10 @@ public class AutoGaitCollectionActivity extends Activity {
 			}
 		}
 
+		/**
+		 * Attaches the appropriate Filter and Analyser objects
+		 * to perform the AutoGait model calibration.
+		 */
 		public void attachFiltersAndAnalysers(){
 			// Attach the Butterworth filter to the RawReadingSource
 			accelRS.attachFilter(filter);
@@ -178,6 +184,9 @@ public class AutoGaitCollectionActivity extends Activity {
 	private String logFolder;
 	private String filename;
 
+	// Database attributes
+	private AutoGaitSegmentDataSource agsds;
+	
 	// Application attributes
 	private WakeLock mWakeLock;
 	private UIUpdater mUIUpdater;
@@ -222,12 +231,13 @@ public class AutoGaitCollectionActivity extends Activity {
 		String date = getDateForFilename();
 		filename = logFolder + date + ".log";
 		
-		// Initialize and attach the Listener-related activity attributes
+		// Create the DB DAO object
+		agsds = new AutoGaitSegmentDataSource(this);
+		agsds.open();
+		
+		// Initialize and attach the Listener-related attributes
 		initializeListeners();
 		attachListeners();
-		
-		// Initialize the AutoGaitModeler related attributes
-		initializeAutoGaitModeler();
 
 		// Display toast message with the filename being written to
 		String message = getString(R.string.log_file_message) + filename + "\"";
@@ -248,8 +258,18 @@ public class AutoGaitCollectionActivity extends Activity {
 		// Attach all the filter and analyser objects acoordingly
 		mAccelGPSListener.attachFiltersAndAnalysers();
 
-		// TODO Retrieve the data from the application context
-			// Get the readings and insert them into the model
+		// Get the stored samples and insert them into the model
+		double[][] storedSamples = agsds.getAllSegmentDataSamples();
+		mAccelGPSListener.agma.restoreDataSamples(storedSamples);
+		
+		// Set the SampleRunnable object to update the data model
+		mAccelGPSListener.agma.setSampleUpdater(new SampleRunnable() {
+			@Override
+			public void run() {
+				// Add the sample value to the application's DAO
+				agsds.createSegmentData(sample[0], sample[1]); // TODO Test this
+			}
+		});
 	}
 
 	/**
@@ -303,6 +323,9 @@ public class AutoGaitCollectionActivity extends Activity {
 
 		// Define both the location and accelerometer listeners
 		mAccelGPSListener = new AccelGPSListener();
+		
+		// Initialize the AutoGait model, if appropriate
+		initializeAutoGaitModeler();
 	}
 
 	/**

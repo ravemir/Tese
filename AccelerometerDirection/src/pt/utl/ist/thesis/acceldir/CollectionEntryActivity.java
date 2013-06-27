@@ -242,6 +242,7 @@ public class CollectionEntryActivity extends Activity {
 				// Launch AutoGaitCollectionActivity
 				Intent i = new Intent(CollectionEntryActivity.this,
 						AutoGaitCollectionActivity.class);
+				i.putExtra("logFolder", dir.getAbsolutePath());
 				startActivity(i);
 				break;
 		    case R.id.menu_clear_logs:
