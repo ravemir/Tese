@@ -54,6 +54,10 @@ public class AutoGaitModel {
 				averageStepLength));
 	}
 	
+	public void addSampleToModel(double[] sample){
+		addSampleToModel(sample[0], sample[1]);
+	}
+	
 	public AutoGaitModel() {}
 
 	public Double getAlpha(){

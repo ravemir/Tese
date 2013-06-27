@@ -6,6 +6,7 @@ import java.util.Observer;
 
 import org.apache.commons.math.stat.descriptive.SynchronizedSummaryStatistics;
 
+import pt.utl.ist.thesis.util.SampleRunnable;
 import pt.utl.ist.thesis.util.buffers.GPSSegment;
 import pt.utl.ist.util.sensor.exception.StepOutsideSegmentBoundariesException;
 import pt.utl.ist.util.sensor.reading.GPSReading;
@@ -34,6 +35,7 @@ public class AutoGaitModelerAnalyser extends Analyser implements Observer {
 	// State and statistical variables
 	private GPSSegment currentSegment;
 	private SynchronizedSummaryStatistics speedStats = new SynchronizedSummaryStatistics();
+	private SampleRunnable sampleRunnable;
 
 	/**
 	 * Builds a new {@link AutoGaitModelerAnalyser} object
@@ -60,7 +62,16 @@ public class AutoGaitModelerAnalyser extends Analyser implements Observer {
 		autoGaitModel = new AutoGaitModel();
 	}
 	
-
+	/**
+	 * Takes a 2D array of data samples and restores the
+	 * {@link AutoGaitModel} object with them.
+	 * 
+	 * @param samples	The samples to reinitialize the 
+	 * 					{@link AutoGaitModel} with.
+	 */
+	public void restoreDataSamples(double[][] samples){
+		autoGaitModel = new AutoGaitModel(samples);
+	}
 
 	/**
 	 * 
@@ -87,8 +98,12 @@ public class AutoGaitModelerAnalyser extends Analyser implements Observer {
 		segments.add(currentSegment);
 		
 		// Add this segment's values to the model
-		autoGaitModel.addSampleToModel(currentSegment.getAverageStepFrequency(), 
-				currentSegment.getAverageStepLength());
+		double[] sample = {currentSegment.getAverageStepFrequency(), 
+				currentSegment.getAverageStepLength()};
+		autoGaitModel.addSampleToModel(sample);
+		
+		// TODO Run the sampleRunnable
+		sampleRunnable.run(sample);
 	}
 	
 	public void forceStepAdd(StepReading read){
@@ -309,4 +324,8 @@ public class AutoGaitModelerAnalyser extends Analyser implements Observer {
 //			}
 //		}
 //	}
+	
+	public void setSampleUpdater(SampleRunnable r){
+		sampleRunnable = r;
+	}
 }
