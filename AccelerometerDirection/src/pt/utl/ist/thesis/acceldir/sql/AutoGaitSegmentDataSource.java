@@ -56,6 +56,14 @@ public class AutoGaitSegmentDataSource {
 		database.delete(SQLiteDBHelper.TABLE_AUTOGAIT_DATA, SQLiteDBHelper.COLUMN_ID
 				+ " = " + id, null);
 	}
+	
+	/**
+	 * Deletes all the data inside the database.
+	 */
+	public void deleteAllSegmentData(){
+		for(AutoGaitSegmentData d : getAllSegmentData())
+			deleteSegmentData(d);
+	}
 
 	public List<AutoGaitSegmentData> getAllSegmentData() {
 		// Create the list to hold the data
@@ -97,7 +105,7 @@ public class AutoGaitSegmentDataSource {
 		for (int i = 0; i < allData.size(); i++) {
 			AutoGaitSegmentData item = allData.get(i);
 			samples[i] = new double[]{item.getStepFrequency(), 
-					item.getStepFrequency()};
+					item.getStepLength()};
 		}
 		
 		return samples;
@@ -110,8 +118,8 @@ public class AutoGaitSegmentDataSource {
 		
 		// Set each attribute value to the cursor's 
 		segmentDataEntry.setId(cursor.getLong(0));
-		segmentDataEntry.setStepLength(cursor.getDouble(1));
-		segmentDataEntry.setStepFrequency(cursor.getDouble(2));
+		segmentDataEntry.setStepFrequency(cursor.getDouble(1));
+		segmentDataEntry.setStepLength(cursor.getDouble(2));
 		
 		return segmentDataEntry;
 	}

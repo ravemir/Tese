@@ -59,6 +59,22 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="pt.utl.ist.thesis.datacollector.CollectionEntryActivity" />
         </activity>
+        <activity
+            android:name="pt.utl.ist.thesis.acceldir.AutoGaitDBActivity"
+            android:label="@string/title_activity_auto_gait_db" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="pt.utl.ist.thesis.acceldir.CollectionEntryActivity" />
+        </activity>
+        <activity
+            android:name="pt.utl.ist.thesis.acceldir.DBFillingActivity"
+            android:label="@string/title_activity_dbfilling" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>

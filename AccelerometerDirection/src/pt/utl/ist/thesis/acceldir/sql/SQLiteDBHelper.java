@@ -13,7 +13,7 @@ public class SQLiteDBHelper extends SQLiteOpenHelper {
 	public static final String COLUMN_STEP_LENGTH = "step_length";
 
 	private static final String DATABASE_NAME = "autogait_segments.db";
-	private static final int DATABASE_VERSION = 1;
+	private static final int DATABASE_VERSION = 2;
 
 	// Database creation SQL statement
 	private static final String DATABASE_CREATE = "create table "

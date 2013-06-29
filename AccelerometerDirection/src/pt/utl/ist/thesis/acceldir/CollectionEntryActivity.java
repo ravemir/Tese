@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import pt.utl.ist.thesis.acceldir.R;
 import pt.utl.ist.thesis.acceldir.exception.ExternalStorageUnavailableException;
 import pt.utl.ist.thesis.acceldir.exception.ExternalStorageWriteProtectedException;
+import pt.utl.ist.thesis.acceldir.sql.AutoGaitSegmentDataSource;
 import pt.utl.ist.thesis.acceldir.util.AndroidUtils;
 import pt.utl.ist.thesis.acceldir.util.FileUtils;
 import android.app.Activity;
@@ -228,28 +229,29 @@ public class CollectionEntryActivity extends Activity {
 	
 	public boolean onOptionsItemSelected(MenuItem item) {
 		File dir = new File(logsFolder);
+		Intent i;
 		switch(item.getItemId()) {
-			case R.id.menu_toggle_gps_fix:
-		    	// Toggle the requirement of a GPS fix to start a capture
-				isGPSFixDisabled ^= true;
-				getSharedPreferences(COLLECTION_PREFERENCES, MODE_PRIVATE).edit().
-					putBoolean(getString(R.string.disable_gps_fix_preference), isGPSFixDisabled).commit();
-		    	AndroidUtils.displayToast(getApplicationContext(),
-		    			getString(R.string.toggle_gps_fix_requirement_message) + 
-		    			(isGPSFixDisabled ? "disabled" : "enabled"));
+			case R.id.menu_view_database_data:
+		    	// Shows the autogait data stored in the database
+				i = new Intent(CollectionEntryActivity.this,
+						AutoGaitDBActivity.class);
+				startActivity(i);
 		    	break;
 			case R.id.menu_autogait_calibration:
 				// Launch AutoGaitCollectionActivity
-				Intent i = new Intent(CollectionEntryActivity.this,
+				i = new Intent(CollectionEntryActivity.this,
 						AutoGaitCollectionActivity.class);
 				i.putExtra("logFolder", dir.getAbsolutePath());
 				startActivity(i);
 				break;
-		    case R.id.menu_clear_logs:
-		    	// Delete all the files in the folder
-		    	FileUtils.deleteFilesFromDir(dir);
+		    case R.id.menu_clear_agdb:
+		    	// Delete all the entries in the AutoGait database
+		    	AutoGaitSegmentDataSource agsds = new AutoGaitSegmentDataSource(this);
+		    	agsds.open();
+		    	agsds.deleteAllSegmentData();
+		    	agsds.close();
 		    	AndroidUtils.displayToast(getApplicationContext(),
-		    			getString(R.string.logs_cleared_message));
+		    			getString(R.string.cleared_the_autogait_data_message));
 		    	break;
 		    case R.id.menu_archive_logs:
 		    	// Archive all files in the folder
