@@ -30,16 +30,17 @@ import android.widget.TextView;
 public class CollectionEntryActivity extends Activity {
 
 	protected static final String COLLECTION_PREFERENCES = "collection_preferences";
+	private static final int FILE_CHOOSER_REQUEST = 1234;
 
 	private class GPSStatusChecker implements GpsStatus.Listener, LocationListener {
 
 		private Boolean isGPSFix = false;
 		private Location mLastLocation;
-		
+
 		public Boolean getIsGPSFix() {
 			return isGPSFix;
 		}
-		
+
 		@Override
 		public void onGpsStatusChanged(int event) {
 			switch (event) {
@@ -77,33 +78,39 @@ public class CollectionEntryActivity extends Activity {
 	private GPSStatusChecker gpsc;
 	private String archiveFolder;
 	private Boolean isGPSFixDisabled;
+	private String dbFolder;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_collection_entry);
-		
+
 		// Set scrollbar movement method for the TextView
 		((TextView)findViewById(R.id.instructionsValue))
-			.setMovementMethod(new ScrollingMovementMethod());
+		.setMovementMethod(new ScrollingMovementMethod());
 
 		// Fill the log directory attribute
 		String sdcardPath = Environment.getExternalStorageDirectory()
 				.getAbsolutePath();
-		logsFolder = sdcardPath + File.separator + "AccelGPS" + 
-				File.separator + "logs" + File.separator;
+		String baseFolder = sdcardPath + File.separator + "AccelGPS" + File.separator;
+		logsFolder = baseFolder + "logs" + File.separator;
 		archiveFolder = logsFolder + "archive" + File.separator;
+		dbFolder = baseFolder + "dbs" + File.separator;
 
 		// Create directories if necessary
 		File a = new File(archiveFolder);
+		File db = new File(dbFolder);
 		if(a.mkdirs()) {
 			String message = getString(R.string.created_application_folder_message) + archiveFolder + ").";
+			AndroidUtils.displayToast(getApplicationContext(), message);
+		} if(db.mkdirs()){
+			String message = getString(R.string.created_application_folder_message) + dbFolder + ").";
 			AndroidUtils.displayToast(getApplicationContext(), message);
 		}
 
 		// Fill the storage state details
 		updateStorageState();
-		
+
 		// Retrieve preferences
 		isGPSFixDisabled = !getSharedPreferences(COLLECTION_PREFERENCES, MODE_PRIVATE).
 				getBoolean(getString(R.string.disable_gps_fix_preference), false);
@@ -118,12 +125,12 @@ public class CollectionEntryActivity extends Activity {
 	 */
 	private void attachFixListeners() {
 		lm = (LocationManager) getSystemService(LOCATION_SERVICE);
-//		gpsc = new GPSStatusChecker();
+		//		gpsc = new GPSStatusChecker();
 		lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, gpsc);
 		lm.addGpsStatusListener(gpsc);
 	}
 
-	
+
 	/**
 	 * Detaches the Listener classes responsible for determining
 	 * the GPS location fix status.
@@ -142,7 +149,7 @@ public class CollectionEntryActivity extends Activity {
 	public void toggleOnClick(View v) {
 		// If we have a GPS Fix...
 		Boolean isGPSFix = gpsc.getIsGPSFix();
-		
+
 		// ...or the GPS fix requirement is disabled
 		if(isGPSFix || isGPSFixDisabled){
 			// Start the collection activity
@@ -217,52 +224,76 @@ public class CollectionEntryActivity extends Activity {
 		emailIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, fileURIs);
 		context.startActivity(Intent.createChooser(emailIntent, "Send mail...")
 				.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
-		
+
 		// TODO Read if e-mail was successful, and archive the logs accordingly
 	}
 
 	public boolean onCreateOptionsMenu(Menu menu) {
-	    MenuInflater inflater = getMenuInflater();
-	    inflater.inflate(R.menu.activity_collection, menu);
-	    return true;
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.activity_collection, menu);
+		return true;
 	}
-	
+
 	public boolean onOptionsItemSelected(MenuItem item) {
 		File dir = new File(logsFolder);
 		Intent i;
 		switch(item.getItemId()) {
-			case R.id.menu_view_database_data:
-		    	// Shows the autogait data stored in the database
-				i = new Intent(CollectionEntryActivity.this,
-						AutoGaitDBActivity.class);
-				startActivity(i);
-		    	break;
-			case R.id.menu_autogait_calibration:
-				// Launch AutoGaitCollectionActivity
-				i = new Intent(CollectionEntryActivity.this,
-						AutoGaitCollectionActivity.class);
-				//i.putExtra("logFolder", dir.getAbsolutePath());
-				i.putExtra("logFolder", logsFolder);
-				startActivity(i);
-				break;
-		    case R.id.menu_clear_agdb:
-		    	// Delete all the entries in the AutoGait database
-		    	AutoGaitSegmentDataSource agsds = new AutoGaitSegmentDataSource(this);
-		    	agsds.open();
-		    	agsds.deleteAllSegmentData();
-		    	agsds.close();
-		    	AndroidUtils.displayToast(getApplicationContext(),
-		    			getString(R.string.cleared_the_autogait_data_message));
-		    	break;
-		    case R.id.menu_archive_logs:
-		    	// Archive all files in the folder
-		    	FileUtils.moveAllFilesToDir(dir, archiveFolder);
-		    	AndroidUtils.displayToast(getApplicationContext(),
-		    			getString(R.string.logs_archived_message) + archiveFolder + "'");
-		    	break;
-		    default: return super.onOptionsItemSelected(item);
+		case R.id.menu_view_database_data:
+			// Shows the autogait data stored in the database
+			i = new Intent(CollectionEntryActivity.this,
+					AutoGaitDBActivity.class);
+			startActivity(i);
+			break;
+		case R.id.menu_autogait_calibration:
+			// Launch AutoGaitCollectionActivity
+			i = new Intent(CollectionEntryActivity.this,
+					AutoGaitCollectionActivity.class);
+			//i.putExtra("logFolder", dir.getAbsolutePath());
+			i.putExtra("logFolder", logsFolder);
+			startActivity(i);
+			break;
+		case R.id.menu_clear_agdb:
+			// Delete all the entries in the AutoGait database
+			AutoGaitSegmentDataSource agsds = new AutoGaitSegmentDataSource(this);
+			agsds.open();
+			agsds.deleteAllSegmentData();
+			agsds.close();
+			AndroidUtils.displayToast(getApplicationContext(),
+					getString(R.string.cleared_the_autogait_data_message));
+			break;
+		case R.id.menu_archive_logs:
+			// Archive all files in the folder
+			FileUtils.moveAllFilesToDir(dir, archiveFolder);
+			AndroidUtils.displayToast(getApplicationContext(),
+					getString(R.string.logs_archived_message) + archiveFolder + "'");
+			break;
+		case R.id.menu_export_database:
+			// Export the current database with the specified name
+			exportDBToFile("ag_database-" + FileUtils.getDateForFilename());
+			break;	
+		case R.id.menu_import_database:
+			// Select a file from the chooser, to be used in the import process
+			i = Intent.createChooser(
+					com.ipaulpro.afilechooser.utils.FileUtils.createGetContentIntent(),
+					"Select a File");
+			startActivityForResult(i, FILE_CHOOSER_REQUEST);
+			break;	
+		default: return super.onOptionsItemSelected(item);
 		}
 		return true;
+	}
+
+	/**
+	 * Exports this {@link AutoGaitSegmentDataSource}'s DB into
+	 * the DB folder, with the specified name.
+	 * 
+	 * @param name	The name for the DB file.
+	 */
+	public void exportDBToFile(String name) {
+		// Open the data source and export its DB to the desired path
+		AutoGaitSegmentDataSource agsds = new AutoGaitSegmentDataSource(this);
+		agsds.exportDataBase(dbFolder, name);
+		AndroidUtils.displayToast(this, getString(R.string.exported_DB_message) + name + "'");
 	}
 
 	/**
@@ -314,5 +345,23 @@ public class CollectionEntryActivity extends Activity {
 
 		// Detach Fix Listeners before pausing
 		detachFixListeners();
+	}
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		switch (requestCode) {
+		case FILE_CHOOSER_REQUEST:   
+			if (resultCode == RESULT_OK) {  
+				final Uri uri = data.getData();
+
+				// Restore the database from the file
+				AutoGaitSegmentDataSource agsds = new AutoGaitSegmentDataSource(this);
+				agsds.open();
+				agsds.importDataBase(uri.getPath());
+				agsds.close();
+				AndroidUtils.displayToast(this, getString(R.string.imported_database_from_file_message) 
+						+ uri.getPath() + "'");
+			}
+		}
 	}
 }

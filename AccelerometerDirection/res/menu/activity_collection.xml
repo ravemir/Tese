@@ -15,4 +15,12 @@
         android:id="@+id/menu_archive_logs"
         android:orderInCategory="101"
         android:title="@string/menu_archive_logs" />
+	<item
+        android:id="@+id/menu_import_database"
+        android:orderInCategory="102"
+        android:title="@string/menu_import_database" />
+	<item
+        android:id="@+id/menu_export_database"
+        android:orderInCategory="103"
+        android:title="@string/menu_export_database" />
 </menu>

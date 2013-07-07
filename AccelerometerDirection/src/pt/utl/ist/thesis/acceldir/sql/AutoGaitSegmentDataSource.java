@@ -1,5 +1,6 @@
 package pt.utl.ist.thesis.acceldir.sql;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -122,5 +123,35 @@ public class AutoGaitSegmentDataSource {
 		segmentDataEntry.setStepLength(cursor.getDouble(2));
 		
 		return segmentDataEntry;
+	}
+	
+	/**
+	 * Imports a database file into this source's
+	 * database.
+	 * 
+	 * @param dbPath	The path to the DB file.
+	 */
+	public void importDataBase(String dbPath){
+		// Import new database
+		try {
+			dbHelper.importDatabase(dbPath);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		// Re-open the database for business
+		open();
+	}
+	
+	/**
+	 * Exports the current database to a file in the
+	 * specified path.
+	 * 
+	 * @param path	The path to export the database to.
+	 * @param fileName TODO
+	 */
+	public void exportDataBase(String path, String fileName){
+		dbHelper.exportDatabase(path, fileName);
 	}
 }

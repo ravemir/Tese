@@ -2,14 +2,13 @@ package pt.utl.ist.thesis.acceldir;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
 import pt.utl.ist.thesis.acceldir.R;
 import pt.utl.ist.thesis.acceldir.util.AndroidUtils;
+import pt.utl.ist.thesis.acceldir.util.FileUtils;
 import pt.utl.ist.thesis.acceldir.util.UIUpdater;
 import pt.utl.ist.util.sensor.reading.AccelReading;
 import android.annotation.TargetApi;
@@ -28,6 +27,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
+import android.util.Log;
 import android.view.Menu;
 import android.view.Window;
 import android.view.WindowManager;
@@ -85,6 +85,7 @@ public class CollectionActivity extends Activity {
 						values[1] + LOGSEPARATOR + 
 						values[2] + LOGSEPARATOR +
 						accuracy + "\n";
+				Log.v("AccelGPS", "Received acceleration value.");
 				
 				// If the buffer has filled once...
 				if(bufferIsWarm){
@@ -326,7 +327,7 @@ public class CollectionActivity extends Activity {
 		logFolder = (String) getIntent().getExtras().get("logFolder");
 
 		// Get date from system and set the file name to save
-		String date = getDateForFilename();
+		String date = FileUtils.getDateForFilename();
 		filename = logFolder + date + ".log";
 		
 		// Initialize and attach the Listener-related activity attributes
@@ -349,9 +350,12 @@ public class CollectionActivity extends Activity {
 	 * 
 	 */
 	private void setFullScreen() {
-		requestWindowFeature(Window.FEATURE_NO_TITLE); 
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
 				WindowManager.LayoutParams.FLAG_FULLSCREEN);
+		
+		// To stop home button from exiting the app, but doesn't work
+//		this.getWindow().setType(WindowManager.LayoutParams.TYPE_KEYGUARD);
 	}
 
 	@Override
@@ -511,18 +515,15 @@ public class CollectionActivity extends Activity {
 				@Override public void run() {backWasPressed = false;}}, PERIOD);
 		}
 	}
-
-	/**
-	 * Function used to return the current date, ready to be used in a filename.
-	 * 
-	 * @return A string representing the date in a "YYYY-MM-DD_HH:MM" format
-	 */
-	private String getDateForFilename() {
-		Calendar c = Calendar.getInstance();
-		SimpleDateFormat sdf = (SimpleDateFormat) java.text.DateFormat.getDateTimeInstance();
-		sdf.applyPattern("yyyy-MM-dd_HH'h'mm");
-		String date = sdf.format(c.getTime());
-
-		return date;
-	}
+	
+//	/**
+//	 * Method placed to disable Home button.
+//	 * 
+//	 * Note: Taken from http://stackoverflow.com/questions/3898876/how-to-disable-the-home-key
+//	 */
+//	@Override
+//	public void onAttachedToWindow() {
+//	    this.getWindow().setType(WindowManager.LayoutParams.TYPE_KEYGUARD);
+//	    super.onAttachedToWindow();
+//	}
 }
