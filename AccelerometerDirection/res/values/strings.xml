@@ -26,6 +26,7 @@
     <!-- TextView values -->
     <string name="gps_data_label">GPS data:</string>
     <string name="accelerometer_data_label">Accelerometer data:</string>
+    <string name="orientation_data_label">Orientation data:</string>
     <string name="initial_value">0</string>
     <string name="lat_label">"Lat. (deg): "</string>
     <string name="long_label">"Long. (deg): "</string>
@@ -33,6 +34,10 @@
     <string name="x_label">"X: "</string>
     <string name="y_label">", Y: "</string>
     <string name="z_label">", Z: "</string>
+    <string name="azimuth_label">Az: </string>
+    <string name="pitch_label">, Pt: </string>
+    <string name="roll_label">, Rl: </string>
+    
     <string name="instructions_label">Instructions:</string>
     <string name="instructions_text">When you are ready to start collecting values, press the \'Start Collection\' button. While on the next screen, the application will record both accelerometer and GPS (if locked) values.\n\nYou should then place the mobile phone either in your trouser pocket or sock and either walk or run for as long as you wish (prefferably in a straight line).\n\nWhen done, press the back button twice to end the collection and return to this screen. When you are done, you should press the \'Send Logs by E-mail\' button, write a short description (optional) about the the events in the recoveries you made and send it (you may send it offline in GMail and it will be delivered the next time you have connectivity).\n\nPS: You should only start the collection once the GPS has obtained a fix (the icon will be fixed, not flashing).</string>
     <string name="rate_label">"Update rate (Hz): "</string>
@@ -75,5 +80,6 @@
     <string name="menu_export_database">Export current database</string>
     <string name="imported_database_from_file_message">Imported database from file \'</string>
     <string name="exported_DB_message">Exported DB as \'</string>
+    
 
 </resources>

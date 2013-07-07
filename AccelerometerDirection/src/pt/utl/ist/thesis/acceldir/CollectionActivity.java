@@ -242,12 +242,16 @@ public class CollectionActivity extends Activity {
 			return accel;
 		}
 
-		public Location getLoc() {
+		public Location getLatestLoc() {
 			if (loc == null){
 				loc = new Location(LocationManager.GPS_PROVIDER);
 				loc.setSpeed(0);
 			}
 			return loc;
+		}
+		
+		public float[] getLatestOrientation(){
+			return (orientations == null ? new float[]{0.0f, 0.0f, 0.0f} : orientations);
 		}
 
 		@Override
@@ -299,7 +303,8 @@ public class CollectionActivity extends Activity {
 		public void run() {
 			// Get values
 			float[] accel = mAccelGPSListener.getLatestAccel();
-			Location loc = mAccelGPSListener.getLoc();
+			Location loc = mAccelGPSListener.getLatestLoc();
+			float[] orientation = mAccelGPSListener.getLatestOrientation();
 
 			// Update Accelerometer Views
 			((TextView) findViewById(R.id.XValue)).setText(Float.valueOf(accel[0]).toString());
@@ -310,6 +315,11 @@ public class CollectionActivity extends Activity {
 			((TextView) findViewById(R.id.LatValue)).setText(Double.valueOf(loc.getLatitude()).toString());
 			((TextView) findViewById(R.id.LongValue)).setText(Double.valueOf(loc.getLongitude()).toString());
 			((TextView) findViewById(R.id.SpeedValue)).setText(Double.valueOf(loc.getSpeed()).toString());
+			
+			// Update Orientation
+			((TextView) findViewById(R.id.XOriValue)).setText(Float.valueOf(orientation[0]).toString());
+			((TextView) findViewById(R.id.YOriValue)).setText(Float.valueOf(orientation[1]).toString());
+			((TextView) findViewById(R.id.ZOriValue)).setText(Float.valueOf(orientation[2]).toString());
 		}
 	};
 

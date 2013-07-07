@@ -7,8 +7,6 @@
     android:orientation="vertical"
     tools:context=".CollectionActivity" >
     <LinearLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:tools="http://schemas.android.com/tools"
         android:id="@+id/GPSLinearLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -22,8 +20,6 @@
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:textStyle="bold" />
         <LinearLayout
-            xmlns:android="http://schemas.android.com/apk/res/android"
-            xmlns:tools="http://schemas.android.com/tools"
             android:id="@+id/LocCoordLinearLayout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -77,8 +73,6 @@
         </LinearLayout>
     </LinearLayout>
     <LinearLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:tools="http://schemas.android.com/tools"
         android:id="@+id/AccelLinearLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -92,8 +86,6 @@
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:textStyle="bold" />
         <LinearLayout
-            xmlns:android="http://schemas.android.com/apk/res/android"
-            xmlns:tools="http://schemas.android.com/tools"
             android:id="@+id/AccelCoordLinearLayout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -129,6 +121,60 @@
                 android:textStyle="bold" />
             <TextView
                 android:id="@+id/ZValue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/initial_value" />
+        </LinearLayout>
+    </LinearLayout>
+    <LinearLayout
+        android:id="@+id/OriLinearLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        tools:context=".CollectionActivity" >
+        <TextView
+            android:id="@+id/OriLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/orientation_data_label"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textStyle="bold" />
+        <LinearLayout
+            android:id="@+id/OriCoordLinearLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            tools:context=".CollectionActivity" >
+            <TextView
+                android:id="@+id/XOriLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/azimuth_label"
+                android:textStyle="bold" />
+            <TextView
+                android:id="@+id/XOriValue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/initial_value" />
+            <TextView
+                android:id="@+id/YOriLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/pitch_label"
+                android:textStyle="bold" />
+            <TextView
+                android:id="@+id/YOriValue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/initial_value" />
+            <TextView
+                android:id="@+id/ZOriLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/roll_label"
+                android:textStyle="bold" />
+            <TextView
+                android:id="@+id/ZOriValue"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/initial_value" />
