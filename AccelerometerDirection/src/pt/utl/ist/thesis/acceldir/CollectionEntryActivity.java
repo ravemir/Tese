@@ -241,7 +241,8 @@ public class CollectionEntryActivity extends Activity {
 				// Launch AutoGaitCollectionActivity
 				i = new Intent(CollectionEntryActivity.this,
 						AutoGaitCollectionActivity.class);
-				i.putExtra("logFolder", dir.getAbsolutePath());
+				//i.putExtra("logFolder", dir.getAbsolutePath());
+				i.putExtra("logFolder", logsFolder);
 				startActivity(i);
 				break;
 		    case R.id.menu_clear_agdb:

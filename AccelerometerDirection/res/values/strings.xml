@@ -18,7 +18,7 @@
     <string name="sendMailText">Send Logs by E-Mail</string>
     <string name="menu_clear_db">Clear AutoGait Data</string>
     <string name="menu_show_database_data">Show database data</string>
-    <string name="menu_autogait_calibration">Launch Calibration procedure</string>
+    <string name="menu_autogait_calibration">Launch AutoGait calibration</string>
     <string name="menu_toggle_gps_fix">Toggle GPS Fix Requirement</string>
     <string name="menu_archive_logs">Archive Logs</string>
     <string name="menu_settings">Settings</string>
