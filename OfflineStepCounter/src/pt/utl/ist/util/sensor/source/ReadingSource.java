@@ -32,7 +32,7 @@ public abstract class ReadingSource extends Observable {
 	 */
 	public void pushReading(SensorReading read){
 		// If a buffer was created, add the reading to it
-		if(buffer != null) buffer.addReading((AccelReading) read);
+		if(buffer != null) buffer.addReading((AccelReading) read); // TODO Push a reading as a SensorReading
 		
 		// Notify the filters (observer pattern)
 		notifyFilters(read);

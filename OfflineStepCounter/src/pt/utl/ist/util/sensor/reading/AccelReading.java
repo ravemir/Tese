@@ -22,7 +22,7 @@ public class AccelReading extends SensorReading {
 	private final double norm;
 	
 	/**
-	 * Creates an AccelReading object with the
+	 * Creates an {@link AccelReading}AccelReading object with the
 	 * specified timestamp and acceleration
 	 * values.
 	 * 
@@ -35,7 +35,7 @@ public class AccelReading extends SensorReading {
 	}
 	
 	/**
-	 * Creates an AccelReading object with the
+	 * Creates an {@link AccelReading} object with the
 	 * specified formatted timestamp string and
 	 * acceleration values.
 	 * 
@@ -92,7 +92,7 @@ public class AccelReading extends SensorReading {
 	}
 	
 	/**
-	 * Creates an AccelReading object with a
+	 * Creates an {@link AccelReading}AccelReading object with a
 	 * timestamp string of zero and zeroed
 	 * acceleration values.
 	 */
@@ -101,7 +101,7 @@ public class AccelReading extends SensorReading {
 	}
 	
 	/**
-	 * Clones a given AccelReading object.
+	 * Clones a given {@link AccelReading} object.
 	 * 
 	 * @param ar The object to be cloned.
 	 */

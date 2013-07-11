@@ -1,6 +1,7 @@
 package pt.utl.ist.thesis.util.buffers;
 
 import pt.utl.ist.util.sensor.reading.AccelReading;
+import pt.utl.ist.util.sensor.reading.OrientationReading;
 
 
 public class AverageCircularBuffer extends ReadingCircularBuffer {
@@ -17,7 +18,7 @@ public class AverageCircularBuffer extends ReadingCircularBuffer {
 	}
 	
 	@Override
-	public void addReading(AccelReading read){
+	public void addReading(AccelReading read){		// TODO Change to receive SensorReading
 		double[] newAccel = new double[3];
 		
 		// Get the current value and compute the average term value
@@ -36,8 +37,15 @@ public class AverageCircularBuffer extends ReadingCircularBuffer {
 		for (int i = 0; i < latestTerm.length; i++)
 			newAccel[i] += latestTerm[i];
 
-		// Add new term value to the buffer
-		avgTerms.addReading(new AccelReading(read.getTimestampString(), latestTerm));
+		// Add new term value of the respective type of reading to the buffer
+		if(read instanceof AccelReading){
+			avgTerms.addReading(new AccelReading(read.getTimestampString(), latestTerm));
+		}
+		// TODO Uncomment when read is SensorReading
+//		else if (read instanceof OrientationReading){
+//			avgTerms.addReading(new OrientationReading(read.getTimestampString(), latestTerm));
+//		}
+		
 		
 		// Add new average value to the main buffer
 		super.addReading(new AccelReading(read.getTimestampString(),newAccel));
