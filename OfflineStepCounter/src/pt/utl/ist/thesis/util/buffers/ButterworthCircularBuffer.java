@@ -24,7 +24,7 @@ public class ButterworthCircularBuffer extends ReadingCircularBuffer {
 	 * a filtered output and adds it to the main buffer.
 	 */
 	@Override
-	public void addReading(AccelReading read) {
+	public void addReading(AccelReading read) { // TODO Make this method receive any type of sensorreading
 		// Check if enough inputs have been received
 		Boolean shouldFilter = isWarm();
 		
