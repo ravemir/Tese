@@ -5,20 +5,21 @@ import java.util.List;
 
 import pt.utl.ist.thesis.util.MathUtils;
 import pt.utl.ist.util.sensor.reading.AccelReading;
+import pt.utl.ist.util.sensor.reading.SensorReading;
 import pt.utl.ist.util.source.filters.Filter;
 
 public class ReadingCircularBuffer {
 	
 	private int positionIndex = -1;
-	private AccelReading[] readings;
+	private SensorReading[] readings;
 
 	List<Filter> observers = new ArrayList<Filter>();
 	
 	public ReadingCircularBuffer(int size) {
-		readings =  new AccelReading[size];
+		readings =  new SensorReading[size];
 	}
 	
-	public AccelReading[] getBufferValues() {
+	public SensorReading[] getBufferValues() {
 			return readings;
 	}
 	
@@ -42,8 +43,8 @@ public class ReadingCircularBuffer {
 	 * 
 	 * @return The last reading to be added.
 	 */
-	public AccelReading getCurrentReading() {
-		AccelReading current = getPrevNReading(0); // FIXME colocado aqui porque positionindex começa a -1, e rebenta
+	public SensorReading getCurrentReading() {
+		SensorReading current = getPrevNReading(0); // FIXME colocado aqui porque positionindex começa a -1, e rebenta
 		
 		return (current!=null? current: new AccelReading());
 	}
@@ -54,8 +55,8 @@ public class ReadingCircularBuffer {
 	 * 
 	 * @return The oldest value in the buffer.
 	 */
-	public AccelReading getOldestReading() {
-		AccelReading lastValue = getPrevNReading(readings.length-1);
+	public SensorReading getOldestReading() {
+		SensorReading lastValue = getPrevNReading(readings.length-1);
 		
 		return (lastValue!=null? lastValue: new AccelReading());
 	}
@@ -101,7 +102,7 @@ public class ReadingCircularBuffer {
 	public void clearOld() {
 		int samplesWarmed = samplesWarmed();
 		if(samplesWarmed > 2) {
-			AccelReading[] tmp = new AccelReading[readings.length];
+			SensorReading[] tmp = new AccelReading[readings.length];
 			tmp[0] = getPreviousReading();
 			tmp[1] = getCurrentReading();
 			readings = tmp;
@@ -115,7 +116,7 @@ public class ReadingCircularBuffer {
 	 * 
 	 * @return The last reading to be inserted.
 	 */
-	public AccelReading getPreviousReading() {
+	public SensorReading getPreviousReading() {
 		return getPrevNReading(1);
 	}
 	
@@ -127,9 +128,9 @@ public class ReadingCircularBuffer {
 	 * @return	The reading that was inserted 'n'
 	 * 		operations back.
 	 */
-	public AccelReading getPrevNReading(int n) {
-		AccelReading read = readings[MathUtils.altMod(positionIndex-n,readings.length)];
-		return (read != null? read: new AccelReading());
+	public SensorReading getPrevNReading(int n) {
+		SensorReading read = readings[MathUtils.altMod(positionIndex-n,readings.length)];
+		return (read != null? read: new AccelReading()); // FIXME Should not return an AccelReading, since this is generic
 	}
 	
 	/**

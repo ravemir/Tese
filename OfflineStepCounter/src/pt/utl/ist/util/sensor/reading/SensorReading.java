@@ -24,5 +24,16 @@ public abstract class SensorReading {
 		return timestamp;
 	}
 	
-	public abstract Object getReading();
+	public abstract double[] getReading();
+	
+	public double[] getReadingAndNorm(){
+		double[] reading = getReading();
+		double[] tmp = new double[reading.length+1];
+		for (int i = 0; i < reading.length; i++) {
+			tmp[i] = reading[i];
+		}
+		tmp[tmp.length] = 0;
+		
+		return tmp;
+	}
 }

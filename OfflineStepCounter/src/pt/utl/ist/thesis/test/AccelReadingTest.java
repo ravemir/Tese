@@ -33,7 +33,7 @@ public class AccelReadingTest {
 				MathUtils.norm(new double[]{1,2,3}), 4,
 				MathUtils.norm(new double[]{1,2,3}),4};
 		for (int i = 0; i < expected.length; i++) {
-			assertEquals(expected[i], ars[i].getAccelerationNorm(), 0.001);
+			assertEquals(expected[i], ars[i].getReadingNorm(), 0.001);
 		}
 	}
 

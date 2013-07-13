@@ -8,6 +8,7 @@ import org.junit.Test;
 
 import pt.utl.ist.thesis.util.buffers.ButterworthCircularBuffer;
 import pt.utl.ist.util.sensor.reading.AccelReading;
+import pt.utl.ist.util.sensor.reading.SensorReading;
 import pt.utl.ist.util.source.filters.ButterworthData;
 
 public class ButterworthCircularBufferTest {
@@ -80,7 +81,7 @@ public class ButterworthCircularBufferTest {
 		// Test each value
 		for (int i = 0; i < readings.length; i++) {
 			bwcb.addReading(readings[i]);
-			AccelReading currentReading = bwcb.getCurrentReading();
+			SensorReading currentReading = bwcb.getCurrentReading();
 			assertArrayEquals(expected[i].getReadingAndNorm(), currentReading.getReadingAndNorm(), 0.001);
 		}
 	}

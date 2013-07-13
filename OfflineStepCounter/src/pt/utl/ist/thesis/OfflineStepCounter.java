@@ -66,8 +66,8 @@ public class OfflineStepCounter {
 			// TODO Print current state
 			//System.out.println("Value:\t\t" + rs.getBuffer().getCurrentReading().getAccelerationNorm());
 			System.out.println("Time: " + reading.getTimestampString());
-			System.out.println("Filtered:\t" + ((ButterworthFilter) rs.getFilters().get(0)).getBuffer().getCurrentReading().getAccelerationNorm());
-			System.out.println("Gravity:\t" + ((GravityFilter) rs.getFilters().get(1)).getBuffer().getCurrentReading().getAccelerationNorm() + ", " 
+			System.out.println("Filtered:\t" + ((AccelReading) ((ButterworthFilter) rs.getFilters().get(0)).getBuffer().getCurrentReading()).getReadingNorm());
+			System.out.println("Gravity:\t" + ((AccelReading) ((GravityFilter) rs.getFilters().get(1)).getBuffer().getCurrentReading()).getReadingNorm() + ", " 
 								+ ((GravityFilter) rs.getFilters().get(1)).getBuffer().getCurrentReading());
 
 			// Read new line
@@ -81,10 +81,10 @@ public class OfflineStepCounter {
 		
 		// TODO Output relevant states
 		for(AccelReading a :  fa.getNormPeaks()){
-			System.out.println("Peak: " + a.getTimestampString() + ", " + a.getAccelerationNorm() + ", " + a);
+			System.out.println("Peak: " + a.getTimestampString() + ", " + a.getReadingNorm() + ", " + a);
 		}
 		for(AccelReading a :  fa.getSteps()){
-			System.out.println("Step: " + a.getTimestampString() + ", " + a.getAccelerationNorm() + ", " + a);
+			System.out.println("Step: " + a.getTimestampString() + ", " + a.getReadingNorm() + ", " + a);
 		}
 		
 		// Close the line reader

@@ -130,8 +130,8 @@ public class StepAnalyser extends Analyser {
 			
 			for(AccelReading r : unaveragedPeaks){
 				// If a peak is bigger than threshold...
-				if(r.getAccelerationNorm() > KFACTOR && 
-						r.getAccelerationNorm() > PEAKTHRESHFACTOR*peakMean) {
+				if(r.getReadingNorm() > KFACTOR && 
+						r.getReadingNorm() > PEAKTHRESHFACTOR*peakMean) {
 					// Push a new StepReading object and add it to the list
 					steps.pushReading(new StepReading(r));
 				}				
@@ -152,7 +152,7 @@ public class StepAnalyser extends Analyser {
 	 */
 	private ArrayList<AccelReading> countPeaksInBuffer(ReadingCircularBuffer circBuffer) {
 		// Get the values from the buffer and create a list to store the peaks
-		AccelReading[] bufferValues = circBuffer.getBufferValues();
+		SensorReading[] bufferValues = circBuffer.getBufferValues();
 		ArrayList<AccelReading> peaks = new ArrayList<AccelReading>();
 		
 		// Count peaks
@@ -161,11 +161,11 @@ public class StepAnalyser extends Analyser {
 				// TODO If so, detect if it is lower than previous.
 			
 			// Detect peak in the norm value, if case
-			double fwdSlope = computeSlope(bufferValues, i-1, i);
-			double bwdSlope = computeSlope(bufferValues, i-2, i-1);
+			double fwdSlope = computeNormSlope(bufferValues, i-1, i);
+			double bwdSlope = computeNormSlope(bufferValues, i-2, i-1);
 			if(fwdSlope < 0 && bwdSlope > 0){
 				// If so, see if bigger than thresholds
-				peaks.add(bufferValues[i-1]);
+				peaks.add((AccelReading) bufferValues[i-1]);
 			}
 		}
 		
@@ -181,9 +181,11 @@ public class StepAnalyser extends Analyser {
 	 * @param frontIndex The index of the next value in the slope.
 	 * @return The computed slope value.
 	 */
-	private double computeSlope(AccelReading[] bufferValues, int backIndex, int frontIndex) {
-		double x = bufferValues[frontIndex].getAccelerationNorm() - bufferValues[backIndex].getAccelerationNorm();
-		double y = bufferValues[frontIndex].getTimestamp()-bufferValues[backIndex].getTimestamp();
+	private double computeNormSlope(SensorReading[] bufferValues, int backIndex, int frontIndex) {
+		double x = ((AccelReading) bufferValues[frontIndex]).getReadingNorm()-
+				((AccelReading) bufferValues[backIndex]).getReadingNorm();
+		double y = ((AccelReading) bufferValues[frontIndex]).getTimestamp()-
+				((AccelReading) bufferValues[backIndex]).getTimestamp();
 		
 		return x / y;
 	}
@@ -231,14 +233,14 @@ public class StepAnalyser extends Analyser {
 		if(f instanceof MovingAverageFilter){
 			// Get this filter's order and the latest reading
 			int order = ((MovingAverageFilter) f).getAverageOrder();
-			AccelReading currentReading = f.getBuffer().getCurrentReading();
+			AccelReading currentReading = (AccelReading) f.getBuffer().getCurrentReading();
 	
 			// Adds the reading to the buffer with the associated order
 			addAvgReading(order, currentReading);
 		} else if(f instanceof ButterworthFilter){
 			// Get this filter's order and the latest reading
 			int order = ((ButterworthFilter) f).getFilterOrder();
-			AccelReading currentReading = f.getBuffer().getCurrentReading();
+			AccelReading currentReading = (AccelReading) f.getBuffer().getCurrentReading();
 	
 			// Adds the reading to the buffer with the associated order
 			addAvgReading(order, currentReading); // FIXME Should be using a different method of filter storage
@@ -252,7 +254,7 @@ public class StepAnalyser extends Analyser {
 	public void updateFromRaw(ReadingSource rs, Object reading){
 		// TODO Untested?
 		// Get this ReadingSource's latest reading
-		AccelReading currentReading = rs.getBuffer().getCurrentReading();
+		AccelReading currentReading = (AccelReading) rs.getBuffer().getCurrentReading();
 
 		// Adds the reading to the buffer with the associated 
 		// order (adding to an AverageCircularBuffer should be

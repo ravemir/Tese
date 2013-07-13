@@ -8,6 +8,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import pt.utl.ist.util.sensor.reading.AccelReading;
+import pt.utl.ist.util.sensor.reading.SensorReading;
 import pt.utl.ist.util.sensor.source.RawReadingSource;
 import pt.utl.ist.util.source.filters.MovingAverageFilter;
 
@@ -65,7 +66,7 @@ public class MovingAverageFilterTest {
 		// Match all expected results to actual ones
 		for (int i = 0; i < inputReadings.length; i++) {
 			rrs.pushReading(inputReadings[i]);
-			AccelReading currentReading = maf.getBuffer().getCurrentReading();
+			SensorReading currentReading = maf.getBuffer().getCurrentReading();
 			assertArrayEquals(expectedReadings[i].getReading(), currentReading.getReading(), 0.00001);
 		}
 	}

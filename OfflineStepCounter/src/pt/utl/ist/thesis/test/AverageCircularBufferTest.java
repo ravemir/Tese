@@ -47,21 +47,21 @@ public class AverageCircularBufferTest {
 		acb.addReading(new AccelReading("0", new double[]{1.0d,1.0d,1.0d}));
 		
 		// Assert equal to average
-		double[] currentAcceleration = acb.getCurrentReading().getAcceleration();
+		double[] currentAcceleration = acb.getCurrentReading().getReading();
 		assertArrayEquals(new double[]{0.5d, 0.5d, 0.5d}, currentAcceleration, 0);
 		
 		// Add 1 value
 		acb.addReading(new AccelReading("0", new double[]{2.0d,2.0d,2.0d}));
 		
 		// Assert equal to average
-		currentAcceleration = acb.getCurrentReading().getAcceleration();
+		currentAcceleration = acb.getCurrentReading().getReading();
 		assertArrayEquals(new double[]{1.5d, 1.5d, 1.5d}, currentAcceleration, 0);
 		
 		// Add 1 value
 		acb.addReading(new AccelReading("0", new double[]{4.0d,4.0d,4.0d}));
 		
 		// Assert equal to average
-		currentAcceleration = acb.getCurrentReading().getAcceleration();
+		currentAcceleration = acb.getCurrentReading().getReading();
 		assertArrayEquals(new double[]{3.0d, 3.0d, 3.0d}, currentAcceleration, 0);
 	}
 

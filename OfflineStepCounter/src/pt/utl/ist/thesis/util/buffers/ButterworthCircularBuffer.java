@@ -1,6 +1,7 @@
 package pt.utl.ist.thesis.util.buffers;
 
 import pt.utl.ist.util.sensor.reading.AccelReading;
+import pt.utl.ist.util.sensor.reading.SensorReading;
 import pt.utl.ist.util.source.filters.ButterworthData;
 
 public class ButterworthCircularBuffer extends ReadingCircularBuffer {
@@ -78,7 +79,7 @@ public class ButterworthCircularBuffer extends ReadingCircularBuffer {
 	}
 
 	@Override
-	public AccelReading getPrevNReading(int n) {
+	public SensorReading getPrevNReading(int n) {
 		// Returns the filtered reading, according to 
 		// the state of the previous inputs buffer
 		return (isWarm()? super.getPrevNReading(n): new AccelReading());

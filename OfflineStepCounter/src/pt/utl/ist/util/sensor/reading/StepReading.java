@@ -49,7 +49,7 @@ public class StepReading extends AccelReading {
 	 * 			the aceleration norm)
 	 */
 	public Double getStepIntensity(){
-		return getAccelerationNorm();
+		return getReadingNorm();
 	}
 	
 	/**

@@ -18,12 +18,10 @@ public class OrientationReadingTest {
 
 	@Test
 	public void testOrientationReading() {
-		Double[] expected = new Double[]{1.1D, 2.2D, 3.3D};
-		Double[] actual = or.getReading();
+		double[] expected = new double[]{1.1D, 2.2D, 3.3D};
+		double[] actual = or.getReading();
 		
-		for (int i = 0; i < expected.length; i++) {
-			assertEquals(expected[i], actual[i], 0.0001);
-		}
+		assertArrayEquals(expected, actual, 0.0001);
 	}
 
 }

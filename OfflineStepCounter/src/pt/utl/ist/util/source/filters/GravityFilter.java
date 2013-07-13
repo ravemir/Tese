@@ -22,7 +22,7 @@ public class GravityFilter extends Filter {
 		
 		// Get acceleration
 		AccelReading receivedReading = (AccelReading) read;
-		AccelReading lastGravity = getBuffer().getPreviousReading();
+		AccelReading lastGravity = (AccelReading) getBuffer().getPreviousReading();
 		
 		// Compute gravity value
 		AccelReading newGravity = new AccelReading(receivedReading.getTimestampString(),

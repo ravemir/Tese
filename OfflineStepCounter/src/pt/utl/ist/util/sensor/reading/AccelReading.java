@@ -120,6 +120,7 @@ public class AccelReading extends SensorReading {
 	 * 
 	 * @return The vector with both types of value.
 	 */
+	@Override
 	public double[] getReadingAndNorm(){
 		double[] ret = new double[4];
 		
@@ -142,7 +143,7 @@ public class AccelReading extends SensorReading {
 		return acceleration;
 	}
 	
-	public double getAccelerationNorm(){
+	public double getReadingNorm(){
 		return norm;
 	}
 	

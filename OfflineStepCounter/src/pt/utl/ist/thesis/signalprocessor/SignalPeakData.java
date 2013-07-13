@@ -61,7 +61,7 @@ public class SignalPeakData {
 	private void recomputeMeanValues(AccelReading r) {
 		// Get acceleration components and norm values
 		double[] accelR = r.getAcceleration();
-		double accelRNorm = r.getAccelerationNorm();
+		double accelRNorm = r.getReadingNorm();
 		
 		// Recompute acceleration values
 		for (int i = 0; i < currentMean.length; i++) {

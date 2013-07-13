@@ -123,7 +123,7 @@ public class OrientationReading extends SensorReading {
 	}
 
 	@Override
-	public Double[] getReading() {
-		return new Double[] {azimuth, pitch, roll};
+	public double[] getReading() {
+		return new double[] {azimuth, pitch, roll};
 	}
 }

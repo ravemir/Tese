@@ -120,10 +120,10 @@ public class OfflineCallibrator {
 		
 		// TODO Output relevant states
 		for(AccelReading a :  sa.getNormPeaks()){	// Count peaks
-			System.out.println("Peak: " + a.getTimestampString() + ", " + a.getAccelerationNorm() + ", " + a);
+			System.out.println("Peak: " + a.getTimestampString() + ", " + a.getReadingNorm() + ", " + a);
 		}
 		for(AccelReading a :  sa.getSteps()){		// Count steps
-			System.out.println("Step: " + a.getTimestampString() + ", " + a.getAccelerationNorm() + ", " + a);
+			System.out.println("Step: " + a.getTimestampString() + ", " + a.getReadingNorm() + ", " + a);
 		}
 
 		// Close the line reader
