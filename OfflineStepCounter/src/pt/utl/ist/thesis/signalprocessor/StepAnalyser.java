@@ -64,7 +64,7 @@ public class StepAnalyser extends Analyser {
 	 * @param order The order of the mean that was computed.
 	 * @param reading The reading to be inserted.
 	 */
-	private void addAvgReading(int order, AccelReading reading) {
+	private void addAvgReading(int order, SensorReading reading) {
 		// Gets the respective buffer if exists, creates if not
 		ReadingCircularBuffer targetBuffer = getAvgBuffer(order);
 		
@@ -184,8 +184,8 @@ public class StepAnalyser extends Analyser {
 	private double computeNormSlope(SensorReading[] bufferValues, int backIndex, int frontIndex) {
 		double x = ((AccelReading) bufferValues[frontIndex]).getReadingNorm()-
 				((AccelReading) bufferValues[backIndex]).getReadingNorm();
-		double y = ((AccelReading) bufferValues[frontIndex]).getTimestamp()-
-				((AccelReading) bufferValues[backIndex]).getTimestamp();
+		double y = ((SensorReading) bufferValues[frontIndex]).getTimestamp()-
+				((SensorReading) bufferValues[backIndex]).getTimestamp();
 		
 		return x / y;
 	}
@@ -207,7 +207,7 @@ public class StepAnalyser extends Analyser {
 	
 	
 	
-	private void addRawReading(AccelReading currentReading) {
+	private void addRawReading(SensorReading currentReading) {
 		rawBuffer.addReading(currentReading);
 	}
 
@@ -233,14 +233,14 @@ public class StepAnalyser extends Analyser {
 		if(f instanceof MovingAverageFilter){
 			// Get this filter's order and the latest reading
 			int order = ((MovingAverageFilter) f).getAverageOrder();
-			AccelReading currentReading = (AccelReading) f.getBuffer().getCurrentReading();
+			SensorReading currentReading = (SensorReading) f.getBuffer().getCurrentReading();
 	
 			// Adds the reading to the buffer with the associated order
 			addAvgReading(order, currentReading);
 		} else if(f instanceof ButterworthFilter){
 			// Get this filter's order and the latest reading
 			int order = ((ButterworthFilter) f).getFilterOrder();
-			AccelReading currentReading = (AccelReading) f.getBuffer().getCurrentReading();
+			SensorReading currentReading = (SensorReading) f.getBuffer().getCurrentReading();
 	
 			// Adds the reading to the buffer with the associated order
 			addAvgReading(order, currentReading); // FIXME Should be using a different method of filter storage
@@ -254,7 +254,7 @@ public class StepAnalyser extends Analyser {
 	public void updateFromRaw(ReadingSource rs, Object reading){
 		// TODO Untested?
 		// Get this ReadingSource's latest reading
-		AccelReading currentReading = (AccelReading) rs.getBuffer().getCurrentReading();
+		SensorReading currentReading = (SensorReading) rs.getBuffer().getCurrentReading();
 
 		// Adds the reading to the buffer with the associated 
 		// order (adding to an AverageCircularBuffer should be

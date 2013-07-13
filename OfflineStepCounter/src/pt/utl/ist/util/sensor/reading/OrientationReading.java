@@ -2,10 +2,6 @@ package pt.utl.ist.util.sensor.reading;
 
 public class OrientationReading extends SensorReading {
 
-	// The properly formatted timestamp
-	// string in millisecond units.
-	private final String formattedTs;
-	
 	private final Double azimuth;
 	private final Double pitch;
 	private final Double roll;
@@ -24,7 +20,6 @@ public class OrientationReading extends SensorReading {
 	public OrientationReading(Double ts, Double az, Double pit, Double ro) {
 		super(ts);
 		
-		formattedTs = ts.toString();
 		azimuth = az;
 		pitch = pit;
 		roll = ro;
@@ -51,9 +46,7 @@ public class OrientationReading extends SensorReading {
 	 * TODO @param reading
 	 */
 	public OrientationReading(String ts, double[] reading) {
-		super(Double.valueOf(ts));
-		
-		formattedTs = ts;
+		super(ts);
 		
 		azimuth = reading[0];
 		pitch = reading[1];
@@ -85,15 +78,23 @@ public class OrientationReading extends SensorReading {
 	 * TODO @param ro
 	 */
 	public OrientationReading(String ts, float[] reading) {
-		super(Double.valueOf(ts));
-		
-		formattedTs = ts;
+		super(ts);
 		
 		azimuth = (double) reading[0];
 		pitch = (double) reading[1];
 		roll = (double) reading[2];
 	}
 	
+	/**
+	 * Clone the given {@link OrientationReading} object
+	 * into a new instance.
+	 * 
+	 * @param read	The reading to clone from.
+	 */
+	public OrientationReading(OrientationReading read) {
+		this(read.getTimestampString(), read.getReading());
+	}
+
 	/**
 	 * @return the formattedTs
 	 */

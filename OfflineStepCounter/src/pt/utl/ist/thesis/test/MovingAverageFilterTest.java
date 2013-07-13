@@ -54,11 +54,11 @@ public class MovingAverageFilterTest {
 		
 		// Create readings and expected results
 		MovingAverageFilter maf = (MovingAverageFilter) rrs.getFilters().get(0);
-		AccelReading[] inputReadings = {new AccelReading("0", new double[]{-0.804,5.324,6.244}),
+		SensorReading[] inputReadings = {new AccelReading("0", new double[]{-0.804,5.324,6.244}),
 				new AccelReading("1", new double[]{-1.11,5.631,6.282}),
 				new AccelReading("2", new double[]{-0.804,5.478,5.822}),
 				new AccelReading("3", new double[]{0.153,4.367,3.447})};
-		AccelReading[] expectedReadings = {new AccelReading("0", new double[]{-0.03216,0.21296,0.24976}),
+		SensorReading[] expectedReadings = {new AccelReading("0", new double[]{-0.03216,0.21296,0.24976}),
 				new AccelReading("1", new double[]{-0.07656,0.4382,0.50104}),
 				new AccelReading("2", new double[]{-0.10872,0.65732,0.73392}),
 				new AccelReading("3", new double[]{-0.1026,0.832,0.8718})};

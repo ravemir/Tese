@@ -4,7 +4,6 @@ import java.util.Observable;
 
 import pt.utl.ist.thesis.signalprocessor.Analyser;
 import pt.utl.ist.thesis.util.buffers.ReadingCircularBuffer;
-import pt.utl.ist.util.sensor.reading.AccelReading;
 import pt.utl.ist.util.sensor.reading.SensorReading;
 
 public abstract class ReadingSource extends Observable {
@@ -32,7 +31,7 @@ public abstract class ReadingSource extends Observable {
 	 */
 	public void pushReading(SensorReading read){
 		// If a buffer was created, add the reading to it
-		if(buffer != null) buffer.addReading((AccelReading) read); // TODO Push a reading as a SensorReading
+		if(buffer != null) buffer.addReading((SensorReading) read); // TODO Push a reading as a SensorReading
 		
 		// Notify the filters (observer pattern)
 		notifyFilters(read);

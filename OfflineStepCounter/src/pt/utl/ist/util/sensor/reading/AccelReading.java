@@ -14,10 +14,6 @@ import pt.utl.ist.thesis.util.MathUtils;
  */
 public class AccelReading extends SensorReading {
 
-	// The properly formatted timestamp
-	// string in millisecond units.
-	private final String formattedTs;
-
 	private final double[] acceleration;
 	private final double norm;
 	
@@ -40,12 +36,11 @@ public class AccelReading extends SensorReading {
 	 * acceleration values.
 	 * 
 	 * @param ts	The formatted timestamp string,
-	 * 				in milliseconds..
+	 * 				in milliseconds.
 	 * @param accel	The read acceleration values.
 	 */
 	public AccelReading(String ts, float[] accel) {
-		super(Double.valueOf(ts));
-		formattedTs = ts;
+		super(ts);
 		
 		// Copies the acceleration values
 		acceleration = new double[3];
@@ -70,8 +65,7 @@ public class AccelReading extends SensorReading {
 	}
 	
 	public AccelReading(String ts, double[] accel){
-		super(Double.valueOf(ts));
-		formattedTs = ts;
+		super(ts);
 		
 		// Copies the acceleration values
 		acceleration = new double[3];
@@ -105,7 +99,7 @@ public class AccelReading extends SensorReading {
 	 * 
 	 * @param ar The object to be cloned.
 	 */
-	public AccelReading(AccelReading ar){
+	public AccelReading(SensorReading ar){
 		this(ar.formattedTs, ar.getReadingAndNorm());
 	}
 

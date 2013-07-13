@@ -5,11 +5,11 @@ public class StepReading extends AccelReading {
 	private Double stepFrequency;
 	private Double stepLength;
 
-	public StepReading(AccelReading ar){
+	public StepReading(SensorReading ar){
 		super(ar);
 	}
 	
-	public StepReading(AccelReading ar, Double freq, Double len){
+	public StepReading(SensorReading ar, Double freq, Double len){
 		super(ar);
 		stepFrequency = freq;
 		stepLength = len;

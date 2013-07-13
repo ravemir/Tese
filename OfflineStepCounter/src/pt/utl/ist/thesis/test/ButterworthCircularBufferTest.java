@@ -53,7 +53,7 @@ public class ButterworthCircularBufferTest {
 		};
 		
 		// Create expected values array FIXME Include norm values
-		AccelReading[] expected = new AccelReading[]{
+		SensorReading[] expected = new SensorReading[]{
 				new AccelReading("0", new double[]{0, 0, 0}),
 				new AccelReading("0", new double[]{0, 0, 0}),
 				new AccelReading("0", new double[]{0, 0, 0}),

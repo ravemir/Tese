@@ -1,7 +1,7 @@
 package pt.utl.ist.thesis.util.buffers;
 
 import pt.utl.ist.util.sensor.reading.AccelReading;
-import pt.utl.ist.util.sensor.reading.OrientationReading;
+import pt.utl.ist.util.sensor.reading.SensorReading;
 
 
 public class AverageCircularBuffer extends ReadingCircularBuffer {
@@ -18,7 +18,7 @@ public class AverageCircularBuffer extends ReadingCircularBuffer {
 	}
 	
 	@Override
-	public void addReading(AccelReading read){		// TODO Change to receive SensorReading
+	public void addReading(SensorReading read){		// TODO Change to receive SensorReading
 		double[] newAccel = new double[3];
 		
 		// Get the current value and compute the average term value

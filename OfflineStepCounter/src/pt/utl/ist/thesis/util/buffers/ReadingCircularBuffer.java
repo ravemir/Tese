@@ -5,6 +5,7 @@ import java.util.List;
 
 import pt.utl.ist.thesis.util.MathUtils;
 import pt.utl.ist.util.sensor.reading.AccelReading;
+import pt.utl.ist.util.sensor.reading.OrientationReading;
 import pt.utl.ist.util.sensor.reading.SensorReading;
 import pt.utl.ist.util.source.filters.Filter;
 
@@ -16,7 +17,7 @@ public class ReadingCircularBuffer {
 	List<Filter> observers = new ArrayList<Filter>();
 	
 	public ReadingCircularBuffer(int size) {
-		readings =  new SensorReading[size];
+		readings = new SensorReading[size];
 	}
 	
 	public SensorReading[] getBufferValues() {
@@ -29,12 +30,23 @@ public class ReadingCircularBuffer {
 	 * 
 	 * @param read The reading to be inserted
 	 */
-	public void addReading(AccelReading read) {
+	public void addReading(SensorReading read) {
+		// Check the received the reading's type, and clone its
+		SensorReading add;
+	    if(read instanceof AccelReading)
+	    	add = new AccelReading((SensorReading) read);
+	    else if(read instanceof OrientationReading)
+	    	add = new OrientationReading((OrientationReading) read);
+	    else{
+	    	throw new UnsupportedOperationException("Tried to add an supported reading of type '" 
+	    			+ read.getClass().getSimpleName() + "'");
+	    }
+		
 		// Update the buffer index
 	    positionIndex = ((positionIndex+1) % readings.length);
 		
 	    // Add the new reading to the buffer
-    	readings[positionIndex] = new AccelReading(read); // FIXME Should not need to clone like this
+    	readings[positionIndex] = add; // FIXME Should not need to clone like this
 	}
 	
 	/**

@@ -61,7 +61,7 @@ public class ButterworthCircularBuffer extends ReadingCircularBuffer {
 			}
 			
 			// Add filtered reading
-			AccelReading newRead = new AccelReading(read.getTimestampString(), aTerms);
+			SensorReading newRead = new AccelReading(read.getTimestampString(), aTerms);
 			super.addReading(newRead);
 		}
 	}

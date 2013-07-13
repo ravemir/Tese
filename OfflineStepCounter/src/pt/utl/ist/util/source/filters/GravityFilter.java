@@ -4,6 +4,7 @@ import java.util.Observable;
 
 import pt.utl.ist.thesis.util.buffers.ReadingCircularBuffer;
 import pt.utl.ist.util.sensor.reading.AccelReading;
+import pt.utl.ist.util.sensor.reading.SensorReading;
 
 public class GravityFilter extends Filter {
 	
@@ -25,7 +26,7 @@ public class GravityFilter extends Filter {
 		AccelReading lastGravity = (AccelReading) getBuffer().getPreviousReading();
 		
 		// Compute gravity value
-		AccelReading newGravity = new AccelReading(receivedReading.getTimestampString(),
+		SensorReading newGravity = new AccelReading(receivedReading.getTimestampString(),
 				new double[]{_gravityAlpha*lastGravity.getAcceleration()[0]-(1-_gravityAlpha)*receivedReading.getAcceleration()[0],
 			_gravityAlpha*lastGravity.getAcceleration()[1]-(1-_gravityAlpha)*receivedReading.getAcceleration()[1],
 			_gravityAlpha*lastGravity.getAcceleration()[2]-(1-_gravityAlpha)*receivedReading.getAcceleration()[2]});

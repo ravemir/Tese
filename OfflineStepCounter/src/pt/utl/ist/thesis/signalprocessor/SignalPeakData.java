@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import pt.utl.ist.util.sensor.reading.AccelReading;
+import pt.utl.ist.util.sensor.reading.SensorReading;
 
 public class SignalPeakData {
 	
@@ -11,7 +12,7 @@ public class SignalPeakData {
 	private ArrayList<AccelReading> unaveragedPeaks;
 	private double[] currentMean;
 	private double currentNormMean = 0;
-	private AccelReading oldestUnaveragedPeak;
+	private SensorReading oldestUnaveragedPeak;
 	
 												
 	static final double PEAKTHRESHFACTOR = 0.7;	//	Value before which a peak is always discarded.
@@ -82,7 +83,7 @@ public class SignalPeakData {
 		return currentNormMean;
 	}
 	
-	public AccelReading getOldestUnaveragedPeak() {
+	public SensorReading getOldestUnaveragedPeak() {
 		return oldestUnaveragedPeak;
 	}
 	

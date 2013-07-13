@@ -1,21 +1,22 @@
 package pt.utl.ist.util.sensor.reading;
 
-import java.lang.reflect.InvocationTargetException;
 
 public abstract class SensorReading {
 	// The properly formatted timestamp double 
 	// value in millisecond units.
 	private final Double timestamp;
+	protected final String formattedTs;
 	
 	public SensorReading(Double ts){
 		timestamp = ts;
+		formattedTs = ts.toString();
 	}
 	
-	public SensorReading(SensorReading sr) throws IllegalArgumentException, SecurityException, InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException{
-		sr.getClass().getConstructor().newInstance(sr.getClass().cast(sr));
-		timestamp = sr.getTimestamp();
+	public SensorReading(String ts){
+		timestamp = Double.valueOf(ts);
+		formattedTs = ts;
 	}
-
+	
 	/**
 	 * Returns the timestamp of this value in 
 	 * millisecond units.

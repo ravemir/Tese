@@ -4,7 +4,7 @@ import java.util.Observable;
 
 import pt.utl.ist.thesis.util.buffers.ButterworthCircularBuffer;
 import pt.utl.ist.thesis.util.buffers.ReadingCircularBuffer;
-import pt.utl.ist.util.sensor.reading.AccelReading;
+import pt.utl.ist.util.sensor.reading.SensorReading;
 
 public class ButterworthFilter extends Filter {
 
@@ -56,7 +56,7 @@ public class ButterworthFilter extends Filter {
 	@Override
 	public void update(Observable readingSource, Object reading) {
 		// Cast the received reading to the appropriate type
-		AccelReading receivedRead = (AccelReading) reading;
+		SensorReading receivedRead = (SensorReading) reading;
 
 		// Notify all Filters or FilterAnalysers (also Observers)
 		pushReading(receivedRead);
