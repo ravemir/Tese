@@ -7,6 +7,13 @@ public abstract class SensorReading {
 	private final Double timestamp;
 	protected final String formattedTs;
 	
+	/**
+	 * @return The formatted timestamp string.
+	 */
+	public final String getTimestampString() {
+		return formattedTs;
+	}
+
 	public SensorReading(Double ts){
 		timestamp = ts;
 		formattedTs = ts.toString();

@@ -96,13 +96,6 @@ public class OrientationReading extends SensorReading {
 	}
 
 	/**
-	 * @return the formattedTs
-	 */
-	public final String getTimestampString() {
-		return formattedTs;
-	}
-
-	/**
 	 * @return the azimuth
 	 */
 	public final Double getAzimuth() {

@@ -1,6 +1,7 @@
 package pt.utl.ist.thesis.util.buffers;
 
 import pt.utl.ist.util.sensor.reading.AccelReading;
+import pt.utl.ist.util.sensor.reading.OrientationReading;
 import pt.utl.ist.util.sensor.reading.SensorReading;
 import pt.utl.ist.util.source.filters.ButterworthData;
 
@@ -24,7 +25,7 @@ public class ButterworthCircularBuffer extends ReadingCircularBuffer {
 	 * a filtered output and adds it to the main buffer.
 	 */
 	@Override
-	public void addReading(AccelReading read) { // TODO Make this method receive any type of sensorreading
+	public void addReading(SensorReading read) {
 		// Check if enough inputs have been received
 		Boolean shouldFilter = isWarm();
 		
@@ -61,7 +62,13 @@ public class ButterworthCircularBuffer extends ReadingCircularBuffer {
 			}
 			
 			// Add filtered reading
-			SensorReading newRead = new AccelReading(read.getTimestampString(), aTerms);
+			SensorReading newRead;
+			if(read instanceof AccelReading){
+				newRead = new AccelReading(read.getTimestampString(), aTerms);
+			} else if (read instanceof OrientationReading) {
+				newRead = new OrientationReading(read.getTimestampString(), aTerms);
+			} else
+				throw new UnsupportedOperationException("Tried adding an unsupported SensorReading sub-type: " + read.getClass().getSimpleName());
 			super.addReading(newRead);
 		}
 	}

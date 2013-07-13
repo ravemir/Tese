@@ -37,7 +37,7 @@ public class ReadingCircularBuffer {
 	    	add = new AccelReading((SensorReading) read);
 	    else if(read instanceof OrientationReading)
 	    	add = new OrientationReading((OrientationReading) read);
-	    else{
+	    else {
 	    	throw new UnsupportedOperationException("Tried to add an supported reading of type '" 
 	    			+ read.getClass().getSimpleName() + "'");
 	    }

@@ -128,10 +128,6 @@ public class AccelReading extends SensorReading {
 		
 		return ret;
 	}
-		
-	public String getTimestampString() {
-		return formattedTs;
-	}
 
 	public double[] getAcceleration() {
 		return acceleration;
