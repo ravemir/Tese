@@ -12,7 +12,9 @@ import pt.utl.ist.thesis.signalprocessor.StepAnalyser;
 import pt.utl.ist.util.sensor.reading.AccelReading;
 import pt.utl.ist.util.sensor.reading.GPSReading;
 import pt.utl.ist.util.sensor.reading.SensorReading;
+import pt.utl.ist.util.sensor.reading.StepReading;
 import pt.utl.ist.util.sensor.source.RawReadingSource;
+import pt.utl.ist.util.sensor.source.ReadingSource;
 import pt.utl.ist.util.source.filters.ButterworthFilter;
 
 public class OfflineCallibrator {
@@ -50,7 +52,7 @@ public class OfflineCallibrator {
 		//rs.addMovingAverageFilter(50);
 		
 		// Create ReadingSource for GPSReadings and attach it
-		RawReadingSource locRs = new RawReadingSource();
+		ReadingSource locRs = new RawReadingSource();
 
 		// Create the StepAnalyser
 		StepAnalyser sa = new StepAnalyser(sampleFreq);
@@ -58,7 +60,7 @@ public class OfflineCallibrator {
 		
 		// Create the AutoGaitModelerAnalyser and attach the StepAnalyser
 		AutoGaitModelerAnalyser agma = new AutoGaitModelerAnalyser();
-		sa.attachAnalyser(agma);
+		sa.attachToAnalyser(agma);
 		locRs.attachAnalyser(agma);
 
 		// Get the first lines
@@ -118,10 +120,10 @@ public class OfflineCallibrator {
 		
 		// Output relevant states
 		for(AccelReading a :  sa.getNormPeaks()){	// Count peaks
-			System.out.println("Peak: " + a.getTimestampString() + ", " + a.getReadingNorm() + ", " + a);
+			System.out.println("Peak: " + a);
 		}
-		for(AccelReading a :  sa.getSteps()){		// Count steps
-			System.out.println("Step: " + a.getTimestampString() + ", " + a.getReadingNorm() + ", " + a);
+		for(StepReading s :  sa.getSteps()){		// Count steps
+			System.out.println("Step: " + s);
 		}
 
 		// Close the line reader

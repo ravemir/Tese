@@ -138,8 +138,9 @@ public class AccelReading extends SensorReading {
 	}
 	
 	public String toString(){
-		return acceleration[0] + "," +
-				acceleration[1] + "," +
+		return	norm + ", " +
+				acceleration[0] + ", " +
+				acceleration[1] + ", " +
 				acceleration[2];
 	}
 }

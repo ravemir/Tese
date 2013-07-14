@@ -33,12 +33,12 @@ public class StepReading extends AccelReading {
 		return stepLength;
 	}
 	
-	public void setStepFrequency(Double stepFrequency) {
-		this.stepFrequency = stepFrequency;
+	public void setStepFrequency(Double stepF) {
+		this.stepFrequency = stepF;
 	}
 
-	public void setStepLength(Double stepLength) {
-		this.stepLength = stepLength;
+	public void setStepLength(Double stepL) {
+		this.stepLength = stepL;
 	}
 
 	/**
@@ -59,5 +59,9 @@ public class StepReading extends AccelReading {
 	 */
 	public double[] getAccelerationReading(){
 		return getAcceleration();
+	}
+	
+	public String toString(){
+		return getTimestampString() + ", " + super.toString();
 	}
 }

@@ -103,7 +103,7 @@ public class AutoGaitModelerAnalyser extends Analyser implements Observer {
 		autoGaitModel.addSampleToModel(sample);
 		
 		// Run the sampleRunnable
-		sampleRunnable.run(sample);
+		if(sampleRunnable != null) sampleRunnable.run(sample);
 	}
 	
 	public void forceStepAdd(StepReading read){

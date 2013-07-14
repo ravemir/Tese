@@ -57,9 +57,10 @@ public class MathUtils {
 	}
 	
 	/**
-	 * 
+	 * Returns the approximate distance between two
+	 * decimal degree coordinatesm in meters.
 	 * (Adapted from version presented in  
-	 * 'http://stackoverflow.com/questions/3694380/calculating-distance-between-two-points-using-latitude-longitude-what-am-i-doi')
+	 * 'http://stackoverflow.com/a/3694416/1293116')
 	 * 
 	 * @param lat1
 	 * @param lng1

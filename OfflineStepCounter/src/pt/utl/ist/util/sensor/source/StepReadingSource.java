@@ -2,6 +2,7 @@ package pt.utl.ist.util.sensor.source;
 
 import java.util.ArrayList;
 
+import pt.utl.ist.util.sensor.reading.SensorReading;
 import pt.utl.ist.util.sensor.reading.StepReading;
 
 public class StepReadingSource extends ReadingSource {
@@ -15,6 +16,21 @@ public class StepReadingSource extends ReadingSource {
 	public StepReadingSource() {
 		super();
 	}
+	
+	/* (non-Javadoc)
+	 * @see pt.utl.ist.util.sensor.source.ReadingSource#pushReading(pt.utl.ist.util.sensor.reading.SensorReading)
+	 */
+	@Override
+	public void pushReading(SensorReading read) {
+		if(read instanceof StepReading)
+			pushReading((StepReading) read);
+		else
+			throw new UnsupportedOperationException("Tried to push a '" +
+					read.getClass().getSimpleName() + "' reading type to this " +
+					getClass().getSimpleName());
+	}
+
+
 
 	/**
 	 * Pushes a {@link StepReading} to this object's
@@ -31,7 +47,7 @@ public class StepReadingSource extends ReadingSource {
 		// Calculate the step's frequency
 		StepReading step = read;
 		step.setStepFrequency(
-				1 / (step.getTimestamp() - previousTimestamp));
+				1 / ((step.getTimestamp() - previousTimestamp)/1000));
 		
 		// Add the StepReading value to the internal array
 		stepList.add(step);

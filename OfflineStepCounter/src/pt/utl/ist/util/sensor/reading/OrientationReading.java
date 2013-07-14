@@ -4,8 +4,7 @@ public class OrientationReading extends SensorReading {
 
 	private final Double azimuth;
 	private final Double pitch;
-	private final Double roll;
-	
+	private final Double roll; 
 	
 	/**
 	 * Creates a {@link OrientationReading} object with the
@@ -93,6 +92,10 @@ public class OrientationReading extends SensorReading {
 	 */
 	public OrientationReading(OrientationReading read) {
 		this(read.getTimestampString(), read.getReading());
+	}
+	
+	public OrientationReading(){
+		this(0D, 0D, 0D, 0D);
 	}
 
 	/**

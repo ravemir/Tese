@@ -1,15 +1,19 @@
 package pt.utl.ist.util.sensor.source;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Observable;
 
 import pt.utl.ist.thesis.signalprocessor.Analyser;
 import pt.utl.ist.thesis.util.buffers.ReadingCircularBuffer;
 import pt.utl.ist.util.sensor.reading.SensorReading;
+import pt.utl.ist.util.source.filters.Filter;
 
 public abstract class ReadingSource extends Observable {
 	// The buffer of pushed values
 	protected ReadingCircularBuffer buffer;
 	protected final Object bufferLock = new Object();
+	protected List<Filter> filters = new ArrayList<Filter>();
 
 	public ReadingSource(ReadingCircularBuffer rcb){
 		buffer = rcb;
@@ -53,5 +57,14 @@ public abstract class ReadingSource extends Observable {
 		// Adds new FilterAnalyser
 		addObserver(fa);
 	}
-	
+
+	/**
+	 * Attaches a filter to this ReadingSource.
+	 * 
+	 * @param f The filter to be attached.
+	 */
+	public void attachFilter(Filter f) {
+		addObserver(f);
+		filters.add(f);
+	}
 }

@@ -51,5 +51,8 @@ public class RelativePositionReading extends SensorReading {
 	public double[] getReading() {
 		return new double[]{xCoord, yCoord};
 	}
-
+	
+	public String toString(){
+		return getTimestampString() + ", " + xCoord + ", " + yCoord;
+	}
 }

@@ -44,6 +44,10 @@ public class GPSReading extends SensorReading {
 		//			meaning no course change.
 		this(lat,lon, 180D, 0D);
 	}
+	
+	public GPSReading(){
+		this(0D, 0D, 0D, 0D, 0D);
+	}
 
 	public Double getLatitude() {
 		return latitude;

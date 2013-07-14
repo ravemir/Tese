@@ -31,7 +31,7 @@ public class StepAnalyser extends Analyser {
 	private TreeMap<Integer, ReadingCircularBuffer> avgBuffers = new TreeMap<Integer, ReadingCircularBuffer>();
 	private SignalPeakData peakData = new SignalPeakData();
 
-	private StepReadingSource steps = new StepReadingSource();
+//	private StepReadingSource steps = new StepReadingSource();
 
 	public StepAnalyser(int sampleRate){
 		super(new StepReadingSource());
@@ -131,7 +131,8 @@ public class StepAnalyser extends Analyser {
 				if(r.getReadingNorm() > KFACTOR && 
 						r.getReadingNorm() > PEAKTHRESHFACTOR*peakMean) {
 					// Push a new StepReading object and add it to the list
-					steps.pushReading(new StepReading(r));
+//					steps.pushReading(new StepReading(r));
+					pushReading(new StepReading(r));
 				}				
 			}
 			
@@ -187,23 +188,6 @@ public class StepAnalyser extends Analyser {
 		
 		return x / y;
 	}
-
-//	public void update(Observable rs, Object reading) {
-//		// Determine the type of ReadingSource/Filter that was pushed
-//		if(rs instanceof Filter)
-//			updateFromFilter((ReadingSource) rs, reading);
-//		else if(rs instanceof ReadingSource)
-//			updateFromRaw((ReadingSource) rs, reading);
-//		else {
-//			throw new UnsupportedOperationException("Tried to update Analyser from '"
-//					+ rs.getClass().getSimpleName() + "' observable type." );
-//		}
-//		
-//		// ...and Process the state
-//		processState();
-//	}
-	
-	
 	
 	private void addRawReading(SensorReading currentReading) {
 		rawBuffer.addReading(currentReading);

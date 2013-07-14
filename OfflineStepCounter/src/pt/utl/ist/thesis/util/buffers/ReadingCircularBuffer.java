@@ -58,7 +58,7 @@ public class ReadingCircularBuffer {
 	public SensorReading getCurrentReading() {
 		SensorReading current = getPrevNReading(0);
 		
-		return (current!=null? current: new AccelReading()); // FIXME Não deve devolver AccelReading, mas genérico
+		return (current!=null? current: getEmptyReading()); // FIXME Não deve devolver AccelReading, mas genérico
 	}
 	
 	/**
@@ -70,7 +70,15 @@ public class ReadingCircularBuffer {
 	public SensorReading getOldestReading() {
 		SensorReading lastValue = getPrevNReading(readings.length-1);
 		
-		return (lastValue!=null? lastValue: new AccelReading());
+		return (lastValue!=null? lastValue: getEmptyReading());
+	}
+
+	/**
+	 * @return
+	 */
+	public SensorReading getEmptyReading() {
+		SensorReading reading = new AccelReading();
+		return reading;
 	}
 
 	/**
@@ -142,7 +150,7 @@ public class ReadingCircularBuffer {
 	 */
 	public SensorReading getPrevNReading(int n) {
 		SensorReading read = readings[MathUtils.altMod(positionIndex-n,readings.length)];
-		return (read != null? read: new AccelReading()); // FIXME Should not return an AccelReading, since this is generic
+		return (read != null? read: getEmptyReading()); // FIXME Should not return an AccelReading, since this is generic
 	}
 	
 	/**
@@ -150,6 +158,6 @@ public class ReadingCircularBuffer {
 	 */
 	public void zero() {
 		for (int i = 0; i < readings.length; i++)
-			addReading(new AccelReading());
+			addReading(getEmptyReading());
 	}
 }

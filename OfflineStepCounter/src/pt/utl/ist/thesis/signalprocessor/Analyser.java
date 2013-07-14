@@ -44,7 +44,7 @@ public abstract class Analyser implements Observer {
 	 * 
 	 * @param a	The {@link Analyser} to attach.
 	 */
-	public void attachAnalyser(Analyser a){
+	public void attachToAnalyser(Analyser a){
 		rs.attachAnalyser(a);
 	}
 }
