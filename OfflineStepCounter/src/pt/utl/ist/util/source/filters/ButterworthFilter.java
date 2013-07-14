@@ -3,7 +3,6 @@ package pt.utl.ist.util.source.filters;
 import java.util.Observable;
 
 import pt.utl.ist.thesis.util.buffers.ButterworthCircularBuffer;
-import pt.utl.ist.thesis.util.buffers.ReadingCircularBuffer;
 import pt.utl.ist.util.sensor.reading.SensorReading;
 
 public class ButterworthFilter extends Filter {
@@ -61,13 +60,7 @@ public class ButterworthFilter extends Filter {
 		// Notify all Filters or FilterAnalysers (also Observers)
 		pushReading(receivedRead);
 	}
-	
 
-	@Override
-	public ReadingCircularBuffer getBuffer() {
-		return buffer;
-	}
-	
 	/**
 	 * Returns the order of this {@link ButterworthFilter}.
 	 * 

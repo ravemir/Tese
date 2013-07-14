@@ -58,7 +58,7 @@ public class MathUtils {
 	
 	/**
 	 * Returns the approximate distance between two
-	 * decimal degree coordinatesm in meters.
+	 * decimal degree coordinates in meters.
 	 * (Adapted from version presented in  
 	 * 'http://stackoverflow.com/a/3694416/1293116')
 	 * 
@@ -80,6 +80,7 @@ public class MathUtils {
 
 	    return new Double(dist);
     }
+	
 	/**
 	 * @param angle
 	 * @return

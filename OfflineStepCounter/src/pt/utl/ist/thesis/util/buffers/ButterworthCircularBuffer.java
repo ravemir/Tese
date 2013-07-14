@@ -54,7 +54,6 @@ public class ButterworthCircularBuffer extends ReadingCircularBuffer {
 			double[] a = butterworthFilter.getA();
 			double[] aTerms = bTerms;
 			for (int i = 1; i < a.length; i++) {
-				// TODO Write explanation for -1 (it's here for a[0] to be excluded)
 				double[] prevRValue = prevF.getPrevNReading(i-1).getReadingAndNorm();
 				for (int j = 0; j < prevRValue.length; j++) {
 					aTerms[j] -= a[i] * prevRValue[j];

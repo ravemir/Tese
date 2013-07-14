@@ -27,13 +27,29 @@ public class GPSReading extends SensorReading {
 	 * @param spd		The speed value of this reading (in m/s).
 	 */
 	public GPSReading(Double ts, Double lat, Double lon, Double bearValue, Double spd) {
+		this(ts.toString(), lat, lon, bearValue, spd);
+	}
+
+	/**
+	 * Builds a {@link GPSReading} object, using the latitude, 
+	 * longitude, bearing change (ranged ]0;360] degrees) and
+	 * speed.
+	 * 
+	 * @param ts		The timestamp of this reading.
+	 * @param lat		The latitude value of this reading.
+	 * @param lon		The longitude value of this reading.
+	 * @param bearValue	The bearing value of this reading (ranged
+	 * 					]0;360] degrees) related to North.
+	 * @param spd		The speed value of this reading (in m/s).
+	 */
+	public GPSReading(String ts, Double lat, Double lon, Double bearValue, Double spd) {		
 		super(ts);
 		latitude = lat;
 		longitude = lon;
 		bearing = bearValue;
 		speed = spd;
 	}
-
+	
 	public GPSReading(Double lat, Double lon, Double head, Double speed){
 		this(timestamp, lat, lon, head, speed);
 		timestamp += 1000;

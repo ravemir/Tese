@@ -38,9 +38,4 @@ public class GravityFilter extends Filter {
 		pushReading(newGravity);
 	}
 
-	@Override
-	public ReadingCircularBuffer getBuffer() {
-		return buffer;
-	}
-
 }

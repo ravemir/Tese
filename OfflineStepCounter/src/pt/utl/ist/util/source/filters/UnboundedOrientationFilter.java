@@ -37,11 +37,6 @@ public class UnboundedOrientationFilter extends Filter {
 		}
 	}
 
-	@Override
-	public ReadingCircularBuffer getBuffer() {
-		return buffer;
-	}
-
 	/* 
 	 * Pushes a SensorReading, after verifying if the
 	 * bounds have been crossed and turns added.

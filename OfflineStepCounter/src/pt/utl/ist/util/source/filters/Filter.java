@@ -11,10 +11,12 @@ public abstract class Filter extends ReadingSource implements Observer {
 	public Filter(ReadingCircularBuffer rcb){
 		super(rcb);
 	}
-	
-	public abstract ReadingCircularBuffer getBuffer();
 
 	public SensorReading getLastReading() {
 		return getBuffer().getCurrentReading();
+	}
+
+	public ReadingCircularBuffer getBuffer() {
+		return buffer;
 	}
 }

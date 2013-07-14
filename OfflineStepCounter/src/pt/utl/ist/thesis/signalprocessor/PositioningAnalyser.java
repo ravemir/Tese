@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Observer;
 
 import pt.utl.ist.thesis.util.SensorReadingRunnable;
-import pt.utl.ist.util.sensor.exception.StepOutsideSegmentBoundariesException;
+import pt.utl.ist.util.sensor.exception.StepWithNoFrequencyException;
 import pt.utl.ist.util.sensor.reading.GPSReading;
 import pt.utl.ist.util.sensor.reading.OrientationReading;
 import pt.utl.ist.util.sensor.reading.RelativePositionReading;
@@ -15,7 +15,10 @@ import pt.utl.ist.util.sensor.source.ReadingSource;
 import pt.utl.ist.util.source.filters.MovingAverageFilter;
 
 /**
- * Computes positioning changes from 
+ * Computes positioning changes from step and 
+ * orientation data, combining them into a {@link RelativePositionReading}
+ * and a {@link GPSReading}, computed from a base
+ * absolute position.
  * 
  * @author Carlos Simões
  */
@@ -35,7 +38,7 @@ public class PositioningAnalyser extends Analyser implements Observer {
 	// State and statistical variables
 	private SensorReadingRunnable readingRunnable;
 
-
+	// Starting abdolute position 
 	private GPSReading startingPosition; 
 
 	/**
@@ -90,36 +93,43 @@ public class PositioningAnalyser extends Analyser implements Observer {
 				// Add either all or Azimuth values to an average
 				orientationFilter.pushReading(reading);
 			} else if (reading instanceof StepReading){
-				try {
-					// Add step to list
-					StepReading stepRead = (StepReading) reading;
-					stepBuffer.add(stepRead);
+				// Add step to list
+				StepReading stepRead = (StepReading) reading;
+				stepBuffer.add(stepRead);
 
-					// If step doesn't have frequency...
-					if(stepRead.getStepFrequency() == null)
-						throw new StepOutsideSegmentBoundariesException(); 		// TODO Set it to the value of the difference of ts from the last step
+				// If step doesn't have frequency...
+				if(stepRead.getStepFrequency() == null)
+					throw new StepWithNoFrequencyException(); 		// TODO Set it to the value of the difference of ts from the last step
 
-					// Compute Step distance from frequency
-					double dist = autoGaitModel.
-							getLengthFromFrequency(stepRead.getStepFrequency());
+				// Compute Step distance from frequency
+				double dist = autoGaitModel.
+						getLengthFromFrequency(stepRead.getStepFrequency());
 
-					// Get average Orientation value
-					OrientationReading lastOrientation = 
-							(orientationFilter.getBuffer().getCurrentReading() instanceof OrientationReading?  // FIXME Returns AccelReading, should return null orientation reading
-									(OrientationReading) orientationFilter.getLastReading(): new OrientationReading());
+				// Get average Orientation value
+				OrientationReading lastOrientation = 
+						(orientationFilter.getBuffer().getCurrentReading() instanceof OrientationReading?  // FIXME Returns AccelReading, should return null orientation reading
+								(OrientationReading) orientationFilter.getLastReading(): new OrientationReading());
 
-					// Compute and store the RelativePositionReading
-					RelativePositionReading prev = rprBuffer.get(rprBuffer.size()-1);
-					double xOff = dist*Math.sin(lastOrientation.getAzimuth());
-					double yOff = dist*Math.cos(lastOrientation.getAzimuth());
-					RelativePositionReading newRelPosRead = new RelativePositionReading(reading.getTimestampString(), 
-							prev.getXCoord()+xOff, prev.getYCoord()+yOff);
-					rprBuffer.add(newRelPosRead);
+				// Compute and store the RelativePositionReading
+				RelativePositionReading prev = rprBuffer.get(rprBuffer.size()-1);
+				double xOff = dist*Math.sin(lastOrientation.getAzimuth());
+				double yOff = dist*Math.cos(lastOrientation.getAzimuth());
+				RelativePositionReading newRelPosRead = 
+						new RelativePositionReading(reading.getTimestampString(), 
+						prev.getXCoord()+xOff, prev.getYCoord()+yOff);
+				rprBuffer.add(newRelPosRead);
+				
+				// Compute and store the GPSReading
+				GPSReading newAbsPosRead = 
+						getAbsolutePositionFromRelative(lastOrientation, newRelPosRead,
+								startingPosition);
 
-					// Output it
-					if(readingRunnable != null) readingRunnable.run(newRelPosRead);
-				} catch (StepOutsideSegmentBoundariesException e) {
-					e.printStackTrace();
+				// Output them
+				pushReading(newRelPosRead);
+				pushReading(newAbsPosRead);
+				if(readingRunnable != null) {
+					readingRunnable.run(newRelPosRead);
+					readingRunnable.run(newAbsPosRead);
 				}
 			} else {
 				throw new UnsupportedOperationException("Tried to update Analyser from '" +
@@ -127,6 +137,23 @@ public class PositioningAnalyser extends Analyser implements Observer {
 						reading.getClass().getSimpleName() +"' reading type." );
 			}
 		}
+	}
+
+	/**
+	 * Computes an absolute position from a given
+	 * {@link OrientationReading}, a {@link RelativePositionReading},
+	 * and {@link GPSReading}.
+	 * 
+	 * @param orientationReading 		The intended 
+	 * 									orientation value.
+	 * @param relativePositionReading	The relative position.
+	 * @param baseCoord					The base coordinate.
+	 * 
+	 * @return	The absolute location value.
+	 */
+	public GPSReading getAbsolutePositionFromRelative(OrientationReading orientationReading,
+			RelativePositionReading relativePositionReading, GPSReading baseCoord) {
+		return new GPSReading(relativePositionReading.getTimestampString(), relativePositionReading.getXCoord()+baseCoord.getLongitude(), relativePositionReading.getYCoord()+baseCoord.getLatitude(), orientationReading.getAzimuth(), 0.0D);
 	}
 
 	public List<RelativePositionReading> getPositions(){
