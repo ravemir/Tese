@@ -8,7 +8,7 @@ import pt.utl.ist.util.sensor.reading.SensorReading;
 
 public abstract class ReadingSource extends Observable {
 	// The buffer of pushed values
-	protected ReadingCircularBuffer buffer; // FIXME This circular buffer only supports AccelReadings
+	protected ReadingCircularBuffer buffer;
 	protected final Object bufferLock = new Object();
 
 	public ReadingSource(ReadingCircularBuffer rcb){
@@ -31,7 +31,7 @@ public abstract class ReadingSource extends Observable {
 	 */
 	public void pushReading(SensorReading read){
 		// If a buffer was created, add the reading to it
-		if(buffer != null) buffer.addReading((SensorReading) read); // TODO Push a reading as a SensorReading
+		if(buffer != null) buffer.addReading(read);
 		
 		// Notify the filters (observer pattern)
 		notifyFilters(read);

@@ -10,6 +10,7 @@ import org.junit.Test;
 import pt.utl.ist.util.sensor.reading.AccelReading;
 import pt.utl.ist.util.sensor.reading.SensorReading;
 import pt.utl.ist.util.sensor.source.RawReadingSource;
+import pt.utl.ist.util.source.filters.Filter;
 import pt.utl.ist.util.source.filters.MovingAverageFilter;
 
 public class MovingAverageFilterTest {
@@ -33,7 +34,7 @@ public class MovingAverageFilterTest {
 
 	@Test
 	public void testMovingAverageFilter() {
-		MovingAverageFilter maf = new MovingAverageFilter(25);
+		Filter maf = new MovingAverageFilter(25);
 		assertNotNull(maf);
 	}
 
@@ -53,7 +54,7 @@ public class MovingAverageFilterTest {
 		rrs.addMovingAverageFilter(25);
 		
 		// Create readings and expected results
-		MovingAverageFilter maf = (MovingAverageFilter) rrs.getFilters().get(0);
+		Filter maf = (Filter) rrs.getFilters().get(0);
 		SensorReading[] inputReadings = {new AccelReading("0", new double[]{-0.804,5.324,6.244}),
 				new AccelReading("1", new double[]{-1.11,5.631,6.282}),
 				new AccelReading("2", new double[]{-0.804,5.478,5.822}),

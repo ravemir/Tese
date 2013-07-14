@@ -39,8 +39,6 @@ public final class MovingAverageFilter extends Filter {
 			throw new UnsupportedOperationException(getClass().getName() + " does not " +
 					"support the reading type '" +reading.getClass().getName() + "'");
 		}
-
-		
 	}
 
 	@Override

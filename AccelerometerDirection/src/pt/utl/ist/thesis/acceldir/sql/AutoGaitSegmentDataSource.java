@@ -136,7 +136,6 @@ public class AutoGaitSegmentDataSource {
 		try {
 			dbHelper.importDatabase(dbPath);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -148,8 +147,8 @@ public class AutoGaitSegmentDataSource {
 	 * Exports the current database to a file in the
 	 * specified path.
 	 * 
-	 * @param path	The path to export the database to.
-	 * @param fileName TODO
+	 * @param path		The path to export the database to.
+	 * @param fileName	The intended filename for the database.
 	 */
 	public void exportDataBase(String path, String fileName){
 		dbHelper.exportDatabase(path, fileName);

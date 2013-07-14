@@ -75,7 +75,7 @@ public class AutoGaitCollectionActivity extends Activity {
 						event.accuracy + "\n";
 				
 				// Push Acceleration reading
-				accelRS.pushReading(new AccelReading(tsString, accel)); // FIXME Test
+				accelRS.pushReading(new AccelReading(tsString, accel));
 				
 				// Write it to a file
 				writeToFile(accelLine);
@@ -267,7 +267,7 @@ public class AutoGaitCollectionActivity extends Activity {
 			@Override
 			public void run() {
 				// Add the sample value to the application's DAO
-				agsds.createSegmentData(sample[0], sample[1]); // TODO Test this
+				agsds.createSegmentData(sample[0], sample[1]);
 			}
 		});
 	}

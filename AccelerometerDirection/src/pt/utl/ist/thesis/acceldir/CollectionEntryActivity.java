@@ -224,8 +224,6 @@ public class CollectionEntryActivity extends Activity {
 		emailIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, fileURIs);
 		context.startActivity(Intent.createChooser(emailIntent, "Send mail...")
 				.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
-
-		// TODO Read if e-mail was successful, and archive the logs accordingly
 	}
 
 	public boolean onCreateOptionsMenu(Menu menu) {

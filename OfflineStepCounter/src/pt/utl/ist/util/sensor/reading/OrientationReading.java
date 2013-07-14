@@ -12,10 +12,10 @@ public class OrientationReading extends SensorReading {
 	 * specified  timestamp value, azimuth, pitch
 	 * and roll values.
 	 * 
-	 * TODO @param ts
-	 * TODO @param az
-	 * TODO @param pit
-	 * TODO @param ro
+	 * @param ts	The Timestamp value.
+	 * @param az	The Azimuth value.
+	 * @param pit	The Pitch value.
+	 * @param ro	The Roll value.
 	 */
 	public OrientationReading(Double ts, Double az, Double pit, Double ro) {
 		super(ts);
@@ -30,8 +30,8 @@ public class OrientationReading extends SensorReading {
 	 * specified  timestamp value, azimuth, pitch
 	 * and roll values inside of the reading array.
 	 * 
-	 * TODO @param ts
-	 * TODO @param reading
+	 * @param ts		The Timestamp value.
+	 * @param reading	The Reading to clone.
 	 */
 	public OrientationReading(Double ts, double[] reading) {
 		this(ts.toString(), reading);
@@ -42,8 +42,8 @@ public class OrientationReading extends SensorReading {
 	 * specified  timestamp value, azimuth, pitch
 	 * and roll values inside of the reading array.
 	 * 
-	 * TODO @param ts
-	 * TODO @param reading
+	 * @param ts		The Timestamp value.
+	 * @param reading	The Reading to clone.
 	 */
 	public OrientationReading(String ts, double[] reading) {
 		super(ts);
@@ -58,10 +58,10 @@ public class OrientationReading extends SensorReading {
 	 * specified  timestamp value, azimuth, pitch
 	 * and roll values.
 	 * 
-	 * TODO @param ts
-	 * TODO @param az
-	 * TODO @param pit
-	 * TODO @param ro
+	 * @param ts	The Timestamp value.
+	 * @param az	The Azimuth value.
+	 * @param pit	The Pitch value.
+	 * @param ro	The Roll value.
 	 */
 	public OrientationReading(Double ts, float[] reading) {
 		this(ts.toString(), reading);
@@ -72,10 +72,10 @@ public class OrientationReading extends SensorReading {
 	 * specified  timestamp value, azimuth, pitch
 	 * and roll values.
 	 * 
-	 * TODO @param ts
-	 * TODO @param az
-	 * TODO @param pit
-	 * TODO @param ro
+	 * @param ts	The Timestamp value.
+	 * @param az	The Azimuth value.
+	 * @param pit	The Pitch value.
+	 * @param ro	The Roll value.
 	 */
 	public OrientationReading(String ts, float[] reading) {
 		super(ts);

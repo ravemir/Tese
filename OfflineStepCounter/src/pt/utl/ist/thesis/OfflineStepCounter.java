@@ -26,7 +26,6 @@ public class OfflineStepCounter {
 		try {
 			lineReader = new BufferedReader(new FileReader(baseFolder + accelLogName));
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return;
 		}
@@ -50,7 +49,6 @@ public class OfflineStepCounter {
 		try {
 			line = lineReader.readLine();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -63,7 +61,7 @@ public class OfflineStepCounter {
 			
 			// Compute averages, etc. (done in the background)
 			
-			// TODO Print current state
+			// Print current state
 			//System.out.println("Value:\t\t" + rs.getBuffer().getCurrentReading().getAccelerationNorm());
 			System.out.println("Time: " + reading.getTimestampString());
 			System.out.println("Filtered:\t" + ((AccelReading) ((ButterworthFilter) rs.getFilters().get(0)).getBuffer().getCurrentReading()).getReadingNorm());
@@ -74,12 +72,11 @@ public class OfflineStepCounter {
 			try {
 				line = lineReader.readLine();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
 		
-		// TODO Output relevant states
+		// Output relevant states
 		for(AccelReading a :  fa.getNormPeaks()){
 			System.out.println("Peak: " + a.getTimestampString() + ", " + a.getReadingNorm() + ", " + a);
 		}
@@ -91,7 +88,6 @@ public class OfflineStepCounter {
 		try {
 			lineReader.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

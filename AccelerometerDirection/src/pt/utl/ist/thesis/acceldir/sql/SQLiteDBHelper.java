@@ -114,10 +114,8 @@ public class SQLiteDBHelper extends SQLiteOpenHelper {
 	            dst.close();
 	            srcOS.close();
 			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
         }

@@ -35,7 +35,7 @@ public class ButterworthDataTest {
 				0.125862428, 0.104885356,0.059934489,
 				0.022475434,0.004994541, 0.0004994540782331};
 		
-		// Test the cases (FIXME: Get more precise results) 
+		// Test the cases
 		assertArrayEquals(expectedA, butterworthFilter.getA(), 0.000000001);
 		assertArrayEquals(expectedB, butterworthFilter.getB(), 0.000000001);
 	}

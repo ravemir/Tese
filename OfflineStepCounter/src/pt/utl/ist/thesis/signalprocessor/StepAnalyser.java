@@ -27,7 +27,7 @@ public class StepAnalyser extends Analyser {
 														// i.e. if a step is a lot smaller than the previous,
 														// this value should be lower to accommodate it.
 	
-	private ReadingCircularBuffer rawBuffer = new ReadingCircularBuffer(_analysisBufferSize); // FIXME Maybe both this and the next buffers should be lists?
+	private ReadingCircularBuffer rawBuffer = new ReadingCircularBuffer(_analysisBufferSize);
 	private TreeMap<Integer, ReadingCircularBuffer> avgBuffers = new TreeMap<Integer, ReadingCircularBuffer>();
 	private SignalPeakData peakData = new SignalPeakData();
 
@@ -48,7 +48,7 @@ public class StepAnalyser extends Analyser {
 	}
 
 	/**
-	 * Returns this {@link Analyser}'s {@link ReadingSource}, ~
+	 * Returns this {@link Analyser}'s {@link ReadingSource},
 	 * which is a StepReadingSource.
 	 * 
 	 * @return	This Analyser's StepReadingSource.
@@ -110,10 +110,8 @@ public class StepAnalyser extends Analyser {
 			
 			// Add them to the peak list
 			peakData.addAll(peakList);
-				
-			// TODO Notify subscribers of a new event
 			
-			// TODO Clear state?
+			// Clear state
 			if(wasPeakDetected) {
 				for(ReadingCircularBuffer rcb : avgBuffers.values()){
 					rcb.clearOld();
@@ -122,10 +120,10 @@ public class StepAnalyser extends Analyser {
 			}
 		}
 		
-		// TODO Check if it is time to count the steps
+		// Check if it is time to count the steps
 		ArrayList<AccelReading> unaveragedPeaks = peakData.getUnaveragedPeaks();
 		if(unaveragedPeaks.size() >= 2){
-			// TODO Compute the average peakValue
+			// Compute the average peakValue
 			double peakMean = peakData.getCurrentNormMean();
 			
 			for(AccelReading r : unaveragedPeaks){
@@ -137,7 +135,7 @@ public class StepAnalyser extends Analyser {
 				}				
 			}
 			
-			// TODO Clear the peak list
+			// Clear the peak list
 			peakData.clearMeanData();
 		}
 	}
@@ -157,8 +155,8 @@ public class StepAnalyser extends Analyser {
 		
 		// Count peaks
 		for(int i = 2; i < circBuffer.samplesWarmed() ; i++) {
-			// TODO Detect peak in X, if case
-				// TODO If so, detect if it is lower than previous.
+			// Detect peak in X, if case
+				// If so, detect if it is lower than previous.
 			
 			// Detect peak in the norm value, if case
 			double fwdSlope = computeNormSlope(bufferValues, i-1, i);
@@ -243,7 +241,7 @@ public class StepAnalyser extends Analyser {
 			SensorReading currentReading = (SensorReading) f.getBuffer().getCurrentReading();
 	
 			// Adds the reading to the buffer with the associated order
-			addAvgReading(order, currentReading); // FIXME Should be using a different method of filter storage
+			addAvgReading(order, currentReading);
 		} else {
 			throw new UnsupportedOperationException("Tried to update Analyser from '"
 					+ f.getClass().getSimpleName() + "' filter type." );
@@ -252,7 +250,6 @@ public class StepAnalyser extends Analyser {
 	}
 	
 	public void updateFromRaw(ReadingSource rs, Object reading){
-		// TODO Untested?
 		// Get this ReadingSource's latest reading
 		SensorReading currentReading = (SensorReading) rs.getBuffer().getCurrentReading();
 

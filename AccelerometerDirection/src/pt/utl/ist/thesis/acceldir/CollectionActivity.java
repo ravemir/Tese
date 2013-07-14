@@ -66,10 +66,6 @@ public class CollectionActivity extends Activity {
 
 		@Override
 		public void onSensorChanged(SensorEvent event) {
-			// Write sensor values and the timestamp to the 'accelView'
-			float[] values = event.values; // FIXME This should be removed, as there is no reason to use the copied values or event.values
-			int accuracy = event.accuracy;
-
 			// Compute the timestamp in nanos first
 			long newtimestamp = AndroidUtils.computeJavaTimeStamp(event.timestamp);
 			String tsString = AndroidUtils.printNanosToMilis(newtimestamp);
@@ -81,10 +77,10 @@ public class CollectionActivity extends Activity {
 				accelReadings[accelI] = new AccelReading(tsString, accel);
 				String accelLine = "A" + LOGSEPARATOR + 
 						tsString + LOGSEPARATOR + 
-						values[0] + LOGSEPARATOR + 
-						values[1] + LOGSEPARATOR + 
-						values[2] + LOGSEPARATOR +
-						accuracy + "\n";
+						accel[0] + LOGSEPARATOR + 
+						accel[1] + LOGSEPARATOR + 
+						accel[2] + LOGSEPARATOR +
+						event.accuracy + "\n";
 				Log.v("AccelGPS", "Received acceleration value.");
 				
 				// If the buffer has filled once...
@@ -101,8 +97,6 @@ public class CollectionActivity extends Activity {
 						// Acumulate peak value
 						acum += accelReadings[peakIndex].getAccelerationNorm();
 					}
-					
-					// TODO Detect "zero" crossings or some other peak validating mechanism
 				}
 				
 				// If buffer has filled...
@@ -141,10 +135,10 @@ public class CollectionActivity extends Activity {
 				System.arraycopy(event.values, 0, magnet, 0, 3);
 				String magnetLine = "M" + LOGSEPARATOR + 
 						tsString + LOGSEPARATOR + 
-						values[0] + LOGSEPARATOR + 
-						values[1] + LOGSEPARATOR + 
-						values[2] + LOGSEPARATOR +
-						accuracy + "\n";
+						magnet[0] + LOGSEPARATOR + 
+						magnet[1] + LOGSEPARATOR + 
+						magnet[2] + LOGSEPARATOR +
+						event.accuracy + "\n";
 
 				if (mAccelerometer != null && mMagnetometer != null) {
 					incl = null;
@@ -178,9 +172,13 @@ public class CollectionActivity extends Activity {
 
 
 		/**
-		 * @param index TODO
-		 * @param bufferSize TODO
-		 * @return
+		 * Computes the previous index in a circular
+		 * buffer like manner.
+		 * 
+		 * @param index			The index from where we
+		 * 						want to know the previous.
+		 * @param bufferSize	The size of the buffer.
+		 * @return				The previous index.
 		 */
 		private int previousIndex(int index, int bufferSize) {
 			return index == 0 ? bufferSize-1 : index-1;

@@ -52,7 +52,7 @@ public class AutoGaitModelerAnalyserTest {
 		// Test Segments that have SL at the beginning, middle and end
 		testSemiSL();
 		
-		// FIXME Old test with a segment with a SL in the middle
+		// Old test with a segment with a SL in the middle
 		testFaultySL();
 	}
 
@@ -96,13 +96,13 @@ public class AutoGaitModelerAnalyserTest {
 			assertTrue(gpa.isCurrentSegmentSL());
 			
 			// Test if resulting segment is the expected
-			assertTrue(expected[i].equals(gpa.getCurrentSegment())); // FIXME Test
+			assertTrue(expected[i].equals(gpa.getCurrentSegment()));
 		}
 	}
 	
 	@Test
 	public void testSegmentation() {
-		// TODO Create GPSReadings with speed values
+		// Create GPSReadings with speed values
 		GPSReading[] speedLimitReads = new GPSReading[]{
 				new GPSReading(38.7600279200000, -9.16737057000000, 0.0D, 0.7D),
 				new GPSReading(38.7600279200000, -9.16737057000000, 0.0D, 0.7D),
@@ -245,31 +245,6 @@ public class AutoGaitModelerAnalyserTest {
 			// Set it and test it
 			gpa.setCurrentSegment(s);
 			assertTrue(!gpa.isCurrentSegmentSL());
-			
-			// Create SL sub-segment
-//				s = new GPSSegment();
-			
-			// TODO Change Heading values into something that has valid SL
-//			GPSReading[] faultyReads = new GPSReading[]{
-//					new GPSReading(38.7599116333333, -9.16738489666667, 35.1D, 0.7D),
-//					new GPSReading(38.7599134566667, -9.16737220000000, 35.1D, 0.7D),
-//					new GPSReading(38.7599077866667, -9.16735972000000, 35.1D, 0.7D),
-//					new GPSReading(38.7599171666667, -9.16736025333333, 35.1D, 0.7D),
-//					new GPSReading(38.7599344800000, -9.16736456333334, 35.1D, 0.7D),
-//					new GPSReading(38.7599574800000, -9.16737299333333, 35.1D, 0.7D),
-//					new GPSReading(38.7599698633333, -9.16737423000000, 0.0D, 0.7D),
-//					new GPSReading(38.7599823633333, -9.16737582666667, 5.0D, 0.7D),
-//					new GPSReading(38.7599933766667, -9.16737896000000, 2.0D, 0.7D),
-//					new GPSReading(38.7600013933333, -9.16738700666667, 0.0D, 0.7D),
-//					new GPSReading(38.7599988466667, -9.16737999333333, 1.0D, 0.7D),
-//					new GPSReading(38.7599955333333, -9.16736559333333, 0.0D, 0.7D),
-//					new GPSReading(38.7599915666667, -9.16734552666667, 35.1D, 0.7D),
-//					new GPSReading(38.7600099100000, -9.16735341333333, 35.1D, 0.7D),
-//					new GPSReading(38.7600279200000, -9.16737057000000, 35.1D, 0.7D),
-//					new GPSReading(38.7600454166667, -9.16738826000000, 35.1D, 0.7D),
-//					new GPSReading(38.7600490433333, -9.16739033000000, 35.1D, 0.7D),
-//					new GPSReading(38.7600513266667, -9.16738820666667, 35.1D, 0.7D),
-//					new GPSReading(38.7600516033333, -9.16738501000000, 35.1D, 0.7D)};
 	}
 	
 	/**

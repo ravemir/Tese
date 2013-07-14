@@ -19,7 +19,7 @@ public class AverageCircularBuffer extends ReadingCircularBuffer {
 	}
 	
 	@Override
-	public void addReading(SensorReading read){		// TODO Change to receive SensorReading
+	public void addReading(SensorReading read){
 		double[] newAccel = new double[3];
 		
 		// Get the current value and compute the average term value
@@ -53,13 +53,4 @@ public class AverageCircularBuffer extends ReadingCircularBuffer {
 		avgTerms.addReading(newTermReading);
 		super.addReading(newAvgReading);
 	}
-
-	
-	// TODO Verify this: isWarm is a check to be done by the users of the code, not by the class itself
-//	@Override
-//	public AccelReading getCurrentReading() {
-//		// Only return the current value if the buffer has filled
-//		return (isWarm() ? super.getCurrentReading() : new AccelReading());
-//	}
-
 }

@@ -15,7 +15,7 @@ import pt.utl.ist.util.sensor.reading.SensorReading;
 import pt.utl.ist.util.sensor.source.RawReadingSource;
 import pt.utl.ist.util.source.filters.ButterworthFilter;
 
-public class OfflineCallibrator {
+public class OfflinePositioning {
 
 	public static final String baseFolder = "C:\\Users\\Carlos\\Dropbox\\Tese\\Dissertacao\\Dados\\06-03-2013\\logs\\conv\\";
 	public static final String accelLogName = "2013-03-06_18h18.log.accel";

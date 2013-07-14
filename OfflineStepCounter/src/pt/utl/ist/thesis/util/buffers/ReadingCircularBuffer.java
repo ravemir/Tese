@@ -31,7 +31,7 @@ public class ReadingCircularBuffer {
 	 * @param read The reading to be inserted
 	 */
 	public void addReading(SensorReading read) {
-		// Check the received the reading's type, and clone its
+		// Check the received the reading's type, and clone it
 		SensorReading add;
 	    if(read instanceof AccelReading)
 	    	add = new AccelReading((SensorReading) read);
@@ -46,7 +46,7 @@ public class ReadingCircularBuffer {
 	    positionIndex = ((positionIndex+1) % readings.length);
 		
 	    // Add the new reading to the buffer
-    	readings[positionIndex] = add; // FIXME Should not need to clone like this
+    	readings[positionIndex] = add;
 	}
 	
 	/**
@@ -56,9 +56,9 @@ public class ReadingCircularBuffer {
 	 * @return The last reading to be added.
 	 */
 	public SensorReading getCurrentReading() {
-		SensorReading current = getPrevNReading(0); // FIXME colocado aqui porque positionindex começa a -1, e rebenta
+		SensorReading current = getPrevNReading(0);
 		
-		return (current!=null? current: new AccelReading());
+		return (current!=null? current: new AccelReading()); // FIXME Não deve devolver AccelReading, mas genérico
 	}
 	
 	/**

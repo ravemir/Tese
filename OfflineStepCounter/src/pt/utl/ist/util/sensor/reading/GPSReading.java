@@ -42,8 +42,7 @@ public class GPSReading extends SensorReading {
 	public GPSReading(Double lat, Double lon){
 		// NOTE:	180º bearing matches 0º in the 180º range,
 		//			meaning no course change.
-		this(lat,lon, 180D, 0D);				// FIXME Is this assumption still correct?
-												// Angle meaning has changed over time
+		this(lat,lon, 180D, 0D);
 	}
 
 	public Double getLatitude() {

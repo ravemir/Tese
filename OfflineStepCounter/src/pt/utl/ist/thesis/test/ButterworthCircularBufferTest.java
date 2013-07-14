@@ -27,7 +27,7 @@ public class ButterworthCircularBufferTest {
 
 	@Test
 	public void testAddReading() {
-		// Create reading values array FIXME Include norm values
+		// Create reading values array
 		AccelReading[] readings = new AccelReading[]{
 				new AccelReading("0", new double[]{-0.651,3.601,7.623}),
 				new AccelReading("0", new double[]{-0.804,3.715,7.661}),
@@ -52,18 +52,18 @@ public class ButterworthCircularBufferTest {
 				new AccelReading("0", new double[]{-1.072, 3.562, 7.316})
 		};
 		
-		// Create expected values array FIXME Include norm values
+		// Create expected values array
 		SensorReading[] expected = new SensorReading[]{
-				new AccelReading("0", new double[]{0, 0, 0}),
-				new AccelReading("0", new double[]{0, 0, 0}),
-				new AccelReading("0", new double[]{0, 0, 0}),
-				new AccelReading("0", new double[]{0, 0, 0}),
-				new AccelReading("0", new double[]{0, 0, 0}),
-				new AccelReading("0", new double[]{0, 0, 0}),
-				new AccelReading("0", new double[]{0, 0, 0}),
-				new AccelReading("0", new double[]{0, 0, 0}),
-				new AccelReading("0", new double[]{0, 0, 0}),
-				new AccelReading("0", new double[]{0, 0, 0}),
+				new AccelReading("0", new double[]{0, 0, 0, 0}),
+				new AccelReading("0", new double[]{0, 0, 0, 0}),
+				new AccelReading("0", new double[]{0, 0, 0, 0}),
+				new AccelReading("0", new double[]{0, 0, 0, 0}),
+				new AccelReading("0", new double[]{0, 0, 0, 0}),
+				new AccelReading("0", new double[]{0, 0, 0, 0}),
+				new AccelReading("0", new double[]{0, 0, 0, 0}),
+				new AccelReading("0", new double[]{0, 0, 0, 0}),
+				new AccelReading("0", new double[]{0, 0, 0, 0}),
+				new AccelReading("0", new double[]{0, 0, 0, 0}),
 				new AccelReading("0", new double[]{-0.001192, 0.006020, 0.013145, 0.014509}),
 				new AccelReading("0", new double[]{-0.008343, 0.042057, 0.091808, 0.101341}),
 				new AccelReading("0", new double[]{-0.031276, 0.157445, 0.343631, 0.379327}),

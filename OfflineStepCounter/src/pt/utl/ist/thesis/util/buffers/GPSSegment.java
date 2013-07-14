@@ -141,10 +141,6 @@ public class GPSSegment extends ArrayList<GPSReading> {
 					lat2, long2);
 			
 			// Compute Heading Change and accumulate it 
-	//		Double headingChange = r.getHeading() - lastReading.getHeading();
-	//		Double headingChange = 							// FIXME See if this function computes good headings
-	//				MathUtils.calculateHeadingChange(lat2, long2, lat1, long1);
-			//		Double headingChange = r.getBearing();
 			Double headingChange =
 					MathUtils.headingChangeFromBearings(
 							lastReading.getBearing(), r.getBearing());

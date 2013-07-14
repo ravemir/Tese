@@ -60,6 +60,4 @@ public class StepReading extends AccelReading {
 	public double[] getAccelerationReading(){
 		return getAcceleration();
 	}
-	
-	// TODO Deverá o getReading ser reimplementado para devolver mais info?
 }
