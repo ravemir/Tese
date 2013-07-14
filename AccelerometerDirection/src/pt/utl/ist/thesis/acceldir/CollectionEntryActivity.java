@@ -29,7 +29,6 @@ import android.widget.TextView;
 
 public class CollectionEntryActivity extends Activity {
 
-	protected static final String COLLECTION_PREFERENCES = "collection_preferences";
 	private static final int FILE_CHOOSER_REQUEST = 1234;
 
 	private class GPSStatusChecker implements GpsStatus.Listener, LocationListener {
@@ -79,7 +78,8 @@ public class CollectionEntryActivity extends Activity {
 	private String archiveFolder;
 	private Boolean isGPSFixDisabled;
 	private String dbFolder;
-
+	private double sampleRate;
+	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -87,7 +87,7 @@ public class CollectionEntryActivity extends Activity {
 
 		// Set scrollbar movement method for the TextView
 		((TextView)findViewById(R.id.instructionsValue))
-		.setMovementMethod(new ScrollingMovementMethod());
+			.setMovementMethod(new ScrollingMovementMethod());
 
 		// Fill the log directory attribute
 		String sdcardPath = Environment.getExternalStorageDirectory()
@@ -112,8 +112,10 @@ public class CollectionEntryActivity extends Activity {
 		updateStorageState();
 
 		// Retrieve preferences
-		isGPSFixDisabled = !getSharedPreferences(COLLECTION_PREFERENCES, MODE_PRIVATE).
-				getBoolean(getString(R.string.disable_gps_fix_preference), false);
+		isGPSFixDisabled = !getSharedPreferences(AccelerometerDirectionApplication.COLLECTION_PREFERENCES, MODE_PRIVATE).
+				getBoolean(AccelerometerDirectionApplication.fixPrefName, false);
+		sampleRate = getSharedPreferences(AccelerometerDirectionApplication.COLLECTION_PREFERENCES, MODE_PRIVATE).
+				getFloat(AccelerometerDirectionApplication.ratePrefName, 50F);
 
 		// Create the GPS status listener
 		gpsc = new GPSStatusChecker();
@@ -169,8 +171,7 @@ public class CollectionEntryActivity extends Activity {
 			// Check for external storage availability
 			checkExternalStore();
 
-			Intent i = new Intent(CollectionEntryActivity.this, CollectionActivity.class);
-			i.putExtra("logFolder", logsFolder);
+			Intent i = createCollectionIntent(CollectionActivity.class);
 			startActivity(i);
 		} catch (ExternalStorageUnavailableException esue) {
 			AndroidUtils.displayToast(getApplicationContext(),
@@ -181,6 +182,22 @@ public class CollectionEntryActivity extends Activity {
 					getString(R.string.external_storage_unwritable_message));
 			eswpe.printStackTrace();
 		}
+	}
+
+	/**
+	 * Creates an Intent appropriate to start a
+	 * Collection Activity, together with all the
+	 * Extras.
+	 * 
+	 * @param activityType
+	 * @return
+	 */
+	public Intent createCollectionIntent(Class<? extends Activity> activityType) {
+		Intent i;
+		i = new Intent(CollectionEntryActivity.this, activityType);
+		i.putExtra("logsFolder", logsFolder);
+		i.putExtra(getString(R.string.sample_rate_preference), sampleRate);
+		return i;
 	}
 
 	public void prepareEmail(View v){
@@ -244,10 +261,7 @@ public class CollectionEntryActivity extends Activity {
 			break;
 		case R.id.menu_autogait_calibration:
 			// Launch AutoGaitCollectionActivity
-			i = new Intent(CollectionEntryActivity.this,
-					AutoGaitCollectionActivity.class);
-			//i.putExtra("logFolder", dir.getAbsolutePath());
-			i.putExtra("logFolder", logsFolder);
+			i = createCollectionIntent(AutoGaitCollectionActivity.class);
 			startActivity(i);
 			break;
 		case R.id.menu_clear_agdb:

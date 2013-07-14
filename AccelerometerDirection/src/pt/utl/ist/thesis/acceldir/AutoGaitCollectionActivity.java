@@ -6,6 +6,8 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
+import org.apache.commons.math.stat.descriptive.SynchronizedSummaryStatistics;
+
 import pt.utl.ist.thesis.acceldir.sql.AutoGaitSegmentDataSource;
 import pt.utl.ist.thesis.acceldir.util.AndroidUtils;
 import pt.utl.ist.thesis.acceldir.util.UIUpdater;
@@ -42,12 +44,18 @@ public class AutoGaitCollectionActivity extends Activity {
 	// Inner-class Listeners
 	private final class AccelGPSListener implements LocationListener, SensorEventListener {
 		
-		private static final int SAMPLERATE = 100;
+		private int SAMPLERATE = 50;
+		private SynchronizedSummaryStatistics sss = new SynchronizedSummaryStatistics();
+		private float lastTimestamp = 0;
+		
+		public AccelGPSListener(int sRate){
+			SAMPLERATE = sRate;
+		}
 		
 		// Sensor-related attributes and methods (sized 4 to be compatible with 4x4 matrices)
 		private float[] accel = new float[4];
 		
-		private static final int CIRCBUFFSIZE = SAMPLERATE; // FIXME Circular buffer size (should be computed according to
+		private int CIRCBUFFSIZE = SAMPLERATE; // FIXME Circular buffer size (should be computed according to
 															//		 sampling rate)
 
 		// AutoGait related attributes
@@ -66,6 +74,10 @@ public class AutoGaitCollectionActivity extends Activity {
 			switch(event.sensor.getType()){
 			case Sensor.TYPE_LINEAR_ACCELERATION:
 			case Sensor.TYPE_ACCELEROMETER:
+				// Compute current rate average
+				averageSampleRateComputation(event);				
+				
+				// Copy event values over and process them
 				System.arraycopy(event.values, 0, accel, 0, 3);
 				String accelLine = "A" + LOGSEPARATOR + 
 						tsString + LOGSEPARATOR + 
@@ -81,6 +93,17 @@ public class AutoGaitCollectionActivity extends Activity {
 				writeToFile(accelLine);
 				break;
 			}
+		}
+
+		/**
+		 * @param event
+		 */
+		public void averageSampleRateComputation(SensorEvent event) {
+			if(lastTimestamp == 0)
+				sss.addValue(SAMPLERATE);
+			else
+				sss.addValue(1/((event.timestamp-lastTimestamp)/1000000));
+			lastTimestamp = event.timestamp;
 		}
 
 		@Override
@@ -321,8 +344,12 @@ public class AutoGaitCollectionActivity extends Activity {
 		else
 			initializeAccelerationPreGingerbread();
 
+		// Get average sample rate value
+		double avgSampleRate = getIntent().getExtras().
+				getDouble(AccelerometerDirectionApplication.ratePrefName);
+		
 		// Define both the location and accelerometer listeners
-		mAccelGPSListener = new AccelGPSListener();
+		mAccelGPSListener = new AccelGPSListener((int) Math.round(avgSampleRate));
 		
 		// Initialize the AutoGait model, if appropriate
 		initializeAutoGaitModeler();
@@ -405,10 +432,15 @@ public class AutoGaitCollectionActivity extends Activity {
 	protected void onPause() {
 		super.onPause();
 
-		// Write to file pause message
+		// Write pause message to file
 		long timestamp = new Date().getTime();
 		writeToFile("I" + LOGSEPARATOR + timestamp + LOGSEPARATOR + 
 				getString(R.string.activity_paused_log));
+		
+		// Save the sample rate to the preferences
+		getSharedPreferences(AccelerometerDirectionApplication.COLLECTION_PREFERENCES, MODE_PRIVATE).
+			edit().putFloat(getString(R.string.sample_rate_preference), 
+					(float) mAccelGPSListener.sss.getGeometricMean());
 
 		// Detach listeners
 		detachListeners();

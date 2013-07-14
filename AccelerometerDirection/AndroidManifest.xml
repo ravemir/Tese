@@ -23,7 +23,7 @@
         android:smallScreens="true" />
 
     <application
-        android:name="pt.utl.ist.thesis.acceldir.DataCollectorApplication"
+        android:name="pt.utl.ist.thesis.acceldir.AccelerometerDirectionApplication"
         android:allowBackup="true"
         android:enabled="true"
         android:icon="@drawable/ic_launcher"

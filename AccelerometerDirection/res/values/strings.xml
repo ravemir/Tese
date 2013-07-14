@@ -7,7 +7,7 @@
 
     <!-- UI-related resources -->
     <!-- Titles -->
-    <string name="app_name">Data Collector</string>
+    <string name="app_name">AccelerometerDirection</string>
     <string name="title_activity_collection">CollectionActivity</string>
     <string name="title_activity_calibration">CalibrationActivity</string>
     <string name="title_activity_auto_gait_db">Auto Gait Data in the DB</string>
@@ -22,6 +22,8 @@
     <string name="menu_toggle_gps_fix">Toggle GPS Fix Requirement</string>
     <string name="menu_archive_logs">Archive Logs</string>
     <string name="menu_settings">Settings</string>
+    <string name="menu_import_database">Import saved database</string>
+    <string name="menu_export_database">Export current database</string>
 
     <!-- TextView values -->
     <string name="gps_data_label">GPS data:</string>
@@ -54,6 +56,8 @@
     <string name="logs_archived_message">All logs archived. You can access them in \'</string>
     <string name="cleared_the_autogait_data_message">Cleared the AutoGait data</string>
     <string name="toggle_gps_fix_requirement_message">"GPS fix requirement "</string>
+    <string name="exported_DB_message">Exported DB as \'</string>
+    <string name="imported_database_from_file_message">Imported database from file \'</string>
 
     <!-- Log file and LogCat resources -->
     <string name="log_separator">,</string>
@@ -74,12 +78,7 @@
 
     <!-- Shared preferences variables -->
     <string name="disable_gps_fix_preference">disable_gps_fix</string>
-    <string name="hello_world">Hello world!</string>
+    <string name="sample_rate_preference">sample_rate</string>
     <string name="action_settings">Settings</string>
-    <string name="menu_import_database">Import saved database</string>
-    <string name="menu_export_database">Export current database</string>
-    <string name="imported_database_from_file_message">Imported database from file \'</string>
-    <string name="exported_DB_message">Exported DB as \'</string>
-    
 
 </resources>

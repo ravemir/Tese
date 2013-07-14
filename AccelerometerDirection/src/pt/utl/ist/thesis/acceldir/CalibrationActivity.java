@@ -102,7 +102,7 @@ public class CalibrationActivity extends Activity {
 					
 					
 					// Save it in preferences
-					Editor editor = getSharedPreferences(CollectionEntryActivity.COLLECTION_PREFERENCES,
+					Editor editor = getSharedPreferences(AccelerometerDirectionApplication.COLLECTION_PREFERENCES,
 							MODE_PRIVATE).edit();
 					for (int i = 0; i < calibrationMatrix.getColumnDimension(); i++) {
 						for (int j = 0; j < calibrationMatrix.getRowDimension(); j++) {
