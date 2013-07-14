@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Observer;
 
 import pt.utl.ist.thesis.util.SampleRunnable;
+import pt.utl.ist.thesis.util.SensorReadingRunnable;
 import pt.utl.ist.util.sensor.reading.GPSReading;
 import pt.utl.ist.util.sensor.reading.OrientationReading;
 import pt.utl.ist.util.sensor.reading.RelativePositionReading;
@@ -30,7 +31,7 @@ public class PositioningAnalyser extends Analyser implements Observer {
 	private ArrayList<RelativePositionReading> rprBuffer = new ArrayList<RelativePositionReading>();
 	
 	// State and statistical variables
-	private SampleRunnable sampleRunnable;
+	private SensorReadingRunnable readingRunnable;
 
 	
 	private GPSReading startingPosition; 
@@ -93,10 +94,12 @@ public class PositioningAnalyser extends Analyser implements Observer {
 				RelativePositionReading prev = rprBuffer.get(rprBuffer.size()-1);
 				double xOff = dist*Math.sin(lastOrientation.getAzimuth());
 				double yOff = dist*Math.cos(lastOrientation.getAzimuth());
-				rprBuffer.add(new RelativePositionReading(reading.getTimestampString(), 
-						prev.getXCoord()+xOff, prev.getYCoord()+yOff));
+				RelativePositionReading newRelPosRead = new RelativePositionReading(reading.getTimestampString(), 
+						prev.getXCoord()+xOff, prev.getYCoord()+yOff);
+				rprBuffer.add(newRelPosRead);
 				
 				// TODO Output it
+				readingRunnable.run(newRelPosRead);
 			} else {
 				throw new UnsupportedOperationException("Tried to update Analyser from '" +
 						readingSource.getClass().getSimpleName() + "' observable type, with a '" +
@@ -105,7 +108,7 @@ public class PositioningAnalyser extends Analyser implements Observer {
 		}
 	}
 	
-	public void setSampleUpdater(SampleRunnable r){
-		sampleRunnable = r;
+	public void setSampleUpdater(SensorReadingRunnable r){
+		readingRunnable = r;
 	}
 }
