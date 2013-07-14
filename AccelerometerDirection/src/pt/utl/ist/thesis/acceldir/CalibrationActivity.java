@@ -84,7 +84,7 @@ public class CalibrationActivity extends Activity {
 			if(readingCount == readingLimit){
 				// Collect average value and place it into local var
 				CalibrationActivity.this.readingMatrix[calibrationRound] = 
-						maf.getBuffer().getCurrentReading().getAcceleration().clone();
+						maf.getBuffer().getCurrentReading().getReading().clone();
 
 				// Unregister event listener
 				((SensorManager) getSystemService(SENSOR_SERVICE))

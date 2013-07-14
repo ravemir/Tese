@@ -95,7 +95,7 @@ public class CollectionActivity extends Activity {
 						peakList.add(accelReadings[peakIndex]);
 						
 						// Acumulate peak value
-						acum += accelReadings[peakIndex].getAccelerationNorm();
+						acum += accelReadings[peakIndex].getReadingNorm();
 					}
 				}
 				
@@ -105,14 +105,14 @@ public class CollectionActivity extends Activity {
 					double peakAverage = acum/peakList.size();
 					for(AccelReading ard : peakList){
 						// Print them
-						if(ard.getAccelerationNorm() > peakAverage * PEAKTHRESHFACTOR &&
-								ard.getAccelerationNorm() > KFACTOR){
+						if(ard.getReadingNorm() > peakAverage * PEAKTHRESHFACTOR &&
+								ard.getReadingNorm() > KFACTOR){
 							accelLine += "S" + LOGSEPARATOR + 
 									ard.getTimestampString() + LOGSEPARATOR +
 									ard.getAcceleration()[0] + LOGSEPARATOR +
 									ard.getAcceleration()[1] + LOGSEPARATOR +
 									ard.getAcceleration()[2] + LOGSEPARATOR +
-									ard.getAccelerationNorm() + "\n";
+									ard.getReadingNorm() + "\n";
 						}
 					}
 					
@@ -193,8 +193,8 @@ public class CollectionActivity extends Activity {
 		 */
 		private double computeFwdSlope(int index) {
 			int prev = previousIndex(index, CIRCBUFFSIZE);
-			return accelReadings[index].getAccelerationNorm() - 
-					accelReadings[prev].getAccelerationNorm();
+			return accelReadings[index].getReadingNorm() - 
+					accelReadings[prev].getReadingNorm();
 		}
 		
 		/**
@@ -208,8 +208,8 @@ public class CollectionActivity extends Activity {
 		private double computeBwdSlope(int index) {
 			int prev = previousIndex(index, CIRCBUFFSIZE);
 			int beforeLast = previousIndex(prev, CIRCBUFFSIZE);
-			return accelReadings[prev].getAccelerationNorm() - 
-					accelReadings[beforeLast].getAccelerationNorm();
+			return accelReadings[prev].getReadingNorm() - 
+					accelReadings[beforeLast].getReadingNorm();
 		}
 
 		@Override

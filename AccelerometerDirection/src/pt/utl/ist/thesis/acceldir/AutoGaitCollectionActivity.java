@@ -161,7 +161,7 @@ public class AutoGaitCollectionActivity extends Activity {
 			
 			// Attach the StepAnalyser and the GPSReading
 			// RawReadingSource to the AutoGaitModelerAnalyser
-			stepA.attachAnalyser(agma);
+			stepA.attachToAnalyser(agma);
 			locRS.attachAnalyser(agma);
 		}
 		

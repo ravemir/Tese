@@ -267,7 +267,7 @@ public class CollectionEntryActivity extends Activity {
 			break;
 		case R.id.menu_export_database:
 			// Export the current database with the specified name
-			exportDBToFile("ag_database-" + FileUtils.getDateForFilename());
+			exportDBToFile("ag_database-" + FileUtils.getDateForFilename() + ".db ");
 			break;	
 		case R.id.menu_import_database:
 			// Select a file from the chooser, to be used in the import process
