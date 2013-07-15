@@ -195,7 +195,7 @@ public class CollectionEntryActivity extends Activity {
 	public Intent createCollectionIntent(Class<? extends Activity> activityType) {
 		Intent i;
 		i = new Intent(CollectionEntryActivity.this, activityType);
-		i.putExtra("logsFolder", logsFolder);
+		i.putExtra("logFolder", logsFolder);
 		i.putExtra(getString(R.string.sample_rate_preference), sampleRate);
 		return i;
 	}

@@ -43,20 +43,20 @@ public class AutoGaitCollectionActivity extends Activity {
 
 	// Inner-class Listeners
 	private final class AccelGPSListener implements LocationListener, SensorEventListener {
-		
+
 		private int SAMPLERATE = 50;
 		private SynchronizedSummaryStatistics sss = new SynchronizedSummaryStatistics();
-		private float lastTimestamp = 0;
-		
+		private long lastTimestamp = -1;
+
 		public AccelGPSListener(int sRate){
 			SAMPLERATE = sRate;
 		}
-		
+
 		// Sensor-related attributes and methods (sized 4 to be compatible with 4x4 matrices)
 		private float[] accel = new float[4];
-		
-		private int CIRCBUFFSIZE = SAMPLERATE; // FIXME Circular buffer size (should be computed according to
-															//		 sampling rate)
+
+		private int CIRCBUFFSIZE = SAMPLERATE;	// FIXME Circular buffer size (should be computed according to
+		//		 sampling rate)
 
 		// AutoGait related attributes
 		private RawReadingSource accelRS = new RawReadingSource(CIRCBUFFSIZE);
@@ -64,11 +64,13 @@ public class AutoGaitCollectionActivity extends Activity {
 		private ButterworthFilter filter = new ButterworthFilter(10, 5, SAMPLERATE, true);
 		private StepAnalyser stepA = new StepAnalyser(SAMPLERATE);
 		private AutoGaitModelerAnalyser agma = new AutoGaitModelerAnalyser();
-		
+
 		@Override
 		public void onSensorChanged(SensorEvent event) {
 			// Compute the timestamp in nanos first
 			long newtimestamp = AndroidUtils.computeJavaTimeStamp(event.timestamp);
+
+			// ...then generate a formatted millis string
 			String tsString = AndroidUtils.printNanosToMilis(newtimestamp);
 
 			switch(event.sensor.getType()){
@@ -76,7 +78,7 @@ public class AutoGaitCollectionActivity extends Activity {
 			case Sensor.TYPE_ACCELEROMETER:
 				// Compute current rate average
 				averageSampleRateComputation(event);				
-				
+
 				// Copy event values over and process them
 				System.arraycopy(event.values, 0, accel, 0, 3);
 				String accelLine = "A" + LOGSEPARATOR + 
@@ -85,10 +87,10 @@ public class AutoGaitCollectionActivity extends Activity {
 						accel[1] + LOGSEPARATOR + 
 						accel[2] + LOGSEPARATOR +
 						event.accuracy + "\n";
-				
+
 				// Push Acceleration reading
 				accelRS.pushReading(new AccelReading(tsString, accel));
-				
+
 				// Write it to a file
 				writeToFile(accelLine);
 				break;
@@ -99,10 +101,11 @@ public class AutoGaitCollectionActivity extends Activity {
 		 * @param event
 		 */
 		public void averageSampleRateComputation(SensorEvent event) {
-			if(lastTimestamp == 0)
+			if(lastTimestamp == -1)
 				sss.addValue(SAMPLERATE);
 			else
-				sss.addValue(1/((event.timestamp-lastTimestamp)/1000000));
+				sss.addValue(1 / ((event.timestamp-lastTimestamp)/1000000000D));
+
 			lastTimestamp = event.timestamp;
 		}
 
@@ -123,11 +126,11 @@ public class AutoGaitCollectionActivity extends Activity {
 			double speed = location.getSpeed();
 			int satelliteNo = location.getExtras().getInt("satellites");
 			float accuracy = location.getAccuracy();
-			
+
 			// Push GPSReading to RawReadingSource
 			locRS.pushReading(new GPSReading(timestamp, latitude, 
 					longitude, bearing, speed));
-			
+
 			// Write the new coordinates to a file
 			String line =   "L"+ LOGSEPARATOR + timestamp + LOGSEPARATOR +
 					latitude + LOGSEPARATOR + 
@@ -178,16 +181,16 @@ public class AutoGaitCollectionActivity extends Activity {
 		public void attachFiltersAndAnalysers(){
 			// Attach the Butterworth filter to the RawReadingSource
 			accelRS.attachFilter(filter);
-			
+
 			// Attach StepAnalyser to filter
 			filter.attachAnalyser(stepA);
-			
+
 			// Attach the StepAnalyser and the GPSReading
 			// RawReadingSource to the AutoGaitModelerAnalyser
 			stepA.attachToAnalyser(agma);
 			locRS.attachAnalyser(agma);
 		}
-		
+
 		@Override
 		public void onProviderDisabled(String provider) {}
 
@@ -209,7 +212,7 @@ public class AutoGaitCollectionActivity extends Activity {
 
 	// Database attributes
 	private AutoGaitSegmentDataSource agsds;
-	
+
 	// Application attributes
 	private WakeLock mWakeLock;
 	private UIUpdater mUIUpdater;
@@ -253,11 +256,11 @@ public class AutoGaitCollectionActivity extends Activity {
 		// Get date from system and set the file name to save
 		String date = getDateForFilename();
 		filename = logFolder + date + ".log";
-		
+
 		// Create the DB DAO object
 		agsds = new AutoGaitSegmentDataSource(this);
 		agsds.open();
-		
+
 		// Initialize and attach the Listener-related attributes
 		initializeListeners();
 		attachListeners();
@@ -284,7 +287,7 @@ public class AutoGaitCollectionActivity extends Activity {
 		// Get the stored samples and insert them into the model
 		double[][] storedSamples = agsds.getAllSegmentDataSamples();
 		mAccelGPSListener.agma.restoreDataSamples(storedSamples);
-		
+
 		// Set the SampleRunnable object to update the data model
 		mAccelGPSListener.agma.setSampleUpdater(new SampleRunnable() {
 			@Override
@@ -337,7 +340,7 @@ public class AutoGaitCollectionActivity extends Activity {
 		mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 		mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 		mMagnetometer = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
-		
+
 		// Gravity and LinearAcceleration sensors only available from Gingerbread and up
 		if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD)
 			initializeAcceleration();
@@ -347,10 +350,10 @@ public class AutoGaitCollectionActivity extends Activity {
 		// Get average sample rate value
 		double avgSampleRate = getIntent().getExtras().
 				getDouble(AccelerometerDirectionApplication.ratePrefName);
-		
+
 		// Define both the location and accelerometer listeners
 		mAccelGPSListener = new AccelGPSListener((int) Math.round(avgSampleRate));
-		
+
 		// Initialize the AutoGait model, if appropriate
 		initializeAutoGaitModeler();
 	}
@@ -379,7 +382,7 @@ public class AutoGaitCollectionActivity extends Activity {
 	private void attachListeners() {
 		// Get the timestamp
 		long timestamp = new Date().getTime();
-		
+
 		// Listen to accelerometer, magnetometer and GPS events
 		if(mAccelerometer != null && mGravity != null){
 			mSensorManager.registerListener(mAccelGPSListener, mAccelerometer, SensorManager.SENSOR_DELAY_FASTEST);
@@ -400,7 +403,7 @@ public class AutoGaitCollectionActivity extends Activity {
 	private void detachListeners() {
 		// Get the timestamp
 		long timestamp = new Date().getTime();
-		
+
 		// Detach both Sensor and GPS listeners
 		if(mAccelGPSListener != null) {
 			mSensorManager.unregisterListener(mAccelGPSListener);
@@ -436,11 +439,14 @@ public class AutoGaitCollectionActivity extends Activity {
 		long timestamp = new Date().getTime();
 		writeToFile("I" + LOGSEPARATOR + timestamp + LOGSEPARATOR + 
 				getString(R.string.activity_paused_log));
-		
+
 		// Save the sample rate to the preferences
+		float castSampleRate = (float) mAccelGPSListener.sss.getGeometricMean();
 		getSharedPreferences(AccelerometerDirectionApplication.COLLECTION_PREFERENCES, MODE_PRIVATE).
 			edit().putFloat(getString(R.string.sample_rate_preference), 
-					(float) mAccelGPSListener.sss.getGeometricMean());
+				castSampleRate);
+		AndroidUtils.displayToast(this, "Saved sample rate of " + castSampleRate + 
+				" Hz\nMax rate: " + mAccelGPSListener.sss.getMax() + ", Min rate: " + mAccelGPSListener.sss.getMin());
 
 		// Detach listeners
 		detachListeners();
@@ -468,7 +474,7 @@ public class AutoGaitCollectionActivity extends Activity {
 			AndroidUtils.displayToast(getApplicationContext(), 
 					getString(R.string.twice_to_exit_message));
 
-			// Schedule a regiter reset
+			// Schedule a register reset
 			new Handler().postDelayed(new Runnable() {
 				@Override public void run() {backWasPressed = false;}}, PERIOD);
 		}

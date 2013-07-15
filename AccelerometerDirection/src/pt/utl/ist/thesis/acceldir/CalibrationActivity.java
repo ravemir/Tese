@@ -73,9 +73,13 @@ public class CalibrationActivity extends Activity {
 
 		@Override
 		public void onSensorChanged(SensorEvent event) {
-			// Add value to RawReadingSource
+			// Compute the timestamp in nanos first
 			long newtimestamp = AndroidUtils.computeJavaTimeStamp(event.timestamp);
+			
+			// ...then generate a formatted millis string
 			String tsString = AndroidUtils.printNanosToMilis(newtimestamp);
+			
+			// Add value to RawReadingSource
 			AccelReading accReading = new AccelReading(tsString,
 					event.values);
 			rrs.pushReading(accReading);

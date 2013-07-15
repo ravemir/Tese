@@ -46,8 +46,11 @@ public class AndroidUtils {
 	}
 
 	/**
-	 * @param eventTimestamp
-	 * @return
+	 * Takes the event's uptime timestamp, and
+	 * computes the UTC timestamp, in nanos.
+	 * 
+	 * @param eventTimestamp	The evnt
+	 * @return	The timestamp in nanos.
 	 */
 	public static long computeJavaTimeStamp(long eventTimestamp) {
 		long javaTime = new Date().getTime();

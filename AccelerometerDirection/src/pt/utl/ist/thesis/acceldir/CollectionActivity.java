@@ -68,6 +68,8 @@ public class CollectionActivity extends Activity {
 		public void onSensorChanged(SensorEvent event) {
 			// Compute the timestamp in nanos first
 			long newtimestamp = AndroidUtils.computeJavaTimeStamp(event.timestamp);
+			
+			// ...then generate a formatted millis string
 			String tsString = AndroidUtils.printNanosToMilis(newtimestamp);
 
 			switch(event.sensor.getType()){
