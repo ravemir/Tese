@@ -68,7 +68,7 @@ public class CalibrationActivity extends Activity {
 			// Create a MovingAverageFilter attached to a RawReadingSource
 			rrs = new RawReadingSource(limit);
 			maf = new MovingAverageFilter(averageSize);
-			rrs.attachFilter(maf);
+			rrs.plugFilterIntoInput(maf);
 		}
 
 		@Override

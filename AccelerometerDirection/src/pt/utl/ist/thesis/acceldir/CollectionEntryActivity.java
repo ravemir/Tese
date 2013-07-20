@@ -111,12 +111,6 @@ public class CollectionEntryActivity extends Activity {
 		// Fill the storage state details
 		updateStorageState();
 
-		// Retrieve preferences
-		isGPSFixDisabled = !getSharedPreferences(AccelerometerDirectionApplication.COLLECTION_PREFERENCES, MODE_PRIVATE).
-				getBoolean(AccelerometerDirectionApplication.fixPrefName, false);
-		sampleRate = getSharedPreferences(AccelerometerDirectionApplication.COLLECTION_PREFERENCES, MODE_PRIVATE).
-				getFloat(AccelerometerDirectionApplication.ratePrefName, 50F);
-
 		// Create the GPS status listener
 		gpsc = new GPSStatusChecker();
 	}
@@ -347,8 +341,21 @@ public class CollectionEntryActivity extends Activity {
 	protected void onResume() {
 		super.onResume();
 
+		// Retrieve preferences
+		loadPreferences();
+		
 		// Re-attach the Fix Listeners
 		attachFixListeners();
+	}
+
+	/**
+	 * 
+	 */
+	public void loadPreferences() {
+		isGPSFixDisabled = !getSharedPreferences(AccelerometerDirectionApplication.COLLECTION_PREFERENCES, MODE_PRIVATE).
+				getBoolean(AccelerometerDirectionApplication.fixPrefName, false);
+		sampleRate = getSharedPreferences(AccelerometerDirectionApplication.COLLECTION_PREFERENCES, MODE_PRIVATE).
+				getFloat(AccelerometerDirectionApplication.ratePrefName, 50F);
 	}
 
 	@Override

@@ -2,15 +2,24 @@ package pt.utl.ist.thesis.acceldir;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
 
-import pt.utl.ist.thesis.acceldir.R;
+import org.apache.commons.math.stat.descriptive.SynchronizedSummaryStatistics;
+
+import pt.utl.ist.thesis.acceldir.sql.AutoGaitSegmentDataSource;
 import pt.utl.ist.thesis.acceldir.util.AndroidUtils;
-import pt.utl.ist.thesis.acceldir.util.FileUtils;
 import pt.utl.ist.thesis.acceldir.util.UIUpdater;
+import pt.utl.ist.thesis.signalprocessor.PositioningAnalyser;
+import pt.utl.ist.thesis.signalprocessor.StepAnalyser;
+import pt.utl.ist.thesis.util.SensorReadingRunnable;
 import pt.utl.ist.util.sensor.reading.AccelReading;
+import pt.utl.ist.util.sensor.reading.GPSReading;
+import pt.utl.ist.util.sensor.reading.OrientationReading;
+import pt.utl.ist.util.sensor.source.RawReadingSource;
+import pt.utl.ist.util.source.filters.ButterworthFilter;
+import pt.utl.ist.util.source.filters.MovingAverageFilter;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
@@ -27,7 +36,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
-import android.util.Log;
 import android.view.Menu;
 import android.view.Window;
 import android.view.WindowManager;
@@ -37,97 +45,69 @@ public class CollectionActivity extends Activity {
 
 	// Inner-class Listeners
 	private final class AccelGPSListener implements LocationListener, SensorEventListener {
-		
+
+		private int SAMPLERATE = 50;
+		private SynchronizedSummaryStatistics sss = new SynchronizedSummaryStatistics();
+		private long lastTimestamp = -1;
+
+		public AccelGPSListener(int sRate){
+			SAMPLERATE = sRate;
+			
+			accelRS = new RawReadingSource(CIRCBUFFSIZE);
+			oriRS = new RawReadingSource(CIRCBUFFSIZE);
+			accelBWF = new ButterworthFilter(10, 5, SAMPLERATE, true);
+			oriMAF = new MovingAverageFilter(SAMPLERATE);
+			stepA = new StepAnalyser(SAMPLERATE);
+			positioningA = new PositioningAnalyser(SAMPLERATE);
+		}
+
 		// Sensor-related attributes and methods (sized 4 to be compatible with 4x4 matrices)
 		private float[] accel = new float[4];
 		private float[] gravity = new float[4];
 		private float[] magnet = new float[4];
+		private float[] rot = new float[16];
+		private float[] incl = new float[16];
 		private float[] orientations = new float[3];
-		private float wAccels[] = new float[4];
-		
-		private static final double KFACTOR = 10.5; // TODO Chosen heuristically. Should be computed?
-													// 		Value before which a peak is always discarded.
-													//		Gravity magnitude is a good pick.
-		private static final double PEAKTHRESHFACTOR = 0.7; // Multiplication factor to lower the step threshold
-															// Depends on the variance of intensity of each step
-															// i.e. if a step is a lot smaller than the previous,
-															// this value should be lower to accommodate it.
-		
-		private static final int CIRCBUFFSIZE = 50; // FIXME Circular buffer size (should be computed according to
-													//		 sampling rate)
-		private int accelI = 0;
-		private double acum = 0;
-		private boolean bufferIsWarm = false;
-		private AccelReading[] accelReadings = new AccelReading[CIRCBUFFSIZE];
-		private List<AccelReading> peakList = new ArrayList<AccelReading>();
-		
-		private float rot[] = new float[16];
-		private float incl[] = null;
+
+		private int CIRCBUFFSIZE = SAMPLERATE;	// FIXME Circular buffer size (should be computed according to
+												//		 sampling rate)
+
+		// Positioning related attributes
+		private RawReadingSource accelRS;
+		private RawReadingSource oriRS;
+		private RawReadingSource locRS = new RawReadingSource();
+		private ButterworthFilter accelBWF;
+		private MovingAverageFilter oriMAF;
+		private StepAnalyser stepA;
+		private PositioningAnalyser positioningA;
 
 		@Override
 		public void onSensorChanged(SensorEvent event) {
 			// Compute the timestamp in nanos first
 			long newtimestamp = AndroidUtils.computeJavaTimeStamp(event.timestamp);
-			
+
 			// ...then generate a formatted millis string
 			String tsString = AndroidUtils.printNanosToMilis(newtimestamp);
 
 			switch(event.sensor.getType()){
 			case Sensor.TYPE_LINEAR_ACCELERATION:
 			case Sensor.TYPE_ACCELEROMETER:
+				// Compute current rate average
+				averageSampleRateComputation(event);				
+
+				// Copy event values over and process them
 				System.arraycopy(event.values, 0, accel, 0, 3);
-				accelReadings[accelI] = new AccelReading(tsString, accel);
 				String accelLine = "A" + LOGSEPARATOR + 
 						tsString + LOGSEPARATOR + 
 						accel[0] + LOGSEPARATOR + 
 						accel[1] + LOGSEPARATOR + 
 						accel[2] + LOGSEPARATOR +
 						event.accuracy + "\n";
-				Log.v("AccelGPS", "Received acceleration value.");
-				
-				// If the buffer has filled once...
-				if(bufferIsWarm){
-					double forwardSlope = computeFwdSlope(accelI);
-					double backwardSlope = computeBwdSlope(accelI);
-					
-					// Detect peak
-					if(forwardSlope > 0 && backwardSlope < 0){
-						// Store peak timestamp and value
-						int peakIndex = previousIndex(accelI, CIRCBUFFSIZE);
-						peakList.add(accelReadings[peakIndex]);
-						
-						// Acumulate peak value
-						acum += accelReadings[peakIndex].getReadingNorm();
-					}
-				}
-				
-				// If buffer has filled...
-				if(accelI == CIRCBUFFSIZE - 1){
-					// Count steps
-					double peakAverage = acum/peakList.size();
-					for(AccelReading ard : peakList){
-						// Print them
-						if(ard.getReadingNorm() > peakAverage * PEAKTHRESHFACTOR &&
-								ard.getReadingNorm() > KFACTOR){
-							accelLine += "S" + LOGSEPARATOR + 
-									ard.getTimestampString() + LOGSEPARATOR +
-									ard.getAcceleration()[0] + LOGSEPARATOR +
-									ard.getAcceleration()[1] + LOGSEPARATOR +
-									ard.getAcceleration()[2] + LOGSEPARATOR +
-									ard.getReadingNorm() + "\n";
-						}
-					}
-					
-					// Reset acumulator and peak list
-					acum = 0;
-					peakList.clear();
-					bufferIsWarm = true;
-				}
-				
-				// Increment circular buffer index
-				accelI = (accelI + 1) % CIRCBUFFSIZE;
-				
-				// Write them to a file
+
+				// Push Acceleration reading
+				accelRS.pushReading(new AccelReading(tsString, accel));
+
+				// Write it to a file
 				writeToFile(accelLine);
 				break;
 			case Sensor.TYPE_GRAVITY:
@@ -141,11 +121,9 @@ public class CollectionActivity extends Activity {
 						magnet[1] + LOGSEPARATOR + 
 						magnet[2] + LOGSEPARATOR +
 						event.accuracy + "\n";
-
 				if (mAccelerometer != null && mMagnetometer != null) {
 					incl = null;
 					boolean success = SensorManager.getRotationMatrix(rot, incl, gravity, magnet);
-					//SensorManager.remapCoordinateSystem(rot, SensorManager.AXIS_X, SensorManager.AXIS_Z, rot);
 					if (success) {
 						// TODO Create temporary rotation matrix to optimize speed
 						SensorManager.getOrientation(rot, orientations);
@@ -155,14 +133,8 @@ public class CollectionActivity extends Activity {
 								orientations[1] + LOGSEPARATOR +			// Pitch
 								orientations[2] + "\n";						// Roll
 						
-						// Copy acceleration values into bigger array for multiplication
-						android.opengl.Matrix.multiplyMV(wAccels, 0, rot, 0, gravity, 0);
-//						android.opengl.Matrix.multiplyMV(wAccels, 0, rot, 0, accel, 0);
-						magnetLine += "W" + LOGSEPARATOR +
-								tsString + LOGSEPARATOR +
-								wAccels[0] + LOGSEPARATOR +
-								wAccels[1] + LOGSEPARATOR +
-								wAccels[2] + "\n";
+						// Push OrientationReading
+						oriRS.pushReading(new OrientationReading(tsString, orientations));
 					}
 				}
 
@@ -172,46 +144,16 @@ public class CollectionActivity extends Activity {
 			}
 		}
 
+		/**
+		 * @param event
+		 */
+		public void averageSampleRateComputation(SensorEvent event) {
+			if(lastTimestamp == -1)
+				sss.addValue(SAMPLERATE);
+			else
+				sss.addValue(1 / ((event.timestamp-lastTimestamp)/1000000000D));
 
-		/**
-		 * Computes the previous index in a circular
-		 * buffer like manner.
-		 * 
-		 * @param index			The index from where we
-		 * 						want to know the previous.
-		 * @param bufferSize	The size of the buffer.
-		 * @return				The previous index.
-		 */
-		private int previousIndex(int index, int bufferSize) {
-			return index == 0 ? bufferSize-1 : index-1;
-		}
-
-		
-		/**
-		 * Computes the forward slope on the appropriate
-		 * range of acceleration values.
-		 * 
-		 * @return The slope value.
-		 */
-		private double computeFwdSlope(int index) {
-			int prev = previousIndex(index, CIRCBUFFSIZE);
-			return accelReadings[index].getReadingNorm() - 
-					accelReadings[prev].getReadingNorm();
-		}
-		
-		/**
-		 * Computes the backward slope on the appropriate
-		 * range of acceleration values.
-		 * 
-		 * @param index Index pointing to the end of the
-		 * 				backward slope. 
-		 * @return The slope value.
-		 */
-		private double computeBwdSlope(int index) {
-			int prev = previousIndex(index, CIRCBUFFSIZE);
-			int beforeLast = previousIndex(prev, CIRCBUFFSIZE);
-			return accelReadings[prev].getReadingNorm() - 
-					accelReadings[beforeLast].getReadingNorm();
+			lastTimestamp = event.timestamp;
 		}
 
 		@Override
@@ -222,17 +164,29 @@ public class CollectionActivity extends Activity {
 
 		@Override
 		public void onLocationChanged(Location location) {
-			// Write the new coordinates to a file
-			long timestamp = location.getTime();
+			// Get values from location (timestamp, satellite number,...)
+			Double timestamp = (double) location.getTime();
+			double latitude = location.getLatitude();
+			double longitude = location.getLongitude();
+			double altitude = location.getAltitude();
+			double bearing = location.getBearing();
+			double speed = location.getSpeed();
 			int satelliteNo = location.getExtras().getInt("satellites");
+			float accuracy = location.getAccuracy();
+
+			// Push GPSReading to RawReadingSource
+			locRS.pushReading(new GPSReading(timestamp, latitude, 
+					longitude, bearing, speed));
+
+			// Write the new coordinates to a file
 			String line =   "L"+ LOGSEPARATOR + timestamp + LOGSEPARATOR +
-					location.getLatitude() + LOGSEPARATOR + 
-					location.getLongitude() + LOGSEPARATOR +
-					location.getAltitude() + LOGSEPARATOR +
-					location.getBearing() + LOGSEPARATOR +
-					location.getSpeed() +  LOGSEPARATOR +
+					latitude + LOGSEPARATOR + 
+					longitude + LOGSEPARATOR +
+					altitude + LOGSEPARATOR +
+					bearing + LOGSEPARATOR +
+					speed +  LOGSEPARATOR +
 					satelliteNo + LOGSEPARATOR +
-					location.getAccuracy() + "\n";
+					accuracy + "\n";
 			writeToFile(line);
 
 			loc = location;
@@ -242,7 +196,7 @@ public class CollectionActivity extends Activity {
 			return accel;
 		}
 
-		public Location getLatestLoc() {
+		public Location getLoc() {
 			if (loc == null){
 				loc = new Location(LocationManager.GPS_PROVIDER);
 				loc.setSpeed(0);
@@ -250,8 +204,8 @@ public class CollectionActivity extends Activity {
 			return loc;
 		}
 		
-		public float[] getLatestOrientation(){
-			return (orientations == null ? new float[]{0.0f, 0.0f, 0.0f} : orientations);
+		public float[] getLatestOri() {
+			return orientations;
 		}
 
 		@Override
@@ -269,6 +223,28 @@ public class CollectionActivity extends Activity {
 			case LocationProvider.OUT_OF_SERVICE:
 				writeToFile(lineHeader + getString(R.string.provider_out_of_service_log));break;
 			}
+		}
+
+		/**
+		 * Attaches the appropriate Filter and Analyser objects
+		 * to perform the AutoGait model calibration.
+		 */
+		public void attachFiltersAndAnalysers(){
+			// Attach the Butterworth accelBWF to the RawReadingSource
+			accelRS.plugFilterIntoInput(accelBWF);
+
+			// Attach StepAnalyser to accelBWF
+			accelBWF.plugAnalyserIntoInput(stepA);
+
+			// Attach an UnboundedOrientationFilter and plug a
+			// MovingAverageFilter to the output end of it
+			oriRS.addUnboundedOrientationFilter(SAMPLERATE);
+			oriMAF.plugFilterIntoInput(oriRS.getFilters().get(0));
+			
+			// Attach the StepAnalyser and the Orientation
+			// MovingAverageFilter to the PositioningAnalyser
+			stepA.attachToAnalyser(positioningA);
+			oriMAF.plugAnalyserIntoInput(positioningA);
 		}
 
 		@Override
@@ -290,6 +266,9 @@ public class CollectionActivity extends Activity {
 	private String logFolder;
 	private String filename;
 
+	// Database attributes
+	private AutoGaitSegmentDataSource agsds;
+
 	// Application attributes
 	private WakeLock mWakeLock;
 	private UIUpdater mUIUpdater;
@@ -303,23 +282,23 @@ public class CollectionActivity extends Activity {
 		public void run() {
 			// Get values
 			float[] accel = mAccelGPSListener.getLatestAccel();
-			Location loc = mAccelGPSListener.getLatestLoc();
-			float[] orientation = mAccelGPSListener.getLatestOrientation();
+			float[] ori = mAccelGPSListener.getLatestOri();
+			Location loc = mAccelGPSListener.getLoc();
 
 			// Update Accelerometer Views
 			((TextView) findViewById(R.id.XValue)).setText(Float.valueOf(accel[0]).toString());
 			((TextView) findViewById(R.id.YValue)).setText(Float.valueOf(accel[1]).toString());
 			((TextView) findViewById(R.id.ZValue)).setText(Float.valueOf(accel[2]).toString());
-
+			
 			// Update Location Views
 			((TextView) findViewById(R.id.LatValue)).setText(Double.valueOf(loc.getLatitude()).toString());
 			((TextView) findViewById(R.id.LongValue)).setText(Double.valueOf(loc.getLongitude()).toString());
 			((TextView) findViewById(R.id.SpeedValue)).setText(Double.valueOf(loc.getSpeed()).toString());
-			
-			// Update Orientation
-			((TextView) findViewById(R.id.XOriValue)).setText(Float.valueOf(orientation[0]).toString());
-			((TextView) findViewById(R.id.YOriValue)).setText(Float.valueOf(orientation[1]).toString());
-			((TextView) findViewById(R.id.ZOriValue)).setText(Float.valueOf(orientation[2]).toString());
+
+			// Update Orientation Views
+			((TextView) findViewById(R.id.XOriValue)).setText(Float.valueOf(ori[0]).toString());
+			((TextView) findViewById(R.id.YOriValue)).setText(Float.valueOf(ori[1]).toString());
+			((TextView) findViewById(R.id.ZOriValue)).setText(Float.valueOf(ori[2]).toString());
 		}
 	};
 
@@ -337,10 +316,14 @@ public class CollectionActivity extends Activity {
 		logFolder = (String) getIntent().getExtras().get("logFolder");
 
 		// Get date from system and set the file name to save
-		String date = FileUtils.getDateForFilename();
+		String date = getDateForFilename();
 		filename = logFolder + date + ".log";
-		
-		// Initialize and attach the Listener-related activity attributes
+
+		// Create the DB DAO object
+		agsds = new AutoGaitSegmentDataSource(this);
+		agsds.open();
+
+		// Initialize and attach the Listener-related attributes
 		initializeListeners();
 		attachListeners();
 
@@ -359,13 +342,36 @@ public class CollectionActivity extends Activity {
 	/**
 	 * 
 	 */
+	public void initializeAutoGaitModeler() {
+		// Attach all the accelBWF and analyser objects acoordingly
+		mAccelGPSListener.attachFiltersAndAnalysers();
+
+		// Get the stored samples and insert them into the model
+		double[][] storedSamples = agsds.getAllSegmentDataSamples();
+		mAccelGPSListener.positioningA.restoreDataSamples(storedSamples);
+
+		// Set the SampleRunnable object to update the data model
+		mAccelGPSListener.positioningA.setSensorReadingUpdater(new SensorReadingRunnable() {
+			@Override
+			public void run() {
+				// Write the new coordinates to a file
+				String line = "P" + LOGSEPARATOR + reading.getTimestampString();
+				for (double d : reading.getReading())
+					line +=	LOGSEPARATOR + d;
+				line += "\n";
+					
+				writeToFile(line);
+			}
+		});
+	}
+
+	/**
+	 * 
+	 */
 	private void setFullScreen() {
-		requestWindowFeature(Window.FEATURE_NO_TITLE);
+		requestWindowFeature(Window.FEATURE_NO_TITLE); 
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
 				WindowManager.LayoutParams.FLAG_FULLSCREEN);
-		
-		// To stop home button from exiting the app, but doesn't work
-//		this.getWindow().setType(WindowManager.LayoutParams.TYPE_KEYGUARD);
 	}
 
 	@Override
@@ -401,15 +407,22 @@ public class CollectionActivity extends Activity {
 		mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 		mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 		mMagnetometer = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
-		
+
 		// Gravity and LinearAcceleration sensors only available from Gingerbread and up
 		if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD)
 			initializeAcceleration();
 		else
 			initializeAccelerationPreGingerbread();
 
+		// Get average sample rate value
+		double avgSampleRate = getIntent().getExtras().
+				getDouble(AccelerometerDirectionApplication.ratePrefName);
+
 		// Define both the location and accelerometer listeners
-		mAccelGPSListener = new AccelGPSListener();
+		mAccelGPSListener = new AccelGPSListener((int) Math.round(avgSampleRate));
+
+		// Initialize the AutoGait model, if appropriate
+		initializeAutoGaitModeler();
 	}
 
 	/**
@@ -436,7 +449,7 @@ public class CollectionActivity extends Activity {
 	private void attachListeners() {
 		// Get the timestamp
 		long timestamp = new Date().getTime();
-		
+
 		// Listen to accelerometer, magnetometer and GPS events
 		if(mAccelerometer != null && mGravity != null){
 			mSensorManager.registerListener(mAccelGPSListener, mAccelerometer, SensorManager.SENSOR_DELAY_FASTEST);
@@ -457,7 +470,7 @@ public class CollectionActivity extends Activity {
 	private void detachListeners() {
 		// Get the timestamp
 		long timestamp = new Date().getTime();
-		
+
 		// Detach both Sensor and GPS listeners
 		if(mAccelGPSListener != null) {
 			mSensorManager.unregisterListener(mAccelGPSListener);
@@ -489,10 +502,15 @@ public class CollectionActivity extends Activity {
 	protected void onPause() {
 		super.onPause();
 
-		// Write to file pause message
+		// Write pause message to file
 		long timestamp = new Date().getTime();
 		writeToFile("I" + LOGSEPARATOR + timestamp + LOGSEPARATOR + 
 				getString(R.string.activity_paused_log));
+
+		// Save the sample rate to the preferences
+		float castSampleRate = (float) mAccelGPSListener.sss.getGeometricMean();
+		getSharedPreferences(AccelerometerDirectionApplication.COLLECTION_PREFERENCES, MODE_PRIVATE).
+			edit().putFloat(AccelerometerDirectionApplication.ratePrefName, castSampleRate).commit();
 
 		// Detach listeners
 		detachListeners();
@@ -520,20 +538,23 @@ public class CollectionActivity extends Activity {
 			AndroidUtils.displayToast(getApplicationContext(), 
 					getString(R.string.twice_to_exit_message));
 
-			// Schedule a regiter reset
+			// Schedule a register reset
 			new Handler().postDelayed(new Runnable() {
 				@Override public void run() {backWasPressed = false;}}, PERIOD);
 		}
 	}
-	
-//	/**
-//	 * Method placed to disable Home button.
-//	 * 
-//	 * Note: Taken from http://stackoverflow.com/questions/3898876/how-to-disable-the-home-key
-//	 */
-//	@Override
-//	public void onAttachedToWindow() {
-//	    this.getWindow().setType(WindowManager.LayoutParams.TYPE_KEYGUARD);
-//	    super.onAttachedToWindow();
-//	}
+
+	/**
+	 * Function used to return the current date, ready to be used in a filename.
+	 * 
+	 * @return A string representing the date in a "YYYY-MM-DD_HH:MM" format
+	 */
+	private String getDateForFilename() {
+		Calendar c = Calendar.getInstance();
+		SimpleDateFormat sdf = (SimpleDateFormat) java.text.DateFormat.getDateTimeInstance();
+		sdf.applyPattern("yyyy-MM-dd_HH'h'mm");
+		String date = sdf.format(c.getTime());
+
+		return date;
+	}
 }
