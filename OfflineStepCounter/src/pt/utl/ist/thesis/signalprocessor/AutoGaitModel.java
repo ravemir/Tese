@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.math.stat.regression.SimpleRegression;
+
 import pt.utl.ist.thesis.util.buffers.GPSSegment;
 
 public class AutoGaitModel {

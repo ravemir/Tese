@@ -50,17 +50,17 @@ public class OfflinePositioning {
 		int sampleFreq = 100;
 		int size = sampleFreq;
 		RawReadingSource accelRs = new RawReadingSource(size);
-		accelRs.attachFilter(new ButterworthFilter(10, 5, sampleFreq, true));
+		accelRs.plugFilterIntoInput(new ButterworthFilter(10, 5, sampleFreq, true));
 
 		// Create ReadingSource for OrientationReadings and attach the filters
 		RawReadingSource oriRs = new RawReadingSource();
 		oriRs.addUnboundedOrientationFilter(size);
 		MovingAverageFilter maf = new MovingAverageFilter(sampleFreq);
-		maf.attachFilter(oriRs.getFilters().get(0));
+		maf.plugFilterIntoInput(oriRs.getFilters().get(0));
 
 		// Create the StepAnalyser and attach the acceleration source
 		StepAnalyser sa = new StepAnalyser(sampleFreq);
-		accelRs.getFilters().get(0).attachAnalyser(sa);
+		accelRs.getFilters().get(0).plugAnalyserIntoInput(sa);
 
 		// Create an initialized AutoGaitModel
 		AutoGaitModel agm = new AutoGaitModel(getSegmentSamples());
@@ -68,7 +68,7 @@ public class OfflinePositioning {
 		// Create the PositioningAnalyser and attach the StepAnalyser
 		PositioningAnalyser pa = new PositioningAnalyser(sampleFreq, agm);
 		sa.attachToAnalyser(pa);
-		oriRs.attachAnalyser(pa);
+		oriRs.plugAnalyserIntoInput(pa);
 
 		// Get the first lines
 		String accelLine = null; String oriLine = null;

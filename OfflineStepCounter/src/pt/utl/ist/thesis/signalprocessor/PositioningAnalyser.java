@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Observer;
 
 import pt.utl.ist.thesis.util.SensorReadingRunnable;
+import pt.utl.ist.util.sensor.exception.AutoGaitModelUninitializedException;
 import pt.utl.ist.util.sensor.exception.StepWithNoFrequencyException;
 import pt.utl.ist.util.sensor.reading.GPSReading;
 import pt.utl.ist.util.sensor.reading.OrientationReading;
@@ -53,12 +54,10 @@ public class PositioningAnalyser extends Analyser implements Observer {
 	 * @param startPos	The absolute position to start from.
 	 */
 	public PositioningAnalyser(int rate, AutoGaitModel agm, GPSReading startPos){
-		orientationFilter = new MovingAverageFilter(rate);
+		this(rate);
+		
 		autoGaitModel = agm;
 		startingPosition = startPos;
-
-		// Add first RelativePositionReading
-		rprBuffer.add(new RelativePositionReading(0D, 0D, 0D));
 	}
 
 	/**
@@ -73,7 +72,21 @@ public class PositioningAnalyser extends Analyser implements Observer {
 	 */
 	public PositioningAnalyser(int rate, AutoGaitModel agm){
 		this(rate,agm, DEFAULT_STARTING_POSITION);
-	} 
+	}
+	
+	/**
+	 * Creates a {@link PositioningAnalyser} object with
+	 * considering the given sampling rate. The {@link AutoGaitModel}
+	 * is not initialized, and thus, the object will not work.
+	 * 
+	 * @param rate	The sampling rate to be considered.
+	 */
+	public PositioningAnalyser(int rate){
+		orientationFilter = new MovingAverageFilter(rate);
+		
+		// Add first RelativePositionReading
+		rprBuffer.add(new RelativePositionReading(0D, 0D, 0D));
+	}
 
 	/**
 	 * Takes a 2D array of data samples and restores the
@@ -89,6 +102,7 @@ public class PositioningAnalyser extends Analyser implements Observer {
 	@Override
 	public void update(ReadingSource readingSource, SensorReading reading) {
 		synchronized(this){
+			initializationCheck();
 			if(reading instanceof OrientationReading){
 				// Add either all or Azimuth values to an average
 				orientationFilter.pushReading(reading);
@@ -137,6 +151,15 @@ public class PositioningAnalyser extends Analyser implements Observer {
 						reading.getClass().getSimpleName() +"' reading type." );
 			}
 		}
+	}
+
+	/**
+	 * Checks if this {@link PositioningAnalyser} was
+	 * properly initialized.
+	 */
+	public void initializationCheck() {
+		if(autoGaitModel == null)
+			throw new AutoGaitModelUninitializedException("The AutoGait model was not initialized.");
 	}
 
 	/**

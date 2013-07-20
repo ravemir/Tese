@@ -1,5 +1,15 @@
 package pt.utl.ist.thesis.util;
 
+import static java.lang.Math.abs;
+import static java.lang.Math.atan;
+import static java.lang.Math.atan2;
+import static java.lang.Math.cos;
+import static java.lang.Math.pow;
+import static java.lang.Math.sin;
+import static java.lang.Math.sqrt;
+import static java.lang.Math.toDegrees;
+import static java.lang.Math.toRadians;
+
 public class MathUtils {
 
 	/**
@@ -51,9 +61,9 @@ public class MathUtils {
 	public static double norm(double[] values) {
 		double[] tmp = values.clone();
 		for (int i = 0; i < tmp.length; i++)
-			tmp[i] = Math.pow(tmp[i], 2);
+			tmp[i] = pow(tmp[i], 2);
 		
-		return Math.sqrt(sum(tmp));
+		return sqrt(sum(tmp));
 	}
 	
 	/**
@@ -69,14 +79,13 @@ public class MathUtils {
 	 * @return
 	 */
 	public static Double distFrom(double lat1, double lng1, double lat2, double lng2) {
-	    double earthRadius = 6369000; // in meters
-	    double dLat = Math.toRadians(lat2-lat1);
-	    double dLng = Math.toRadians(lng2-lng1);
-	    double a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-	               Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
-	               Math.sin(dLng/2) * Math.sin(dLng/2);
-	    double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-	    double dist = earthRadius * c;
+	    double dLat = toRadians(lat2-lat1);
+	    double dLng = toRadians(lng2-lng1);
+	    double a = sin(dLat/2) * sin(dLat/2) +
+	               cos(toRadians(lat1)) * cos(toRadians(lat2)) *
+	               sin(dLng/2) * sin(dLng/2);
+	    double c = 2 * atan2(sqrt(a), sqrt(1-a));
+	    double dist = EARTH_RADIUS * c;
 
 	    return new Double(dist);
     }
@@ -98,17 +107,17 @@ public class MathUtils {
 	public static double calculateHeadingChange(Double lat2, Double long2, Double lat1,
 			Double long1) {
 		double dLon = (long2-long1);
-		double y = Math.sin(dLon) * Math.cos(lat2);
-		double x = Math.cos(lat1)*Math.sin(lat2) - 
-				Math.sin(lat1)*Math.cos(lat2)*Math.cos(dLon);
-		return Math.toDegrees((Math.atan2(y, x)));
+		double y = sin(dLon) * cos(lat2);
+		double x = cos(lat1)*sin(lat2) - 
+				sin(lat1)*cos(lat2)*cos(dLon);
+		return toDegrees((atan2(y, x)));
 	}
 	
 	public static double headingChangeFromBearings(double b1, double b2){
 		double diff = b2 - b1;
 		
 		// If the difference between b2 and b1 is bigger than 180º...
-		if(Math.abs(diff) > 180)
+		if(abs(diff) > 180)
 			// ...return the angle to origin of both, 
 			// multiplied by a coefficient that denotes 
 			// the direction
@@ -138,7 +147,9 @@ public class MathUtils {
 			return angle;
 	}
 	
-	private final static double EPSILON = 0.00001;
+	private static final double EPSILON = 0.00001;
+	public static final double EARTH_RADIUS = 6369000.0;		// Semi-major axis
+	public static final double F = 1 / 298.25257223563;		// Reciprocal of flattening
 
 
 	/**
@@ -153,7 +164,7 @@ public class MathUtils {
 	 * @return true true if two doubles are considered equal.
 	 */
 	public static boolean equalsDouble(double a, double b){
-	    return a == b ? true : Math.abs(a - b) < EPSILON;
+	    return a == b ? true : abs(a - b) < EPSILON;
 	}
 
 
@@ -171,6 +182,49 @@ public class MathUtils {
 	 * @return true if a is considered equal to b.
 	 */
 	public static boolean equalsDouble(double a, double b, double epsilon){
-	    return a == b ? true : Math.abs(a - b) < epsilon;
+	    return a == b ? true : abs(a - b) < epsilon;
+	}
+	
+	/**
+	 * Converts the given Latitude, Longitude and Altitude
+	 * coordinates to a X,Y and Z coordinate.
+	 * 
+	 * @param lat
+	 * @param lon
+	 * @param alt
+	 * @return
+	 */
+	public static double[] LLAtoXYZ(double lat, double lon, double alt){
+		double N = EARTH_RADIUS / (sqrt(1-F*(2-F)*(pow(sin(lat),2))));
+		double[] res = new double[]{
+			(N+alt)*cos(lat)*cos(lon),
+			(N+alt)*cos(lat)*sin(lon),
+			(pow((1-F),2)*N+alt)*sin(lat)};
+		
+		return res;
+	}
+	
+	/**
+	 * Converts a set o northing, easting and 
+	 * coordinates to Latitude, Longitude and
+	 * altitude decimal degree coordinates.
+	 * 
+	 * @param x
+	 * @param y
+	 * @param z
+	 * @return
+	 */
+	public static double[] XYZtoLLA(double x, double y, double z){
+		double b = EARTH_RADIUS*(1-F);
+		double r = sqrt(pow(x,2) + pow(y,2));
+		double e2 = 1 - ((pow(b,2))/(pow(EARTH_RADIUS,2)));
+		double e2l = ((pow(EARTH_RADIUS,2))/(pow(b,2))) - 1;
+		double theta = atan((EARTH_RADIUS*z)/(b*r));
+		double pLx = atan((z+e2l*b*(pow(sin(theta),3)))/(r - e2*EARTH_RADIUS*(pow(cos(theta),3))));
+		double N = EARTH_RADIUS / (sqrt(1-F*(2-F)*(pow(sin(pLx),2))));
+		double pLy = atan(y/x);
+		double h = (r/cos(pLx))-N;
+		
+		return new double[]{pLx, pLy, h};
 	}
 }

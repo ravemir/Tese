@@ -50,20 +50,23 @@ public abstract class ReadingSource extends Observable {
 	}
 
 	/**
-	 * Attaches a new {@link Analyser} object to this filter.
-	 * (part of the Observer pattern)
+	 * Plugs the output end of the given {@link Analyser}
+	 * to this {@link ReadingSource}'s input.
+	 * 
+	 * @param a	The {@link Analyser} to be plugged.
 	 */
-	public void attachAnalyser(Analyser fa) {
+	public void plugAnalyserIntoInput(Analyser a) {
 		// Adds new FilterAnalyser
-		addObserver(fa);
+		addObserver(a);
 	}
 
 	/**
-	 * Attaches a filter to this ReadingSource.
+	 * Plugs the output end of the given {@link Filter}
+	 * to this {@link ReadingSource}'s input.
 	 * 
-	 * @param f The filter to be attached.
+	 * @param f	The {@link Filter} to be plugged.
 	 */
-	public void attachFilter(Filter f) {
+	public void plugFilterIntoInput(Filter f) {
 		addObserver(f);
 		filters.add(f);
 	}

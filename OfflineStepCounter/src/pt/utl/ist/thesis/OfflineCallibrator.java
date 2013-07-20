@@ -45,7 +45,7 @@ public class OfflineCallibrator {
 		int sampleFreq = 100;
 		int size = sampleFreq;
 		RawReadingSource accelRs = new RawReadingSource(size);
-		accelRs.attachFilter(new ButterworthFilter(10, 5, sampleFreq, true));
+		accelRs.plugFilterIntoInput(new ButterworthFilter(10, 5, sampleFreq, true));
 		//accelRs.attachFilter(new GravityFilter());
 		//rs.addMovingAverageFilter(1);
 		//rs.addMovingAverageFilter(25);
@@ -56,12 +56,12 @@ public class OfflineCallibrator {
 
 		// Create the StepAnalyser
 		StepAnalyser sa = new StepAnalyser(sampleFreq);
-		accelRs.getFilters().get(0).attachAnalyser(sa);
+		accelRs.getFilters().get(0).plugAnalyserIntoInput(sa);
 		
 		// Create the AutoGaitModelerAnalyser and attach the StepAnalyser
 		AutoGaitModelerAnalyser agma = new AutoGaitModelerAnalyser();
 		sa.attachToAnalyser(agma);
-		locRs.attachAnalyser(agma);
+		locRs.plugAnalyserIntoInput(agma);
 
 		// Get the first lines
 		String accelLine = null; String gpsLine = null;

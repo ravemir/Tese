@@ -34,15 +34,15 @@ public class OfflineStepCounter {
 		// Create buffer w/two average observers
 		int size = 50;
 		RawReadingSource rs = new RawReadingSource(size);		
-		rs.attachFilter(new ButterworthFilter(10, 5, 50, true));
-		rs.attachFilter(new GravityFilter());
+		rs.plugFilterIntoInput(new ButterworthFilter(10, 5, 50, true));
+		rs.plugFilterIntoInput(new GravityFilter());
 		//rs.addMovingAverageFilter(1);
 		//rs.addMovingAverageFilter(25);
 		//rs.addMovingAverageFilter(50);
 		
 		// Create the filter analyser
 		StepAnalyser fa = new StepAnalyser(50);
-		rs.getFilters().get(0).attachAnalyser(fa);
+		rs.getFilters().get(0).plugAnalyserIntoInput(fa);
 //		rs.attachAnalyser(fa);
 		
 		// Loop until end of file

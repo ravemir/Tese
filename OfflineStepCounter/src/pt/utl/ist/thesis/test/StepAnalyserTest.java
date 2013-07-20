@@ -39,7 +39,7 @@ public class StepAnalyserTest {
 	public void testGetPeaks() {
 		// Create analyser and attach it to the average filter
 		StepAnalyser fa = new StepAnalyser(50);
-		rs.getFilters().get(0).attachAnalyser(fa);
+		rs.getFilters().get(0).plugAnalyserIntoInput(fa);
 		
 		// Add readings
 		rs.pushReading(new AccelReading("0", new double[]{0,0,0}));
@@ -54,7 +54,7 @@ public class StepAnalyserTest {
 		// Create a new reading source, attaching the 
 		// analyser to the raw source
 		rs = new RawReadingSource(50);
-		rs.attachAnalyser(fa);
+		rs.plugAnalyserIntoInput(fa);
 		
 		// Add readings
 		rs.pushReading(new AccelReading("3", new double[]{-1,-1,-1}));

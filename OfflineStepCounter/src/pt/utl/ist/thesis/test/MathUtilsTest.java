@@ -1,6 +1,6 @@
 package pt.utl.ist.thesis.test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -94,5 +94,17 @@ public class MathUtilsTest {
 		
 		// 4º -> 355º
 		assertEquals(-9D, MathUtils.headingChangeFromBearings(4, 355), 0.000000001);
+	}
+	
+	@Test
+	public void testLLAtoXYZ(){
+		
+	}
+	
+	@Test
+	public void testXYZtoLLA(){
+		// ell2xyz(38.73746458,-9.30212407,223.60000610351563, )
+//		assertArrayEquals(new double[]{-3216986.29411006, -396566.52876459, 5464385.82598364}, 
+//				MathUtils.LLAtoXYZ(38.73746458D,-9.30212407D,223.60000610351563D), 0.000000001);
 	}
 }
