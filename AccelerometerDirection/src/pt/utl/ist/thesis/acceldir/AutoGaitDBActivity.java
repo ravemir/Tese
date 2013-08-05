@@ -1,6 +1,7 @@
 package pt.utl.ist.thesis.acceldir;
 
 import pt.utl.ist.thesis.acceldir.sql.AutoGaitSegmentDataSource;
+import pt.utl.ist.thesis.signalprocessor.AutoGaitModel;
 import android.app.ListActivity;
 import android.os.Bundle;
 import android.widget.ArrayAdapter;
@@ -18,9 +19,12 @@ public class AutoGaitDBActivity extends ListActivity {
 		
 		// Get the data from the database and fill the entries
 		double[][] dataSamples = agsds.getAllSegmentDataSamples();
-		String[] entries = new String[dataSamples.length];
+		AutoGaitModel agm = new AutoGaitModel(dataSamples);
+		String[] entries = new String[dataSamples.length + 1];
+		if (dataSamples.length > 0)
+			entries[0] = "alpha: " + agm.getAlpha() + ", beta: " + agm.getBeta();
 		for (int i = 0; i < dataSamples.length; i++)
-			entries[i] = dataSamples[i][0] + ", " + dataSamples[i][1];
+			entries[i+1] = dataSamples[i][0] + ", " + dataSamples[i][1];
 		
 		// Populate the ListView
 		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, 
