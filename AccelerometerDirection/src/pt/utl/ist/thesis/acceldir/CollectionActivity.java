@@ -231,20 +231,18 @@ public class CollectionActivity extends Activity {
 		 */
 		public void attachFiltersAndAnalysers(){
 			// Attach the Butterworth accelBWF to the RawReadingSource
-			accelRS.plugFilterIntoInput(accelBWF);
+			accelRS.plugFilterIntoOutput(accelBWF);
 
 			// Attach StepAnalyser to accelBWF
-			accelBWF.plugAnalyserIntoInput(stepA);
+			accelBWF.plugAnalyserIntoOutput(stepA);
 
-			// Attach an UnboundedOrientationFilter and plug a
-			// MovingAverageFilter to the output end of it
+			// Attach an UnboundedOrientationFilter
 			oriRS.addUnboundedOrientationFilter(SAMPLERATE);
-			oriMAF.plugFilterIntoInput(oriRS.getFilters().get(0));
 			
 			// Attach the StepAnalyser and the Orientation
 			// MovingAverageFilter to the PositioningAnalyser
-			stepA.attachToAnalyser(positioningA);
-			oriMAF.plugAnalyserIntoInput(positioningA);
+			stepA.plugAnalyserIntoOutput(positioningA);
+			oriRS.getFilters().get(0).plugAnalyserIntoOutput(positioningA);
 		}
 
 		@Override
@@ -438,7 +436,8 @@ public class CollectionActivity extends Activity {
 	 */
 	@TargetApi(Build.VERSION_CODES.GINGERBREAD)
 	public void initializeAcceleration() {
-		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
+//		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION); // Removed Linear Acceleration sensor because it is pre-filtered
+		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 		mGravity = mSensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
 	}
 

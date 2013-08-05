@@ -180,15 +180,15 @@ public class AutoGaitCollectionActivity extends Activity {
 		 */
 		public void attachFiltersAndAnalysers(){
 			// Attach the Butterworth filter to the RawReadingSource
-			accelRS.plugFilterIntoInput(filter);
+			accelRS.plugFilterIntoOutput(filter);
 
 			// Attach StepAnalyser to filter
-			filter.plugAnalyserIntoInput(stepA);
+			filter.plugAnalyserIntoOutput(stepA);
 
 			// Attach the StepAnalyser and the GPSReading
 			// RawReadingSource to the AutoGaitModelerAnalyser
-			stepA.attachToAnalyser(agma);
-			locRS.plugAnalyserIntoInput(agma);
+			stepA.plugAnalyserIntoOutput(agma);
+			locRS.plugAnalyserIntoOutput(agma);
 		}
 
 		@Override
