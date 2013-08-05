@@ -36,6 +36,9 @@ public abstract class SensorReading {
 	}
 	
 	public abstract double[] getReading();
+	public double[] getAverageableReading(){
+		return getReading();
+	}
 	
 	public double[] getReadingAndNorm(){
 		double[] reading = getReading();

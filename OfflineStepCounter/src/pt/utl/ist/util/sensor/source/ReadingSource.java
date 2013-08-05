@@ -50,23 +50,23 @@ public abstract class ReadingSource extends Observable {
 	}
 
 	/**
-	 * Plugs the output end of the given {@link Analyser}
-	 * to this {@link ReadingSource}'s input.
+	 * Plugs the input end of the given {@link Analyser}
+	 * to this {@link ReadingSource}'s output.
 	 * 
 	 * @param a	The {@link Analyser} to be plugged.
 	 */
-	public void plugAnalyserIntoInput(Analyser a) {
+	public void plugAnalyserIntoOutput(Analyser a) {
 		// Adds new FilterAnalyser
 		addObserver(a);
 	}
 
 	/**
-	 * Plugs the output end of the given {@link Filter}
-	 * to this {@link ReadingSource}'s input.
+	 * Plugs the input end of the given {@link Filter}
+	 * to this {@link ReadingSource}'s output.
 	 * 
 	 * @param f	The {@link Filter} to be plugged.
 	 */
-	public void plugFilterIntoInput(Filter f) {
+	public void plugFilterIntoOutput(Filter f) {
 		addObserver(f);
 		filters.add(f);
 	}

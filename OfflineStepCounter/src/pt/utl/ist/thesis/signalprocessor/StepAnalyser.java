@@ -19,7 +19,7 @@ public class StepAnalyser extends Analyser {
 
 //	private final int sampleRate;
 	
-	private static final double KFACTOR = 10.5; // TODO Chosen heuristically. Should be computed?
+	private static final double KFACTOR = 9; // TODO Chosen heuristically. Should be computed?
 												// 		Value before which a peak is always discarded.
 												//		Gravity magnitude is a good pick.
 	private static final double PEAKTHRESHFACTOR = 0.7; // Multiplication factor to lower the step threshold

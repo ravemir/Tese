@@ -10,6 +10,7 @@ import java.util.Queue;
 import pt.utl.ist.thesis.signalprocessor.AutoGaitModel;
 import pt.utl.ist.thesis.signalprocessor.PositioningAnalyser;
 import pt.utl.ist.thesis.signalprocessor.StepAnalyser;
+import pt.utl.ist.thesis.util.SensorReadingRunnable;
 import pt.utl.ist.util.sensor.reading.AccelReading;
 import pt.utl.ist.util.sensor.reading.OrientationReading;
 import pt.utl.ist.util.sensor.reading.RelativePositionReading;
@@ -17,18 +18,24 @@ import pt.utl.ist.util.sensor.reading.SensorReading;
 import pt.utl.ist.util.sensor.reading.StepReading;
 import pt.utl.ist.util.sensor.source.RawReadingSource;
 import pt.utl.ist.util.source.filters.ButterworthFilter;
-import pt.utl.ist.util.source.filters.MovingAverageFilter;
 
 public class OfflinePositioning {
 
 	//	public static final String baseFolder = "C:\\Users\\Carlos\\Dropbox\\Tese\\Dissertacao\\Dados\\06-03-2013\\logs\\conv\\";
-	public static final String baseFolder = "C:\\Users\\Carlos\\Dropbox\\Tese\\Dissertacao\\Dados\\07-07-2013\\logs\\conv\\";
-	public static final String accelLogName = "2013-07-07_22h00.log.accel";
-	public static final String locLogName = "2013-07-07_22h00.log.ori";
+//	public static final String baseFolder = "C:\\Users\\Carlos\\Dropbox\\Tese\\Dissertacao\\Dados\\07-07-2013\\logs\\conv\\";
+//	public static final String accelLogName = "2013-07-07_22h00.log.accel";
+//	public static final String oriLogName = "2013-07-07_22h00.log.ori";
+//	public static final String baseFolder = "C:\\Users\\Carlos\\Dropbox\\Tese\\Dissertacao\\Dados\\21-07-2013\\logs\\conv\\";
+//	public static final String accelLogName = "2013-07-21_16h54-sprint.log.accel";
+//	public static final String oriLogName = "2013-07-21_16h54-sprint.log.ori";
 	//	public static final String accelLogName = "2013-03-06_18h18.log.accel";
-	//	public static final String locLogName = "2013-03-06_18h18.log.ori";
+	//	public static final String oriLogName = "2013-03-06_18h18.log.ori";
 	//	public static final String accelLogName = "2013-03-06_18h30.log.accel";
-	//	public static final String locLogName = "2013-03-06_18h30.log.loc";
+	//	public static final String oriLogName = "2013-03-06_18h30.log.loc";
+	public static final String baseFolder = "C:\\Users\\Carlos\\Dropbox\\Tese\\Dissertacao\\Dados\\05-08-2013\\logs\\conv\\";
+	public static final String baseFilename = "2013-08-05_10h06.log";
+	public static final String oriLogName = baseFilename + ".ori";
+	public static final String accelLogName = baseFilename + ".accel";
 
 
 	/**
@@ -40,35 +47,37 @@ public class OfflinePositioning {
 		BufferedReader locLineReader;
 		try {
 			accelLineReader = new BufferedReader(new FileReader(baseFolder + accelLogName));
-			locLineReader = new BufferedReader(new FileReader(baseFolder + locLogName));
+			locLineReader = new BufferedReader(new FileReader(baseFolder + oriLogName));
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 			return;
 		}
 
 		// Create buffer w/two average observers
-		int sampleFreq = 100;
+		int sampleFreq = 50;
 		int size = sampleFreq;
 		RawReadingSource accelRs = new RawReadingSource(size);
-		accelRs.plugFilterIntoInput(new ButterworthFilter(10, 5, sampleFreq, true));
+		ButterworthFilter bwF = new ButterworthFilter(10, 5, sampleFreq, true);
+		accelRs.plugFilterIntoOutput(bwF);
 
-		// Create ReadingSource for OrientationReadings and attach the filters
+		// Create ReadingSource for OrientationReadings 
+		// and attach the UnboundedOrientationFilter
 		RawReadingSource oriRs = new RawReadingSource();
 		oriRs.addUnboundedOrientationFilter(size);
-		MovingAverageFilter maf = new MovingAverageFilter(sampleFreq);
-		maf.plugFilterIntoInput(oriRs.getFilters().get(0));
+//		MovingAverageFilter maf = new MovingAverageFilter(sampleFreq);
+//		maf.plugFilterIntoOutput(oriRs.getFilters().get(0));
 
 		// Create the StepAnalyser and attach the acceleration source
 		StepAnalyser sa = new StepAnalyser(sampleFreq);
-		accelRs.getFilters().get(0).plugAnalyserIntoInput(sa);
+		bwF.plugAnalyserIntoOutput(sa);
 
 		// Create an initialized AutoGaitModel
 		AutoGaitModel agm = new AutoGaitModel(getSegmentSamples());
 
 		// Create the PositioningAnalyser and attach the StepAnalyser
 		PositioningAnalyser pa = new PositioningAnalyser(sampleFreq, agm);
-		sa.attachToAnalyser(pa);
-		oriRs.plugAnalyserIntoInput(pa);
+		sa.plugAnalyserIntoOutput(pa);
+		oriRs.getFilters().get(0).plugAnalyserIntoOutput(pa);
 
 		// Get the first lines
 		String accelLine = null; String oriLine = null;
@@ -116,6 +125,19 @@ public class OfflinePositioning {
 		for(SensorReading sr : accels) readingQueue.add(sr);
 		for(SensorReading sr : orients) readingQueue.add(sr);
 
+		// Display positioning event
+		pa.setSensorReadingUpdater(new SensorReadingRunnable() {
+			
+			@Override
+			public void run() {
+				String s = "New Position event: ";
+				for(double d : reading.getReading())
+					s += "," + d;
+				s += "\n";
+				System.out.println(s);
+			}
+		});
+		
 		// Push SensorReading objects into their
 		// respective reading sources
 		for(SensorReading sr : readingQueue){

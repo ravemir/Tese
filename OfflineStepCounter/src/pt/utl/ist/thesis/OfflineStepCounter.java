@@ -9,14 +9,15 @@ import pt.utl.ist.thesis.signalprocessor.StepAnalyser;
 import pt.utl.ist.util.sensor.reading.AccelReading;
 import pt.utl.ist.util.sensor.source.RawReadingSource;
 import pt.utl.ist.util.source.filters.ButterworthFilter;
-import pt.utl.ist.util.source.filters.Filter;
 import pt.utl.ist.util.source.filters.GravityFilter;
 
 public class OfflineStepCounter {
 
-	public static final String baseFolder = "C:\\Users\\Carlos\\Dropbox\\Tese\\Dissertacao\\Dados\\06-03-2013\\logs\\conv\\";
+	public static final String baseFolder = "C:\\Users\\Carlos\\Dropbox\\Tese\\Dissertacao\\Dados\\05-08-2013\\logs\\conv\\";
 //	public static final String accelLogName = "2013-03-06_18h17.log.accel";
-	public static final String accelLogName = "2013-03-06_18h30.log.accel";
+//	public static final String accelLogName = "2013-03-06_18h30.log.accel";
+//	public static final String accelLogName = "2013-08-05_10h11.log.accel";
+	public static final String accelLogName = "2013-08-05_10h05.log.accel";
 	
 	/**
 	 * @param args
@@ -34,15 +35,15 @@ public class OfflineStepCounter {
 		// Create buffer w/two average observers
 		int size = 50;
 		RawReadingSource rs = new RawReadingSource(size);		
-		rs.plugFilterIntoInput(new ButterworthFilter(10, 5, 50, true));
-		rs.plugFilterIntoInput(new GravityFilter());
+		rs.plugFilterIntoOutput(new ButterworthFilter(10, 5, 50, true));
+		rs.plugFilterIntoOutput(new GravityFilter());
 		//rs.addMovingAverageFilter(1);
 		//rs.addMovingAverageFilter(25);
 		//rs.addMovingAverageFilter(50);
 		
 		// Create the filter analyser
 		StepAnalyser fa = new StepAnalyser(50);
-		rs.getFilters().get(0).plugAnalyserIntoInput(fa);
+		rs.getFilters().get(0).plugAnalyserIntoOutput(fa);
 //		rs.attachAnalyser(fa);
 		
 		// Loop until end of file
@@ -64,10 +65,10 @@ public class OfflineStepCounter {
 			
 			// Print current state
 			//System.out.println("Value:\t\t" + rs.getBuffer().getCurrentReading().getAccelerationNorm());
-			System.out.println("Time: " + reading.getTimestampString());
-			System.out.println("Filtered:\t" + ((AccelReading) ((Filter) rs.getFilters().get(0)).getBuffer().getCurrentReading()).getReadingNorm());
-			System.out.println("Gravity:\t" + ((AccelReading) ((GravityFilter) rs.getFilters().get(1)).getBuffer().getCurrentReading()).getReadingNorm() + ", " 
-								+ ((GravityFilter) rs.getFilters().get(1)).getBuffer().getCurrentReading());
+//			System.out.println("Time: " + reading.getTimestampString());
+//			System.out.println("Filtered:\t" + ((AccelReading) ((Filter) rs.getFilters().get(0)).getBuffer().getCurrentReading()).getReadingNorm());
+//			System.out.println("Gravity:\t" + ((AccelReading) ((GravityFilter) rs.getFilters().get(1)).getBuffer().getCurrentReading()).getReadingNorm() + ", " 
+//								+ ((GravityFilter) rs.getFilters().get(1)).getBuffer().getCurrentReading());
 
 			// Read new line
 			try {

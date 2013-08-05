@@ -48,14 +48,4 @@ public final class MovingAverageFilter extends Filter {
 	public int getAverageOrder() {
 		return averageOrder;
 	}
-	
-	/**
-	 * Attaches a new {@link StepAnalyser} object to this filter.
-	 * (part of the Observer pattern)
-	 */
-	
-//	public void attachAnalyser(StepAnalyser fa){
-//		// Adds new FilterAnalyser
-//		addObserver(fa);
-//	}
 }

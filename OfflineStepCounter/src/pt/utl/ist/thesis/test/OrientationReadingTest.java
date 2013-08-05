@@ -21,7 +21,23 @@ public class OrientationReadingTest {
 		double[] expected = new double[]{1.1D, 2.2D, 3.3D};
 		double[] actual = or.getReading();
 		
-		assertArrayEquals(expected, actual, 0.0001);
+		// Test direct reading
+		assertArrayEquals(expected, actual, 0.00000001);
+		
+		// Test cartesian readings
+		actual = or.getAverageableReading();
+		expected = new double[]{
+				0.45359612142D, 0.89120736006D, 
+				-0.58850111725D, 0.80849640382D, 
+				-0.9874797699D, -0.15774569414D
+		};
+		assertArrayEquals(expected, actual, 0.00000000001);
+		
+		// Test instantiating from catersian
+		or = new OrientationReading(123456D, expected);
+		expected = new double[]{1.1D,2.2D,3.3D}; 
+		actual = or.getReading();
+		assertArrayEquals(expected, actual, 0.00000000001);
 	}
 
 }

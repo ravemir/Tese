@@ -19,11 +19,16 @@ import pt.utl.ist.util.source.filters.ButterworthFilter;
 
 public class OfflineCallibrator {
 
-	public static final String baseFolder = "C:\\Users\\Carlos\\Dropbox\\Tese\\Dissertacao\\Dados\\06-03-2013\\logs\\conv\\";
-	public static final String accelLogName = "2013-03-06_18h18.log.accel";
-	public static final String locLogName = "2013-03-06_18h18.log.loc";
+//	public static final String baseFolder = "C:\\Users\\Carlos\\Dropbox\\Tese\\Dissertacao\\Dados\\06-03-2013\\logs\\conv\\";
+//	public static final String accelLogName = "2013-03-06_18h18.log.accel";
+//	public static final String locLogName = "2013-03-06_18h18.log.loc";
 //	public static final String accelLogName = "2013-03-06_18h30.log.accel";
 //	public static final String locLogName = "2013-03-06_18h30.log.loc";
+	public static final String baseFolder = "C:\\Users\\Carlos\\Dropbox\\Tese\\Dissertacao\\Dados\\05-08-2013\\logs\\conv\\";
+	public static final String baseFilename = "2013-08-05_10h06.log";
+	public static final String oriLogName = baseFilename + ".ori";
+	public static final String accelLogName = baseFilename + ".accel";
+	public static final String locLogName = baseFilename + ".loc";
 
 
 	/**
@@ -45,7 +50,7 @@ public class OfflineCallibrator {
 		int sampleFreq = 100;
 		int size = sampleFreq;
 		RawReadingSource accelRs = new RawReadingSource(size);
-		accelRs.plugFilterIntoInput(new ButterworthFilter(10, 5, sampleFreq, true));
+		accelRs.plugFilterIntoOutput(new ButterworthFilter(10, 5, sampleFreq, true));
 		//accelRs.attachFilter(new GravityFilter());
 		//rs.addMovingAverageFilter(1);
 		//rs.addMovingAverageFilter(25);
@@ -56,12 +61,12 @@ public class OfflineCallibrator {
 
 		// Create the StepAnalyser
 		StepAnalyser sa = new StepAnalyser(sampleFreq);
-		accelRs.getFilters().get(0).plugAnalyserIntoInput(sa);
+		accelRs.getFilters().get(0).plugAnalyserIntoOutput(sa);
 		
 		// Create the AutoGaitModelerAnalyser and attach the StepAnalyser
 		AutoGaitModelerAnalyser agma = new AutoGaitModelerAnalyser();
-		sa.attachToAnalyser(agma);
-		locRs.plugAnalyserIntoInput(agma);
+		sa.plugAnalyserIntoOutput(agma);
+		locRs.plugAnalyserIntoOutput(agma);
 
 		// Get the first lines
 		String accelLine = null; String gpsLine = null;

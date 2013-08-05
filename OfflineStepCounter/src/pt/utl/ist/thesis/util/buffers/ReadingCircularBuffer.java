@@ -5,11 +5,15 @@ import java.util.List;
 
 import pt.utl.ist.thesis.util.MathUtils;
 import pt.utl.ist.util.sensor.reading.AccelReading;
+import pt.utl.ist.util.sensor.reading.GPSReading;
 import pt.utl.ist.util.sensor.reading.OrientationReading;
 import pt.utl.ist.util.sensor.reading.SensorReading;
 import pt.utl.ist.util.source.filters.Filter;
 
 public class ReadingCircularBuffer {
+	
+	// WORKAROUND
+	private String readType;
 	
 	private int positionIndex = -1;
 	private SensorReading[] readings;
@@ -31,6 +35,8 @@ public class ReadingCircularBuffer {
 	 * @param read The reading to be inserted
 	 */
 	public void addReading(SensorReading read) {
+		checkType(read);
+		
 		// Check the received the reading's type, and clone it
 		SensorReading add;
 	    if(read instanceof AccelReading)
@@ -48,6 +54,13 @@ public class ReadingCircularBuffer {
 	    // Add the new reading to the buffer
     	readings[positionIndex] = add;
 	}
+
+	/**
+	 * @param read
+	 */
+	public void checkType(SensorReading read) {
+		if(readType == null) readType = read.getClass().getSimpleName();
+	}
 	
 	/**
 	 * Returns the current reading, which was the last
@@ -58,7 +71,7 @@ public class ReadingCircularBuffer {
 	public SensorReading getCurrentReading() {
 		SensorReading current = getPrevNReading(0);
 		
-		return (current!=null? current: getEmptyReading()); // FIXME Não deve devolver AccelReading, mas genérico
+		return (current!=null? current: getEmptyReading());
 	}
 	
 	/**
@@ -77,8 +90,14 @@ public class ReadingCircularBuffer {
 	 * @return
 	 */
 	public SensorReading getEmptyReading() {
-		SensorReading reading = new AccelReading();
-		return reading;
+		if(readType == null)					// FIXME Dirty workaround. Should pass the reading type and 
+			return new AccelReading();			// not care if there was a previous reading
+		else if (readType.equals("OrientationReading"))
+			return OrientationReading.getNeuterReading();
+		else if (readType.equals("GPSReading"))
+			return new GPSReading();
+		else
+			return new AccelReading();
 	}
 
 	/**
@@ -150,7 +169,7 @@ public class ReadingCircularBuffer {
 	 */
 	public SensorReading getPrevNReading(int n) {
 		SensorReading read = readings[MathUtils.altMod(positionIndex-n,readings.length)];
-		return (read != null? read: getEmptyReading()); // FIXME Should not return an AccelReading, since this is generic
+		return (read != null? read: getEmptyReading());
 	}
 	
 	/**

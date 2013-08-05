@@ -38,13 +38,13 @@ public abstract class Analyser implements Observer {
 	}
 	
 	/**
-	 * Attaches an {@link Analyser} object into this {@link Analyser}'s
-	 * {@link ReadingSource} object, so it can push
-	 * updates through it.
+	 * Attaches an {@link Analyser} object to the output
+	 * end of this {@link Analyser}'s {@link ReadingSource} 
+	 * object, so it can push updates through it.
 	 * 
 	 * @param a	The {@link Analyser} to attach.
 	 */
-	public void attachToAnalyser(Analyser a){
-		rs.plugAnalyserIntoInput(a);
+	public void plugAnalyserIntoOutput(Analyser a){
+		rs.plugAnalyserIntoOutput(a);
 	}
 }

@@ -227,4 +227,12 @@ public class MathUtils {
 		
 		return new double[]{pLx, pLy, h};
 	}
+	/**
+	 * Returns the Atan2 value, placed within
+	 * the [0;2Pi[ interval.
+	 */
+	public static double atan2PositiveRange(double y, double x) {
+		double res = Math.atan2(y, x);
+		return (res < 0 ? res + 2*Math.PI : res);
+	}
 }

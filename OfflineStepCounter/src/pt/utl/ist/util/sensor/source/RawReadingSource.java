@@ -49,7 +49,7 @@ public class RawReadingSource extends ReadingSource {
 	 */
 	public void addMovingAverageFilter(final int numberOfSamples) {
 		// Add a filter
-		plugFilterIntoInput(new MovingAverageFilter(numberOfSamples));
+		plugFilterIntoOutput(new MovingAverageFilter(numberOfSamples));
 	}
 	
 	/**
@@ -61,6 +61,6 @@ public class RawReadingSource extends ReadingSource {
 	 */
 	public void addUnboundedOrientationFilter(final int numberOfSamples) {
 		// Add a filter
-		plugFilterIntoInput(new UnboundedOrientationFilter(numberOfSamples));
+		plugFilterIntoOutput(new UnboundedOrientationFilter(numberOfSamples));
 	}
 }
