@@ -28,6 +28,7 @@ public class OfflineStepCounter {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		long startTime = System.nanoTime();
 		// Grab log file reader
 		BufferedReader lineReader;
 		try {
@@ -102,6 +103,9 @@ public class OfflineStepCounter {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		
+		long endTime = System.nanoTime();
+		System.out.println("Took "+(endTime - startTime)/1000000 + " ms");
 	}
 
 	/**
