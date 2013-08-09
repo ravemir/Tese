@@ -9,6 +9,7 @@ import java.util.Queue;
 
 import pt.utl.ist.thesis.signalprocessor.AutoGaitModelerAnalyser;
 import pt.utl.ist.thesis.signalprocessor.StepAnalyser;
+import pt.utl.ist.thesis.util.PushThread;
 import pt.utl.ist.util.sensor.reading.AccelReading;
 import pt.utl.ist.util.sensor.reading.GPSReading;
 import pt.utl.ist.util.sensor.reading.SensorReading;
@@ -25,10 +26,14 @@ public class OfflineCallibrator {
 //	public static final String accelLogName = "2013-03-06_18h30.log.accel";
 //	public static final String locLogName = "2013-03-06_18h30.log.loc";
 	public static final String baseFolder = "C:\\Users\\Carlos\\Dropbox\\Tese\\Dissertacao\\Dados\\05-08-2013\\logs\\conv\\";
-	public static final String baseFilename = "2013-08-05_10h06.log";
-	public static final String oriLogName = baseFilename + ".ori";
+	public static final String baseFilename = "2013-08-05_10h14.log";
+//	public static final String oriLogName = baseFilename + ".ori";
 	public static final String accelLogName = baseFilename + ".accel";
 	public static final String locLogName = baseFilename + ".loc";
+	private static ReadingSource locRs;
+private static RawReadingSource accelRs;
+private static PushThread accelPushThread;
+private static PushThread locPushThread;
 
 
 	/**
@@ -49,15 +54,14 @@ public class OfflineCallibrator {
 		// Create buffer w/two average observers
 		int sampleFreq = 100;
 		int size = sampleFreq;
-		RawReadingSource accelRs = new RawReadingSource(size);
+		accelRs = new RawReadingSource(size);
 		accelRs.plugFilterIntoOutput(new ButterworthFilter(10, 5, sampleFreq, true));
 		//accelRs.attachFilter(new GravityFilter());
 		//rs.addMovingAverageFilter(1);
 		//rs.addMovingAverageFilter(25);
 		//rs.addMovingAverageFilter(50);
 		
-		// Create ReadingSource for GPSReadings and attach it
-		ReadingSource locRs = new RawReadingSource();
+		locRs = new RawReadingSource();
 
 		// Create the StepAnalyser
 		StepAnalyser sa = new StepAnalyser(sampleFreq);
@@ -117,10 +121,21 @@ public class OfflineCallibrator {
 		// Push SensorReading objects into their
 		// respective reading sources
 		for(SensorReading sr : readingQueue){
-			if(sr instanceof AccelReading)
-				accelRs.pushReading(sr);
-			else if(sr instanceof GPSReading)
-				locRs.pushReading(sr);
+			if(sr instanceof AccelReading) {
+				accelPushThread = new PushThread(sr){
+					public void run(){
+						accelRs.pushReading(reading);
+					}
+				};
+				accelPushThread.run();
+			} else if(sr instanceof GPSReading) {
+				locPushThread = new PushThread(sr){
+					public void run(){
+						locRs.pushReading(reading);
+					}
+				};
+				locPushThread.run();
+			}
 		}
 		
 		// Output relevant states

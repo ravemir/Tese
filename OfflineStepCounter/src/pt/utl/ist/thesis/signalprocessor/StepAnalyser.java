@@ -197,18 +197,20 @@ public class StepAnalyser extends Analyser {
 
 	@Override
 	public void update(ReadingSource rs, SensorReading reading) {
-		// Determine the type of ReadingSource/Filter that was pushed
-		if(rs instanceof Filter)
-			updateFromFilter((ReadingSource) rs, reading);
-		else if(rs instanceof ReadingSource)
-			updateFromRaw((ReadingSource) rs, reading);
-		else {
-			throw new UnsupportedOperationException("Tried to update Analyser from '"
-					+ rs.getClass().getSimpleName() + "' observable type." );
+		synchronized(this){
+			// Determine the type of ReadingSource/Filter that was pushed
+			if(rs instanceof Filter)
+				updateFromFilter((ReadingSource) rs, reading);
+			else if(rs instanceof ReadingSource)
+				updateFromRaw((ReadingSource) rs, reading);
+			else {
+				throw new UnsupportedOperationException("Tried to update Analyser from '"
+						+ rs.getClass().getSimpleName() + "' observable type." );
+			}
+			
+			// ...and Process the state
+			processState();
 		}
-		
-		// ...and Process the state
-		processState();
 	}
 	
 	public void updateFromFilter(ReadingSource f, Object reading){

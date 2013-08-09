@@ -6,6 +6,7 @@ import java.io.FileReader;
 import java.io.IOException;
 
 import pt.utl.ist.thesis.signalprocessor.StepAnalyser;
+import pt.utl.ist.thesis.util.PushThread;
 import pt.utl.ist.util.sensor.reading.AccelReading;
 import pt.utl.ist.util.sensor.source.RawReadingSource;
 import pt.utl.ist.util.source.filters.ButterworthFilter;
@@ -13,11 +14,15 @@ import pt.utl.ist.util.source.filters.GravityFilter;
 
 public class OfflineStepCounter {
 
-	public static final String baseFolder = "C:\\Users\\Carlos\\Dropbox\\Tese\\Dissertacao\\Dados\\05-08-2013\\logs\\conv\\";
+	public static final String baseFolder = "C:\\Users\\Carlos\\Dropbox\\Tese\\Dissertacao\\Dados\\06-03-2013\\logs\\conv\\";
+//	public static final String baseFolder = "C:\\Users\\Carlos\\Dropbox\\Tese\\Dissertacao\\Dados\\05-08-2013\\logs\\conv\\";
 //	public static final String accelLogName = "2013-03-06_18h17.log.accel";
-//	public static final String accelLogName = "2013-03-06_18h30.log.accel";
+	public static final String accelLogName = "2013-03-06_18h30.log.accel";
 //	public static final String accelLogName = "2013-08-05_10h11.log.accel";
-	public static final String accelLogName = "2013-08-05_10h05.log.accel";
+//	public static final String accelLogName = "2013-08-05_10h05.log.accel";
+	private static RawReadingSource rs;
+	private static Object fileLock = new Object();
+	private static PushThread accelPushThread;
 	
 	/**
 	 * @param args
@@ -34,7 +39,7 @@ public class OfflineStepCounter {
 		
 		// Create buffer w/two average observers
 		int size = 50;
-		RawReadingSource rs = new RawReadingSource(size);		
+		rs = new RawReadingSource(size);		
 		rs.plugFilterIntoOutput(new ButterworthFilter(10, 5, 50, true));
 		rs.plugFilterIntoOutput(new GravityFilter());
 		//rs.addMovingAverageFilter(1);
@@ -58,8 +63,13 @@ public class OfflineStepCounter {
 			// Parse String values
 			AccelReading reading = getAccelReadingFromLine(line);
 			
-			// Add sensor reading object to buffer
-			rs.pushReading(reading);
+			accelPushThread = new PushThread(reading){
+				public void run(){
+					rs.pushReading(this.reading);
+				}
+			};
+			accelPushThread.run();
+			
 			
 			// Compute averages, etc. (done in the background)
 			
@@ -98,11 +108,13 @@ public class OfflineStepCounter {
 	 * @param line
 	 */
 	private static AccelReading getAccelReadingFromLine(String line) {
-		String[] bSplit = line.split(",");
-		float[] accel = {Float.parseFloat(bSplit[1]),
-				Float.parseFloat(bSplit[2]),
-				Float.parseFloat(bSplit[3])};
-		 return new AccelReading(bSplit[0], accel);
+		synchronized (fileLock) {
+			String[] bSplit = line.split(",");
+			float[] accel = {Float.parseFloat(bSplit[1]),
+					Float.parseFloat(bSplit[2]),
+					Float.parseFloat(bSplit[3])};
+			 return new AccelReading(bSplit[0], accel);
+		}
 	}
 
 }

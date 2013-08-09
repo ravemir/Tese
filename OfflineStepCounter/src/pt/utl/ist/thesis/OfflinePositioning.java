@@ -10,6 +10,7 @@ import java.util.Queue;
 import pt.utl.ist.thesis.signalprocessor.AutoGaitModel;
 import pt.utl.ist.thesis.signalprocessor.PositioningAnalyser;
 import pt.utl.ist.thesis.signalprocessor.StepAnalyser;
+import pt.utl.ist.thesis.util.PushThread;
 import pt.utl.ist.thesis.util.SensorReadingRunnable;
 import pt.utl.ist.util.sensor.reading.AccelReading;
 import pt.utl.ist.util.sensor.reading.OrientationReading;
@@ -36,12 +37,18 @@ public class OfflinePositioning {
 	public static final String baseFilename = "2013-08-05_10h06.log";
 	public static final String oriLogName = baseFilename + ".ori";
 	public static final String accelLogName = baseFilename + ".accel";
+	private static RawReadingSource accelRs;
+	private static RawReadingSource oriRs;
+	private static PushThread accelPushThread;
+	private static PushThread oriPushThread;
 
 
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		long startTime = System.nanoTime();
+
 		// Grab log file reader
 		BufferedReader accelLineReader;
 		BufferedReader locLineReader;
@@ -56,13 +63,11 @@ public class OfflinePositioning {
 		// Create buffer w/two average observers
 		int sampleFreq = 50;
 		int size = sampleFreq;
-		RawReadingSource accelRs = new RawReadingSource(size);
+		accelRs = new RawReadingSource(size);
 		ButterworthFilter bwF = new ButterworthFilter(10, 5, sampleFreq, true);
 		accelRs.plugFilterIntoOutput(bwF);
 
-		// Create ReadingSource for OrientationReadings 
-		// and attach the UnboundedOrientationFilter
-		RawReadingSource oriRs = new RawReadingSource();
+		oriRs = new RawReadingSource();
 		oriRs.addUnboundedOrientationFilter(size);
 //		MovingAverageFilter maf = new MovingAverageFilter(sampleFreq);
 //		maf.plugFilterIntoOutput(oriRs.getFilters().get(0));
@@ -141,10 +146,21 @@ public class OfflinePositioning {
 		// Push SensorReading objects into their
 		// respective reading sources
 		for(SensorReading sr : readingQueue){
-			if(sr instanceof AccelReading)
-				accelRs.pushReading(sr);
-			else if(sr instanceof OrientationReading)
-				oriRs.pushReading(sr);
+			if(sr instanceof AccelReading) {
+				accelPushThread = new PushThread(sr){
+					public void run(){
+						accelRs.pushReading(reading);
+					}
+				};
+				accelPushThread.run();
+			} else if(sr instanceof OrientationReading) {
+				oriPushThread = new PushThread(sr){
+					public void run(){
+						oriRs.pushReading(reading);
+					}
+				};
+				oriPushThread.run();
+			}
 		}
 
 		// Output relevant states
@@ -165,6 +181,9 @@ public class OfflinePositioning {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		
+		long endTime = System.nanoTime();
+		System.out.println("Took "+(endTime - startTime)/1000000 + " ms");
 	}
 
 	/**
