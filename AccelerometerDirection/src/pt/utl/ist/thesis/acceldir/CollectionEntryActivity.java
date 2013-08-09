@@ -186,7 +186,7 @@ public class CollectionEntryActivity extends Activity {
 	 * @param activityType
 	 * @return
 	 */
-	public Intent createCollectionIntent(Class<? extends Activity> activityType) {
+	public Intent createCollectionIntent(Class<?> activityType) {
 		Intent i;
 		i = new Intent(CollectionEntryActivity.this, activityType);
 		i.putExtra("logFolder", logsFolder);

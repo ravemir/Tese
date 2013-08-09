@@ -381,19 +381,27 @@ public class CollectionActivity extends Activity {
 
 
 	/**
-	 * This function opens a file, writes the given line and closes it.
+	 * This function opens a file, writes the given line 
+	 * and closes it, all in a separate 
 	 * 
 	 * @param line The line to be written.
 	 */
-	private void writeToFile(String line)  {
-		try {
-			// Write line to file
-			FileWriter fw = new FileWriter(filename, true);
-			fw.write(line);
-			fw.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+	private void writeToFile(final String line)  {
+		new Thread(){
+			public void run(){
+				synchronized(fileLock){
+					try {
+						// Write line to file
+						FileWriter fw = new FileWriter(filename, true);
+						fw.write(line);
+						fw.close();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		};
+		
 	}
 
 	/**
@@ -524,6 +532,9 @@ public class CollectionActivity extends Activity {
 	// Back-button functionality
 	private static final int PERIOD = 2000;
 	private Boolean backWasPressed = false;
+	
+	// Lock files
+	private Object fileLock = new Object();
 
 	@Override
 	public void onBackPressed() {
