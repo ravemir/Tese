@@ -23,6 +23,8 @@ public class AutoGaitDBActivity extends ListActivity {
 		String[] entries = new String[dataSamples.length + 1];
 		if (dataSamples.length > 0)
 			entries[0] = "alpha: " + agm.getAlpha() + ", beta: " + agm.getBeta();
+		else
+			entries[0] = "alpha: 0, beta: 0";
 		for (int i = 0; i < dataSamples.length; i++)
 			entries[i+1] = dataSamples[i][0] + ", " + dataSamples[i][1];
 		
