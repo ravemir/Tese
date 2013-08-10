@@ -20,7 +20,6 @@ import pt.utl.ist.util.sensor.reading.GPSReading;
 import pt.utl.ist.util.sensor.reading.OrientationReading;
 import pt.utl.ist.util.sensor.source.RawReadingSource;
 import pt.utl.ist.util.source.filters.ButterworthFilter;
-import pt.utl.ist.util.source.filters.MovingAverageFilter;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
@@ -37,6 +36,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
+import android.util.Log;
 import android.view.Menu;
 import android.view.Window;
 import android.view.WindowManager;
@@ -57,7 +57,6 @@ public class CollectionActivity extends Activity {
 			accelRS = new RawReadingSource(CIRCBUFFSIZE);
 			oriRS = new RawReadingSource(CIRCBUFFSIZE);
 			accelBWF = new ButterworthFilter(10, 5, SAMPLERATE, true);
-			oriMAF = new MovingAverageFilter(SAMPLERATE);
 			stepA = new StepAnalyser(SAMPLERATE);
 			positioningA = new PositioningAnalyser(SAMPLERATE);
 		}
@@ -78,7 +77,6 @@ public class CollectionActivity extends Activity {
 		private RawReadingSource oriRS;
 		private RawReadingSource locRS = new RawReadingSource();
 		private ButterworthFilter accelBWF;
-		private MovingAverageFilter oriMAF;
 		private StepAnalyser stepA;
 		private PositioningAnalyser positioningA;
 
@@ -370,8 +368,10 @@ public class CollectionActivity extends Activity {
 				for (double d : reading.getReading())
 					line +=	LOGSEPARATOR + d;
 				line += "\n";
-					
+				
 				writeToFile(line);
+				
+				Log.v("AccelDir", "Retrieved position: " + line);
 			}
 		});
 	}
@@ -403,11 +403,16 @@ public class CollectionActivity extends Activity {
 		new Thread(){
 			public void run(){
 				synchronized(mFileWriter){
+					writingToFile++;
+					
 					try {
 						// Write line to file
 						mFileWriter.write(line);
 					} catch (IOException e) {
 						e.printStackTrace();
+					} finally {
+						writingToFile--;
+						mFileWriter.notifyAll();
 					}
 				}
 			}
@@ -566,13 +571,17 @@ public class CollectionActivity extends Activity {
 		// Waits for other writers to finish...
 		synchronized (mFileWriter) {
 			try {
+				// Waits for writers to finish writing
+				while(writingToFile > 0) mFileWriter.wait();
+				
 				// Close the FileWriter
 				mFileWriter.close();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			} finally {
-				mFileWriter = null;
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 		}
 	}
@@ -580,6 +589,7 @@ public class CollectionActivity extends Activity {
 	// Back-button functionality
 	private static final int PERIOD = 2000;
 	private Boolean backWasPressed = false;
+	private int writingToFile = 0;
 
 	@Override
 	public void onBackPressed() {
