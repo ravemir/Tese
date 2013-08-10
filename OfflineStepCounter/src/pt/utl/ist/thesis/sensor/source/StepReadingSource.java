@@ -1,9 +1,9 @@
-package pt.utl.ist.util.sensor.source;
+package pt.utl.ist.thesis.sensor.source;
 
 import java.util.ArrayList;
 
-import pt.utl.ist.util.sensor.reading.SensorReading;
-import pt.utl.ist.util.sensor.reading.StepReading;
+import pt.utl.ist.thesis.sensor.reading.SensorReading;
+import pt.utl.ist.thesis.sensor.reading.StepReading;
 
 public class StepReadingSource extends ReadingSource {
 
@@ -18,7 +18,7 @@ public class StepReadingSource extends ReadingSource {
 	}
 	
 	/* (non-Javadoc)
-	 * @see pt.utl.ist.util.sensor.source.ReadingSource#pushReading(pt.utl.ist.util.sensor.reading.SensorReading)
+	 * @see pt.utl.ist.thesis.sensor.source.ReadingSource#pushReading(pt.utl.ist.thesis.sensor.reading.SensorReading)
 	 */
 	@Override
 	public void pushReading(SensorReading read) {

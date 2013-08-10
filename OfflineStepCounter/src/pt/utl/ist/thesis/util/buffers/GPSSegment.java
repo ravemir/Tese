@@ -2,10 +2,10 @@ package pt.utl.ist.thesis.util.buffers;
 
 import java.util.ArrayList;
 
+import pt.utl.ist.thesis.sensor.exception.StepOutsideSegmentBoundariesException;
+import pt.utl.ist.thesis.sensor.reading.GPSReading;
+import pt.utl.ist.thesis.sensor.reading.StepReading;
 import pt.utl.ist.thesis.util.MathUtils;
-import pt.utl.ist.util.sensor.exception.StepOutsideSegmentBoundariesException;
-import pt.utl.ist.util.sensor.reading.GPSReading;
-import pt.utl.ist.util.sensor.reading.StepReading;
 
 public class GPSSegment extends ArrayList<GPSReading> {
 	/**

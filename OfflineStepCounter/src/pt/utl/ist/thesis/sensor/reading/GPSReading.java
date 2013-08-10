@@ -1,4 +1,4 @@
-package pt.utl.ist.util.sensor.reading;
+package pt.utl.ist.thesis.sensor.reading;
 
 import pt.utl.ist.thesis.util.MathUtils;
 

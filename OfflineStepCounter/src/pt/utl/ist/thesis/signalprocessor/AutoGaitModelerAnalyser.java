@@ -6,13 +6,13 @@ import java.util.Observer;
 
 import org.apache.commons.math.stat.descriptive.SynchronizedSummaryStatistics;
 
+import pt.utl.ist.thesis.sensor.exception.StepOutsideSegmentBoundariesException;
+import pt.utl.ist.thesis.sensor.reading.GPSReading;
+import pt.utl.ist.thesis.sensor.reading.SensorReading;
+import pt.utl.ist.thesis.sensor.reading.StepReading;
+import pt.utl.ist.thesis.sensor.source.ReadingSource;
 import pt.utl.ist.thesis.util.SampleRunnable;
 import pt.utl.ist.thesis.util.buffers.GPSSegment;
-import pt.utl.ist.util.sensor.exception.StepOutsideSegmentBoundariesException;
-import pt.utl.ist.util.sensor.reading.GPSReading;
-import pt.utl.ist.util.sensor.reading.SensorReading;
-import pt.utl.ist.util.sensor.reading.StepReading;
-import pt.utl.ist.util.sensor.source.ReadingSource;
 
 /**
  * Handles all the required processing of the GPS

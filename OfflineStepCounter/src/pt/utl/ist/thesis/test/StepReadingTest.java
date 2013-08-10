@@ -5,9 +5,9 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 
+import pt.utl.ist.thesis.sensor.reading.AccelReading;
+import pt.utl.ist.thesis.sensor.reading.StepReading;
 import pt.utl.ist.thesis.util.MathUtils;
-import pt.utl.ist.util.sensor.reading.AccelReading;
-import pt.utl.ist.util.sensor.reading.StepReading;
 
 public class StepReadingTest {
 

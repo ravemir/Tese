@@ -1,4 +1,4 @@
-package pt.utl.ist.util.sensor.reading;
+package pt.utl.ist.thesis.sensor.reading;
 
 
 public abstract class SensorReading {

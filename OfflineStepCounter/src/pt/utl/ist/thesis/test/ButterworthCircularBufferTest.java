@@ -6,10 +6,10 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import pt.utl.ist.thesis.sensor.reading.AccelReading;
+import pt.utl.ist.thesis.sensor.reading.SensorReading;
+import pt.utl.ist.thesis.source.filters.ButterworthData;
 import pt.utl.ist.thesis.util.buffers.ButterworthCircularBuffer;
-import pt.utl.ist.util.sensor.reading.AccelReading;
-import pt.utl.ist.util.sensor.reading.SensorReading;
-import pt.utl.ist.util.source.filters.ButterworthData;
 
 public class ButterworthCircularBufferTest {
 

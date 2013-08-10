@@ -8,18 +8,18 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
+import pt.utl.ist.thesis.sensor.reading.AccelReading;
+import pt.utl.ist.thesis.sensor.reading.OrientationReading;
+import pt.utl.ist.thesis.sensor.reading.RelativePositionReading;
+import pt.utl.ist.thesis.sensor.reading.SensorReading;
+import pt.utl.ist.thesis.sensor.reading.StepReading;
+import pt.utl.ist.thesis.sensor.source.RawReadingSource;
 import pt.utl.ist.thesis.signalprocessor.AutoGaitModel;
 import pt.utl.ist.thesis.signalprocessor.PositioningAnalyser;
 import pt.utl.ist.thesis.signalprocessor.StepAnalyser;
+import pt.utl.ist.thesis.source.filters.ButterworthFilter;
 import pt.utl.ist.thesis.util.PushThread;
 import pt.utl.ist.thesis.util.SensorReadingRunnable;
-import pt.utl.ist.util.sensor.reading.AccelReading;
-import pt.utl.ist.util.sensor.reading.OrientationReading;
-import pt.utl.ist.util.sensor.reading.RelativePositionReading;
-import pt.utl.ist.util.sensor.reading.SensorReading;
-import pt.utl.ist.util.sensor.reading.StepReading;
-import pt.utl.ist.util.sensor.source.RawReadingSource;
-import pt.utl.ist.util.source.filters.ButterworthFilter;
 
 public class OfflinePositioning {
 

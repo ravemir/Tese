@@ -3,8 +3,8 @@ package pt.utl.ist.thesis.signalprocessor;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import pt.utl.ist.util.sensor.reading.AccelReading;
-import pt.utl.ist.util.sensor.reading.SensorReading;
+import pt.utl.ist.thesis.sensor.reading.AccelReading;
+import pt.utl.ist.thesis.sensor.reading.SensorReading;
 
 public class SignalPeakData {
 	

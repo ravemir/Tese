@@ -7,16 +7,16 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Queue;
 
+import pt.utl.ist.thesis.sensor.reading.AccelReading;
+import pt.utl.ist.thesis.sensor.reading.GPSReading;
+import pt.utl.ist.thesis.sensor.reading.SensorReading;
+import pt.utl.ist.thesis.sensor.reading.StepReading;
+import pt.utl.ist.thesis.sensor.source.RawReadingSource;
+import pt.utl.ist.thesis.sensor.source.ReadingSource;
 import pt.utl.ist.thesis.signalprocessor.AutoGaitModelerAnalyser;
 import pt.utl.ist.thesis.signalprocessor.StepAnalyser;
+import pt.utl.ist.thesis.source.filters.ButterworthFilter;
 import pt.utl.ist.thesis.util.PushThread;
-import pt.utl.ist.util.sensor.reading.AccelReading;
-import pt.utl.ist.util.sensor.reading.GPSReading;
-import pt.utl.ist.util.sensor.reading.SensorReading;
-import pt.utl.ist.util.sensor.reading.StepReading;
-import pt.utl.ist.util.sensor.source.RawReadingSource;
-import pt.utl.ist.util.sensor.source.ReadingSource;
-import pt.utl.ist.util.source.filters.ButterworthFilter;
 
 public class OfflineCallibrator {
 

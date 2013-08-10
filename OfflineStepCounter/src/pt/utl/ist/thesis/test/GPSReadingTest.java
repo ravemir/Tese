@@ -6,7 +6,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
 
-import pt.utl.ist.util.sensor.reading.GPSReading;
+import pt.utl.ist.thesis.sensor.reading.GPSReading;
 
 public class GPSReadingTest {
 

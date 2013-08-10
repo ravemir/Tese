@@ -9,10 +9,10 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import pt.utl.ist.thesis.sensor.reading.AccelReading;
+import pt.utl.ist.thesis.sensor.source.RawReadingSource;
 import pt.utl.ist.thesis.signalprocessor.Analyser;
 import pt.utl.ist.thesis.signalprocessor.StepAnalyser;
-import pt.utl.ist.util.sensor.reading.AccelReading;
-import pt.utl.ist.util.sensor.source.RawReadingSource;
 
 public class StepAnalyserTest {
 

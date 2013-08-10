@@ -1,10 +1,10 @@
-package pt.utl.ist.util.source.filters;
+package pt.utl.ist.thesis.source.filters;
 
 import java.util.Observer;
 
+import pt.utl.ist.thesis.sensor.reading.SensorReading;
+import pt.utl.ist.thesis.sensor.source.ReadingSource;
 import pt.utl.ist.thesis.util.buffers.ReadingCircularBuffer;
-import pt.utl.ist.util.sensor.reading.SensorReading;
-import pt.utl.ist.util.sensor.source.ReadingSource;
 
 public abstract class Filter extends ReadingSource implements Observer {
 

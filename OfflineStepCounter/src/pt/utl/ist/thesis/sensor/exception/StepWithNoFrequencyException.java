@@ -1,4 +1,4 @@
-package pt.utl.ist.util.sensor.exception;
+package pt.utl.ist.thesis.sensor.exception;
 
 public class StepWithNoFrequencyException extends RuntimeException {
 

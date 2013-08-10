@@ -1,8 +1,8 @@
 package pt.utl.ist.thesis.util.buffers;
 
-import pt.utl.ist.util.sensor.reading.AccelReading;
-import pt.utl.ist.util.sensor.reading.OrientationReading;
-import pt.utl.ist.util.sensor.reading.SensorReading;
+import pt.utl.ist.thesis.sensor.reading.AccelReading;
+import pt.utl.ist.thesis.sensor.reading.OrientationReading;
+import pt.utl.ist.thesis.sensor.reading.SensorReading;
 
 
 public class AverageCircularBuffer extends ReadingCircularBuffer {
@@ -54,7 +54,7 @@ public class AverageCircularBuffer extends ReadingCircularBuffer {
 	}
 
 	/* (non-Javadoc)
-	 * @see pt.utl.ist.thesis.util.buffers.ReadingCircularBuffer#checkType(pt.utl.ist.util.sensor.reading.SensorReading)
+	 * @see pt.utl.ist.thesis.util.buffers.ReadingCircularBuffer#checkType(pt.utl.ist.thesis.sensor.reading.SensorReading)
 	 */
 	@Override
 	public void checkType(SensorReading read) {

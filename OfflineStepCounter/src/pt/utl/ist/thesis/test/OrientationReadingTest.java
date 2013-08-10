@@ -5,7 +5,7 @@ import static org.junit.Assert.assertArrayEquals;
 import org.junit.Before;
 import org.junit.Test;
 
-import pt.utl.ist.util.sensor.reading.OrientationReading;
+import pt.utl.ist.thesis.sensor.reading.OrientationReading;
 
 public class OrientationReadingTest {
 

@@ -10,11 +10,11 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import pt.utl.ist.util.sensor.reading.AccelReading;
-import pt.utl.ist.util.sensor.reading.SensorReading;
-import pt.utl.ist.util.sensor.source.RawReadingSource;
-import pt.utl.ist.util.source.filters.Filter;
-import pt.utl.ist.util.source.filters.MovingAverageFilter;
+import pt.utl.ist.thesis.sensor.reading.AccelReading;
+import pt.utl.ist.thesis.sensor.reading.SensorReading;
+import pt.utl.ist.thesis.sensor.source.RawReadingSource;
+import pt.utl.ist.thesis.source.filters.Filter;
+import pt.utl.ist.thesis.source.filters.MovingAverageFilter;
 
 public class MovingAverageFilterTest {
 

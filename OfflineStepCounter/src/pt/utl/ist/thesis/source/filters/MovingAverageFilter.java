@@ -1,11 +1,11 @@
-package pt.utl.ist.util.source.filters;
+package pt.utl.ist.thesis.source.filters;
 
 import java.util.Observable;
 
+import pt.utl.ist.thesis.sensor.reading.AccelReading;
+import pt.utl.ist.thesis.sensor.reading.OrientationReading;
+import pt.utl.ist.thesis.sensor.reading.SensorReading;
 import pt.utl.ist.thesis.util.buffers.AverageCircularBuffer;
-import pt.utl.ist.util.sensor.reading.AccelReading;
-import pt.utl.ist.util.sensor.reading.OrientationReading;
-import pt.utl.ist.util.sensor.reading.SensorReading;
 
 public final class MovingAverageFilter extends Filter {
 	// The Moving Average filter order (i.e. the number

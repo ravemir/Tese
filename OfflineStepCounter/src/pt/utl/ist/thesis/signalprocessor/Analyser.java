@@ -3,9 +3,9 @@ package pt.utl.ist.thesis.signalprocessor;
 import java.util.Observable;
 import java.util.Observer;
 
-import pt.utl.ist.util.sensor.reading.SensorReading;
-import pt.utl.ist.util.sensor.source.RawReadingSource;
-import pt.utl.ist.util.sensor.source.ReadingSource;
+import pt.utl.ist.thesis.sensor.reading.SensorReading;
+import pt.utl.ist.thesis.sensor.source.RawReadingSource;
+import pt.utl.ist.thesis.sensor.source.ReadingSource;
 
 public abstract class Analyser implements Observer {
 

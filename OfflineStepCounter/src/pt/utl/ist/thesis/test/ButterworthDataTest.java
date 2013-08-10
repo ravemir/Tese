@@ -8,7 +8,7 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import pt.utl.ist.util.source.filters.ButterworthData;
+import pt.utl.ist.thesis.source.filters.ButterworthData;
 
 public class ButterworthDataTest {
 

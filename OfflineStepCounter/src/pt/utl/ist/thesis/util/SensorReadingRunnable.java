@@ -1,6 +1,6 @@
 package pt.utl.ist.thesis.util;
 
-import pt.utl.ist.util.sensor.reading.SensorReading;
+import pt.utl.ist.thesis.sensor.reading.SensorReading;
 
 public abstract class SensorReadingRunnable implements Runnable {
 

@@ -1,9 +1,9 @@
 package pt.utl.ist.thesis.util.buffers;
 
-import pt.utl.ist.util.sensor.reading.AccelReading;
-import pt.utl.ist.util.sensor.reading.OrientationReading;
-import pt.utl.ist.util.sensor.reading.SensorReading;
-import pt.utl.ist.util.source.filters.ButterworthData;
+import pt.utl.ist.thesis.sensor.reading.AccelReading;
+import pt.utl.ist.thesis.sensor.reading.OrientationReading;
+import pt.utl.ist.thesis.sensor.reading.SensorReading;
+import pt.utl.ist.thesis.source.filters.ButterworthData;
 
 public class ButterworthCircularBuffer extends ReadingCircularBuffer {
 

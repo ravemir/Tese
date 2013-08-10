@@ -1,13 +1,13 @@
-package pt.utl.ist.util.sensor.source;
+package pt.utl.ist.thesis.sensor.source;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Observable;
 
+import pt.utl.ist.thesis.sensor.reading.SensorReading;
 import pt.utl.ist.thesis.signalprocessor.Analyser;
+import pt.utl.ist.thesis.source.filters.Filter;
 import pt.utl.ist.thesis.util.buffers.ReadingCircularBuffer;
-import pt.utl.ist.util.sensor.reading.SensorReading;
-import pt.utl.ist.util.source.filters.Filter;
 
 public abstract class ReadingSource extends Observable {
 	// The buffer of pushed values

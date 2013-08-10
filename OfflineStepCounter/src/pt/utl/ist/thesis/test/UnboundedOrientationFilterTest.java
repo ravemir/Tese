@@ -9,11 +9,11 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import pt.utl.ist.util.sensor.reading.OrientationReading;
-import pt.utl.ist.util.sensor.reading.SensorReading;
-import pt.utl.ist.util.sensor.source.RawReadingSource;
-import pt.utl.ist.util.source.filters.Filter;
-import pt.utl.ist.util.source.filters.UnboundedOrientationFilter;
+import pt.utl.ist.thesis.sensor.reading.OrientationReading;
+import pt.utl.ist.thesis.sensor.reading.SensorReading;
+import pt.utl.ist.thesis.sensor.source.RawReadingSource;
+import pt.utl.ist.thesis.source.filters.Filter;
+import pt.utl.ist.thesis.source.filters.UnboundedOrientationFilter;
 
 public class UnboundedOrientationFilterTest {
 

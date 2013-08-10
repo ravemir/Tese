@@ -4,16 +4,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Observer;
 
+import pt.utl.ist.thesis.sensor.exception.AutoGaitModelUninitializedException;
+import pt.utl.ist.thesis.sensor.exception.StepWithNoFrequencyException;
+import pt.utl.ist.thesis.sensor.reading.GPSReading;
+import pt.utl.ist.thesis.sensor.reading.OrientationReading;
+import pt.utl.ist.thesis.sensor.reading.RelativePositionReading;
+import pt.utl.ist.thesis.sensor.reading.SensorReading;
+import pt.utl.ist.thesis.sensor.reading.StepReading;
+import pt.utl.ist.thesis.sensor.source.ReadingSource;
+import pt.utl.ist.thesis.source.filters.MovingAverageFilter;
 import pt.utl.ist.thesis.util.SensorReadingRunnable;
-import pt.utl.ist.util.sensor.exception.AutoGaitModelUninitializedException;
-import pt.utl.ist.util.sensor.exception.StepWithNoFrequencyException;
-import pt.utl.ist.util.sensor.reading.GPSReading;
-import pt.utl.ist.util.sensor.reading.OrientationReading;
-import pt.utl.ist.util.sensor.reading.RelativePositionReading;
-import pt.utl.ist.util.sensor.reading.SensorReading;
-import pt.utl.ist.util.sensor.reading.StepReading;
-import pt.utl.ist.util.sensor.source.ReadingSource;
-import pt.utl.ist.util.source.filters.MovingAverageFilter;
 
 /**
  * Computes positioning changes from step and 

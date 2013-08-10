@@ -3,12 +3,12 @@ package pt.utl.ist.thesis.util.buffers;
 import java.util.ArrayList;
 import java.util.List;
 
+import pt.utl.ist.thesis.sensor.reading.AccelReading;
+import pt.utl.ist.thesis.sensor.reading.GPSReading;
+import pt.utl.ist.thesis.sensor.reading.OrientationReading;
+import pt.utl.ist.thesis.sensor.reading.SensorReading;
+import pt.utl.ist.thesis.source.filters.Filter;
 import pt.utl.ist.thesis.util.MathUtils;
-import pt.utl.ist.util.sensor.reading.AccelReading;
-import pt.utl.ist.util.sensor.reading.GPSReading;
-import pt.utl.ist.util.sensor.reading.OrientationReading;
-import pt.utl.ist.util.sensor.reading.SensorReading;
-import pt.utl.ist.util.source.filters.Filter;
 
 public class ReadingCircularBuffer {
 	

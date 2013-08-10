@@ -7,11 +7,11 @@ import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.Test;
 
+import pt.utl.ist.thesis.sensor.exception.StepOutsideSegmentBoundariesException;
+import pt.utl.ist.thesis.sensor.reading.AccelReading;
+import pt.utl.ist.thesis.sensor.reading.GPSReading;
+import pt.utl.ist.thesis.sensor.reading.StepReading;
 import pt.utl.ist.thesis.util.buffers.GPSSegment;
-import pt.utl.ist.util.sensor.exception.StepOutsideSegmentBoundariesException;
-import pt.utl.ist.util.sensor.reading.AccelReading;
-import pt.utl.ist.util.sensor.reading.GPSReading;
-import pt.utl.ist.util.sensor.reading.StepReading;
 
 public class GPSSegmentTest {
 

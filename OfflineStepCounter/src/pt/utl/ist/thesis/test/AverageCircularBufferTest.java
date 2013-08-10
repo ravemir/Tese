@@ -9,9 +9,9 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Before;
 import org.junit.Test;
 
+import pt.utl.ist.thesis.sensor.reading.AccelReading;
+import pt.utl.ist.thesis.sensor.reading.OrientationReading;
 import pt.utl.ist.thesis.util.buffers.AverageCircularBuffer;
-import pt.utl.ist.util.sensor.reading.AccelReading;
-import pt.utl.ist.util.sensor.reading.OrientationReading;
 
 /**
  * 
@@ -36,7 +36,7 @@ public class AverageCircularBufferTest {
 	}
 
 	/**
-	 * Test method for {@link pt.utl.ist.thesis.util.buffers.AverageCircularBuffer#addReading(pt.utl.ist.util.sensor.reading.AccelReading)}.
+	 * Test method for {@link pt.utl.ist.thesis.util.buffers.AverageCircularBuffer#addReading(pt.utl.ist.thesis.sensor.reading.AccelReading)}.
 	 */
 	@Test
 	public void testUpdateAverage() {
@@ -67,7 +67,7 @@ public class AverageCircularBufferTest {
 	}
 	
 	/**
-	 * Test method for {@link pt.utl.ist.thesis.util.buffers.AverageCircularBuffer#addReading(pt.utl.ist.util.sensor.reading.AccelReading)}.
+	 * Test method for {@link pt.utl.ist.thesis.util.buffers.AverageCircularBuffer#addReading(pt.utl.ist.thesis.sensor.reading.AccelReading)}.
 	 */
 	@Test
 	public void testOrientationUpdateAverage() {
