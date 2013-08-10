@@ -41,7 +41,9 @@ public class StepReadingSource extends ReadingSource {
 	public void pushReading(StepReading read){
 		// See if there has been a previously recorded timestamp
 		if(previousTimestamp == null) {
-			previousTimestamp = read.getTimestamp() - INVERSEDEFAULTFREQUENCY;
+			// ...if not, get the default inverse frequency,
+			// convert it to millis and subtract it from the current timestamp
+			previousTimestamp = read.getTimestamp() - (INVERSEDEFAULTFREQUENCY*1000);
 		}
 		
 		// Calculate the step's frequency

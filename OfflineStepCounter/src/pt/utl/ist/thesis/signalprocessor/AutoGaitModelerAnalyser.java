@@ -125,7 +125,7 @@ public class AutoGaitModelerAnalyser extends Analyser implements Observer {
 		int baseIndex = 0;
 		int maximumIndex = 0;
 		int minimumIndex = baseIndex;
-		while(!cumHC.isEmpty() && maximumIndex == 0) {
+		while(!cumHC.isEmpty() && maximumIndex == 0) { // FIXME For the 10-08-2013 log, this has a bug on the "1.37614857E12" timestamp reading
 			Boolean minNeedsUpdate = false;
 			// Find the maximum cumulative heading value that...
 			for(int i = 1; i < cumHC.size(); i++) {

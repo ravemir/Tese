@@ -25,15 +25,19 @@ public class OfflineCallibrator {
 //	public static final String locLogName = "2013-03-06_18h18.log.loc";
 //	public static final String accelLogName = "2013-03-06_18h30.log.accel";
 //	public static final String locLogName = "2013-03-06_18h30.log.loc";
-	public static final String baseFolder = "C:\\Users\\Carlos\\Dropbox\\Tese\\Dissertacao\\Dados\\05-08-2013\\logs\\conv\\";
-	public static final String baseFilename = "2013-08-05_10h14.log";
+//	public static final String baseFolder = "C:\\Users\\Carlos\\Dropbox\\Tese\\Dissertacao\\Dados\\05-08-2013\\logs\\conv\\";
+//	public static final String baseFilename = "2013-08-05_10h14.log";
+	public static final String baseFolder = "C:\\Users\\Carlos\\Dropbox\\Tese\\Dissertacao\\Dados\\10-08-2013\\logs\\conv\\";
+	public static final String baseFilename = "2013-08-10_16h27.log";
+	
 //	public static final String oriLogName = baseFilename + ".ori";
 	public static final String accelLogName = baseFilename + ".accel";
 	public static final String locLogName = baseFilename + ".loc";
+	
 	private static ReadingSource locRs;
-private static RawReadingSource accelRs;
-private static PushThread accelPushThread;
-private static PushThread locPushThread;
+	private static RawReadingSource accelRs;
+	private static PushThread accelPushThread;
+	private static PushThread locPushThread;
 
 
 	/**

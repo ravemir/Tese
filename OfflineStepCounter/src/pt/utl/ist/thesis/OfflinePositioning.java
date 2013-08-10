@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 
 import pt.utl.ist.thesis.signalprocessor.AutoGaitModel;
@@ -35,8 +36,12 @@ public class OfflinePositioning {
 	//	public static final String oriLogName = "2013-03-06_18h30.log.loc";
 	public static final String baseFolder = "C:\\Users\\Carlos\\Dropbox\\Tese\\Dissertacao\\Dados\\05-08-2013\\logs\\conv\\";
 	public static final String baseFilename = "2013-08-05_10h06.log";
+//	public static final String baseFolder = "C:\\Users\\Carlos\\Dropbox\\Tese\\Dissertacao\\Dados\\10-08-2013\\logs\\conv\\";
+//	public static final String baseFilename = "2013-08-10_16h27.log";
+		
 	public static final String oriLogName = baseFilename + ".ori";
 	public static final String accelLogName = baseFilename + ".accel";
+	
 	private static RawReadingSource accelRs;
 	private static RawReadingSource oriRs;
 	private static PushThread accelPushThread;
@@ -78,6 +83,8 @@ public class OfflinePositioning {
 
 		// Create an initialized AutoGaitModel
 		AutoGaitModel agm = new AutoGaitModel(getSegmentSamples());
+		double[][] forged = forgeAGValues();
+		if(forged.length != 0) agm = new AutoGaitModel(forged);
 
 		// Create the PositioningAnalyser and attach the StepAnalyser
 		PositioningAnalyser pa = new PositioningAnalyser(sampleFreq, agm);
@@ -132,12 +139,11 @@ public class OfflinePositioning {
 
 		// Display positioning event
 		pa.setSensorReadingUpdater(new SensorReadingRunnable() {
-			
 			@Override
 			public void run() {
 				String s = "New Position event: ";
 				for(double d : reading.getReading())
-					s += "," + d;
+					s += d + ",";
 				s += "\n";
 				System.out.println(s);
 			}
@@ -164,15 +170,28 @@ public class OfflinePositioning {
 		}
 
 		// Output relevant states
-		for(AccelReading a :  sa.getNormPeaks()){	// Count peaks
-			System.out.println("Peak: " + a);
-		}
+//		for(AccelReading a :  sa.getNormPeaks()){	// Count peaks
+//			System.out.println("Peak: " + a);
+//		}
+		double stepDistance = 0; 
 		for(StepReading s :  sa.getSteps()){		// Count steps
 			System.out.println("Step: " + s);
+			stepDistance += agm.getLengthFromFrequency(s.getStepFrequency());
 		}
-		for(RelativePositionReading p :  pa.getPositions()){		// Count positions
+		
+		List<RelativePositionReading> positions = pa.getPositions();
+		double distance = 0;
+		for (int i = 1; i < positions.size(); i++) 
+			distance += Math.sqrt(Math.pow(positions.get(i).getXCoord()-positions.get(i-1).getXCoord(), 2) +
+					Math.pow(positions.get(i).getYCoord()-positions.get(i-1).getYCoord(), 2));
+		
+		for(RelativePositionReading p :  positions){		// Count positions
 			System.out.println("Position: " + p);
 		}
+		
+		System.out.println("No. of positions: " + sa.getSteps().size());
+		System.out.println("Distance covered from steps: " + stepDistance);
+		System.out.println("Distance covered from positions: " + distance);
 
 		// Close the line reader
 		try {
@@ -190,55 +209,64 @@ public class OfflinePositioning {
 	 * @return
 	 */
 	public static double[][] getSegmentSamples() {
-		return new double[][]{
-				new double[]{0.5, 0.4},
-				new double[]{0.333333333333333, 0.5},
-				new double[]{0.25, 0.6},
-				new double[]{0.2, 0.7},
-				new double[]{0.142857142857143, 0.9},
-				new double[]{0.125, 1.0},
-				new double[]{0.111111111111111, 1.1},
-				new double[]{0.1, 1.2},
-				new double[]{0.5, 0.4},
-				new double[]{0.333333333333333, 0.5},
-				new double[]{0.25, 0.6},
-				new double[]{0.2, 0.7},
-				new double[]{0.142857142857143, 0.9},
-				new double[]{0.125, 1.0},
-				new double[]{0.111111111111111, 1.1},
-				new double[]{0.1, 1.2},
-				new double[]{0.5, 0.4},
-				new double[]{0.333333333333333, 0.5},
-				new double[]{0.25, 0.6},
-				new double[]{0.2, 0.7},
-				new double[]{0.142857142857143, 0.9},
-				new double[]{0.125, 1.0},
-				new double[]{0.111111111111111, 1.1},
-				new double[]{0.1, 1.2},
-				new double[]{0.5, 0.4},
-				new double[]{0.333333333333333, 0.5},
-				new double[]{0.25, 0.6},
-				new double[]{0.2, 0.7},
-				new double[]{0.142857142857143, 0.9},
-				new double[]{0.125, 1.0},
-				new double[]{0.111111111111111, 1.1},
-				new double[]{0.1, 1.2},
-				new double[]{0.5, 0.4},
-				new double[]{0.333333333333333, 0.5},
-				new double[]{0.25, 0.6},
-				new double[]{0.2, 0.7},
-				new double[]{0.142857142857143, 0.9},
-				new double[]{0.125, 1.0},
-				new double[]{0.111111111111111, 1.1},
-				new double[]{0.1, 1.2},
-				new double[]{0.5, 0.4},
-				new double[]{0.333333333333333, 0.5},
-				new double[]{0.25, 0.6},
-				new double[]{0.2, 0.7},
-				new double[]{0.142857142857143, 0.9},
-				new double[]{0.125, 1.0},
-				new double[]{0.111111111111111, 1.1},
-				new double[]{0.1, 1.2}};
+//		return new double[][]{
+//				new double[]{0.5, 0.4},
+//				new double[]{0.333333333333333, 0.5},
+//				new double[]{0.25, 0.6},
+//				new double[]{0.2, 0.7},
+//				new double[]{0.142857142857143, 0.9},
+//				new double[]{0.125, 1.0},
+//				new double[]{0.111111111111111, 1.1},
+//				new double[]{0.1, 1.2},
+//				new double[]{0.5, 0.4},
+//				new double[]{0.333333333333333, 0.5},
+//				new double[]{0.25, 0.6},
+//				new double[]{0.2, 0.7},
+//				new double[]{0.142857142857143, 0.9},
+//				new double[]{0.125, 1.0},
+//				new double[]{0.111111111111111, 1.1},
+//				new double[]{0.1, 1.2},
+//				new double[]{0.5, 0.4},
+//				new double[]{0.333333333333333, 0.5},
+//				new double[]{0.25, 0.6},
+//				new double[]{0.2, 0.7},
+//				new double[]{0.142857142857143, 0.9},
+//				new double[]{0.125, 1.0},
+//				new double[]{0.111111111111111, 1.1},
+//				new double[]{0.1, 1.2},
+//				new double[]{0.5, 0.4},
+//				new double[]{0.333333333333333, 0.5},
+//				new double[]{0.25, 0.6},
+//				new double[]{0.2, 0.7},
+//				new double[]{0.142857142857143, 0.9},
+//				new double[]{0.125, 1.0},
+//				new double[]{0.111111111111111, 1.1},
+//				new double[]{0.1, 1.2},
+//				new double[]{0.5, 0.4},
+//				new double[]{0.333333333333333, 0.5},
+//				new double[]{0.25, 0.6},
+//				new double[]{0.2, 0.7},
+//				new double[]{0.142857142857143, 0.9},
+//				new double[]{0.125, 1.0},
+//				new double[]{0.111111111111111, 1.1},
+//				new double[]{0.1, 1.2},
+//				new double[]{0.5, 0.4},
+//				new double[]{0.333333333333333, 0.5},
+//				new double[]{0.25, 0.6},
+//				new double[]{0.2, 0.7},
+//				new double[]{0.142857142857143, 0.9},
+//				new double[]{0.125, 1.0},
+//				new double[]{0.111111111111111, 1.1},
+//				new double[]{0.1, 1.2}};
+		return new double[][] {
+				new double[]{0.51, 0.439},
+				new double[]{0.65, 0.5179},
+				new double[]{0.78, 0.5807},
+				new double[]{0.91, 0.6255},
+				new double[]{1, 0.6837},
+				new double[]{1.07, 0.7417},
+				new double[]{1.14, 0.8},
+				new double[]{1.22, 0.8393}};
 	}
 
 	/**
@@ -259,5 +287,21 @@ public class OfflinePositioning {
 		String[] bSplit = line.split(",");
 		return new OrientationReading(new Double(bSplit[0]), new Double(bSplit[1]), 
 				new Double(bSplit[2]), new Double(bSplit[3]));
+	}
+	
+	private static double[][] forgeAGValues(){
+//		double alpha = 0.453; // Participant A
+//		double beta = 0.23;
+		double alpha = 0.064; // Participant B
+		double beta = 0.612;
+//		double alpha = 0.539; // Participant C
+//		double beta = 0.2156;
+		
+		double[][] generatedForge = new double[100][2];
+		for (int i = 0; i < generatedForge.length; i++) 
+			generatedForge[i] = new double[]{i, alpha*i+beta};
+		
+		return ((alpha != 0 && beta != 0) ? generatedForge : 
+			new double[][]{});
 	}
 }

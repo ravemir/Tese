@@ -113,6 +113,13 @@ public class MathUtils {
 		return toDegrees((atan2(y, x)));
 	}
 	
+	/**
+	 * Computes the Heading change from two given headings.
+	 * 
+	 * @param b1	The first bearing value, in decimal degrees.
+	 * @param b2	The second bearing value, in decimal degrees.
+	 * @return		The heading change value.
+	 */
 	public static double headingChangeFromBearings(double b1, double b2){
 		double diff = b2 - b1;
 		

@@ -7,13 +7,12 @@ import org.junit.Test;
 
 import pt.utl.ist.thesis.util.MathUtils;
 import pt.utl.ist.util.sensor.reading.AccelReading;
-import pt.utl.ist.util.sensor.reading.SensorReading;
 import pt.utl.ist.util.sensor.reading.StepReading;
 
 public class StepReadingTest {
 
 	private StepReading step;
-	private SensorReading ar;
+	private AccelReading ar;
 	private double[] values;
 
 	@Before
