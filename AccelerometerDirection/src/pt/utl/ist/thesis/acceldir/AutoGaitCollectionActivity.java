@@ -443,10 +443,7 @@ public class AutoGaitCollectionActivity extends Activity {
 		// Save the sample rate to the preferences
 		float castSampleRate = (float) mAccelGPSListener.sss.getGeometricMean();
 		getSharedPreferences(AccelerometerDirectionApplication.COLLECTION_PREFERENCES, MODE_PRIVATE).
-			edit().putFloat(getString(R.string.sample_rate_preference), 
-				castSampleRate);
-		AndroidUtils.displayToast(this, "Saved sample rate of " + castSampleRate + 
-				" Hz\nMax rate: " + mAccelGPSListener.sss.getMax() + ", Min rate: " + mAccelGPSListener.sss.getMin());
+			edit().putFloat(AccelerometerDirectionApplication.ratePrefName, castSampleRate).commit();
 
 		// Detach listeners
 		detachListeners();
