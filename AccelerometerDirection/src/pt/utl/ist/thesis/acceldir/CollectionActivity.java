@@ -14,6 +14,7 @@ import pt.utl.ist.thesis.acceldir.util.UIUpdater;
 import pt.utl.ist.thesis.signalprocessor.PositioningAnalyser;
 import pt.utl.ist.thesis.signalprocessor.StepAnalyser;
 import pt.utl.ist.thesis.util.SensorReadingRunnable;
+import pt.utl.ist.util.copy.PushThread;
 import pt.utl.ist.util.sensor.reading.AccelReading;
 import pt.utl.ist.util.sensor.reading.GPSReading;
 import pt.utl.ist.util.sensor.reading.OrientationReading;
@@ -105,7 +106,11 @@ public class CollectionActivity extends Activity {
 						event.accuracy + "\n";
 
 				// Push Acceleration reading
-				accelRS.pushReading(new AccelReading(tsString, accel));
+				new PushThread(new AccelReading(tsString, accel)){
+					public void run(){
+						accelRS.pushReading(reading);
+					}
+				}.run();
 
 				// Write it to a file
 				writeToFile(accelLine);
@@ -134,7 +139,11 @@ public class CollectionActivity extends Activity {
 								orientations[2] + "\n";						// Roll
 						
 						// Push OrientationReading
-						oriRS.pushReading(new OrientationReading(tsString, orientations));
+						new PushThread(new OrientationReading(tsString, orientations)){
+							public void run(){
+								oriRS.pushReading(reading);
+							}
+						}.run();
 					}
 				}
 
@@ -270,6 +279,7 @@ public class CollectionActivity extends Activity {
 	// Application attributes
 	private WakeLock mWakeLock;
 	private UIUpdater mUIUpdater;
+	private FileWriter mFileWriter;
 
 	// Log attributes
 	private static final String LOGSEPARATOR = ",";
@@ -321,6 +331,9 @@ public class CollectionActivity extends Activity {
 		agsds = new AutoGaitSegmentDataSource(this);
 		agsds.open();
 
+		// Initialize Filewriter
+		initializeFileWriter();
+		
 		// Initialize and attach the Listener-related attributes
 		initializeListeners();
 		attachListeners();
@@ -381,26 +394,24 @@ public class CollectionActivity extends Activity {
 
 
 	/**
-	 * This function opens a file, writes the given line 
-	 * and closes it, all in a separate 
+	 * This function writes the given line to a file 
+	 * in a separate thread.
 	 * 
 	 * @param line The line to be written.
 	 */
 	private void writeToFile(final String line)  {
 		new Thread(){
 			public void run(){
-				synchronized(fileLock){
+				synchronized(mFileWriter){
 					try {
 						// Write line to file
-						FileWriter fw = new FileWriter(filename, true);
-						fw.write(line);
-						fw.close();
+						mFileWriter.write(line);
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
 				}
 			}
-		};
+		}.run();
 		
 	}
 
@@ -490,6 +501,9 @@ public class CollectionActivity extends Activity {
 	protected void onResume() {
 		super.onResume();
 
+		// Initialize Filewriter
+		initializeFileWriter();
+		
 		// Write to file pause error
 		long timestamp = new Date().getTime();
 		writeToFile("I" + LOGSEPARATOR + timestamp + LOGSEPARATOR + 
@@ -503,6 +517,19 @@ public class CollectionActivity extends Activity {
 
 		// Acquire partial wake-lock
 		mWakeLock.acquire();
+	}
+
+	/**
+	 * 
+	 */
+	public void initializeFileWriter() {
+		if(mFileWriter == null)
+		try {
+			mFileWriter = new FileWriter(filename, true);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	@Override
@@ -527,14 +554,32 @@ public class CollectionActivity extends Activity {
 
 		// Release the wake-lock
 		mWakeLock.release();
+		
+		// Close the FileWriter
+		closeFileWriter();
+	}
+
+	/**
+	 * Closes the filewriter and clears the field.
+	 */
+	public void closeFileWriter() {
+		// Waits for other writers to finish...
+		synchronized (mFileWriter) {
+			try {
+				// Close the FileWriter
+				mFileWriter.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} finally {
+				mFileWriter = null;
+			}
+		}
 	}
 
 	// Back-button functionality
 	private static final int PERIOD = 2000;
 	private Boolean backWasPressed = false;
-	
-	// Lock files
-	private Object fileLock = new Object();
 
 	@Override
 	public void onBackPressed() {
