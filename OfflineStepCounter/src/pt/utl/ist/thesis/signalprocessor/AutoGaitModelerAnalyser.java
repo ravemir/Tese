@@ -36,6 +36,7 @@ public class AutoGaitModelerAnalyser extends Analyser implements Observer {
 	private GPSSegment currentSegment;
 	private SynchronizedSummaryStatistics speedStats = new SynchronizedSummaryStatistics();
 	private SampleRunnable sampleRunnable;
+	private ArrayList<Double[]> straightLines = new ArrayList<Double[]>();
 
 	/**
 	 * Builds a new {@link AutoGaitModelerAnalyser} object
@@ -79,8 +80,8 @@ public class AutoGaitModelerAnalyser extends Analyser implements Observer {
 	private void segment() {
 		// If SLI conditions verify and segment 
 		// has more than one step and GPS reading
-		boolean isStraightLine = isCurrentSegmentSL();
-		if(isStraightLine && currentSegment.size() > 1 
+		boolean hasStraightLine = hasCurrentSegmentSL();
+		if(hasStraightLine && currentSegment.size() > 1 
 				&& currentSegment.getStepCount() > 1) {
 			processCurrentSegment();
 		}
@@ -90,20 +91,26 @@ public class AutoGaitModelerAnalyser extends Analyser implements Observer {
 	}
 
 	/**
-	 * 
+	 * Processes this segment, and adds the 
+	 * resulting samples to the AutoGait model.
 	 */
 	private void processCurrentSegment() {
+		// TODO Take the current segment, analyse the SL's identified
+		// TODO Readjust the starting segment to the SL's, and store them
+		// TODO Take each newly readjusted segment and add its step samples
+		
 		// Compute step lengths and add currentSegment to array
 		currentSegment.computeStepFrequencyAndLength();
 		segments.add(currentSegment);
 		
-		// Add this segment's values to the model
-		double[] sample = {currentSegment.getAverageStepFrequency(), 
-				currentSegment.getAverageStepLength()};
-		autoGaitModel.addSampleToModel(sample);
-		
-		// Run the sampleRunnable
-		if(sampleRunnable != null) sampleRunnable.run(sample);
+		// Add this segment's samples to the model
+		double[][] samples = currentSegment.getSegmentStepSamples();
+		for(double[] s : samples) {
+			autoGaitModel.addSampleToModel(s);
+			
+			// Run the sampleRunnable
+			if(sampleRunnable != null) sampleRunnable.run(s);
+		}
 	}
 	
 	public void forceStepAdd(StepReading read){
@@ -116,7 +123,12 @@ public class AutoGaitModelerAnalyser extends Analyser implements Observer {
 	 * @return	Whether the segment currently being filled
 	 * 			is a straight line or not.
 	 */
-	public boolean isCurrentSegmentSL() {
+	public boolean hasCurrentSegmentSL() {
+		// TODO Check if SLs have been identified, 
+		// and return true immediately
+		if(!straightLines.isEmpty()) return true;
+		
+		
 		// Get Cumulative Heading Change values
 		GPSSegment seg = currentSegment;
 		ArrayList<Double> cumHC = new ArrayList<Double>(seg.getCumulativeHeadingChanges());

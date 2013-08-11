@@ -14,6 +14,10 @@ public abstract class ReadingSource extends Observable {
 	protected ReadingCircularBuffer buffer;
 	protected final Object bufferLock = new Object();
 	protected List<Filter> filters = new ArrayList<Filter>();
+	
+	
+	// A user-definable Runnable
+	protected Runnable runnable = null;
 
 	public ReadingSource(ReadingCircularBuffer rcb){
 		buffer = rcb;
@@ -36,6 +40,9 @@ public abstract class ReadingSource extends Observable {
 	public void pushReading(SensorReading read){
 		// If a buffer was created, add the reading to it
 		if(buffer != null) buffer.addReading(read);
+
+		// FIXME Remove after testing the runnable issue
+		executeRunnable();
 		
 		// Notify the filters (observer pattern)
 		notifyFilters(read);
@@ -69,5 +76,22 @@ public abstract class ReadingSource extends Observable {
 	public void plugFilterIntoOutput(Filter f) {
 		addObserver(f);
 		filters.add(f);
+	}
+	
+	/**
+	 * Set this {@link ReadingSource}'s {@link Runnable}
+	 * object, making it possible to be executed.
+	 * 
+	 * @param r	The {@link Runnable} to be set.
+	 */
+	public void setRunnable(Runnable r){
+		runnable = r;
+	}
+	
+	/**
+	 * Executes the saved runnable, if it exists.
+	 */
+	public void executeRunnable(){
+		if(runnable != null) runnable.run();
 	}
 }

@@ -19,7 +19,7 @@ public class StepAnalyser extends Analyser {
 
 //	private final int sampleRate;
 	
-	private static final double KFACTOR = 9; // TODO Chosen heuristically. Should be computed?
+	private static final double KFACTOR = 10.5; // TODO Chosen heuristically. Should be computed?
 												// 		Value before which a peak is always discarded.
 												//		Gravity magnitude is a good pick.
 	private static final double PEAKTHRESHFACTOR = 0.7; // Multiplication factor to lower the step threshold
@@ -32,6 +32,9 @@ public class StepAnalyser extends Analyser {
 	private SignalPeakData peakData = new SignalPeakData();
 
 //	private StepReadingSource steps = new StepReadingSource();
+	
+	// FIXME Remove after testing
+	private Runnable runnable;
 
 	public StepAnalyser(int sampleRate){
 		super(new StepReadingSource());
@@ -99,45 +102,55 @@ public class StepAnalyser extends Analyser {
 	 * new state.
 	 */
 	public void processState(){
-		// Get the buffers to analyse (first the average buffers, then the raw buffer)
-		ArrayList<ReadingCircularBuffer> bufferCollection = new ArrayList<ReadingCircularBuffer>(avgBuffers.values()); 
-		bufferCollection.add(rawBuffer);
-		
-		for(ReadingCircularBuffer circBuffer : bufferCollection){
-			// Count peaks
-			ArrayList<AccelReading> peakList = countPeaksInBuffer(circBuffer);
-			Boolean wasPeakDetected = !(peakList.isEmpty());
-			
-			// Add them to the peak list
-			peakData.addAll(peakList);
-			
-			// Clear state
-			if(wasPeakDetected) {
-				for(ReadingCircularBuffer rcb : avgBuffers.values()){
-					rcb.clearOld();
+		synchronized(avgBuffers) {
+			synchronized(rawBuffer) {
+				// Get the buffers to analyse (first the average buffers, then the raw buffer)
+				ArrayList<ReadingCircularBuffer> bufferCollection = new ArrayList<ReadingCircularBuffer>(avgBuffers.values()); 
+				bufferCollection.add(rawBuffer);
+				
+				for(ReadingCircularBuffer circBuffer : bufferCollection){
+					// Count peaks
+					ArrayList<AccelReading> peakList = countPeaksInBuffer(circBuffer);
+					Boolean wasPeakDetected = !(peakList.isEmpty());
+					
+					// Add them to the peak list
+					synchronized(peakData) {
+						peakData.addAll(peakList);
+					}
+					
+					// Clear state
+					if(wasPeakDetected) {
+						for(ReadingCircularBuffer rcb : avgBuffers.values()){
+							rcb.clearOld();
+						}
+						rawBuffer.clearOld();
+					}
 				}
-				rawBuffer.clearOld();
 			}
 		}
 		
-		// Check if it is time to count the steps
-		ArrayList<AccelReading> unaveragedPeaks = peakData.getUnaveragedPeaks();
-		if(unaveragedPeaks.size() >= 2){
-			// Compute the average peakValue
-			double peakMean = peakData.getCurrentNormMean();
+		synchronized(peakData) {
+			// Check if it is time to count the steps
+			ArrayList<AccelReading> unaveragedPeaks = peakData.getUnaveragedPeaks();
+			if(unaveragedPeaks.size() >= 2){
+				// Compute the average peakValue
+				double peakMean = peakData.getCurrentNormMean();
+				
+				for(AccelReading r : unaveragedPeaks){
+					// If a peak is bigger than threshold...
+					if(r.getReadingNorm() > KFACTOR && 
+							r.getReadingNorm() > PEAKTHRESHFACTOR*peakMean) {
+						// Push a new StepReading object and add it to the list
+						pushReading(new StepReading(r));
 			
-			for(AccelReading r : unaveragedPeaks){
-				// If a peak is bigger than threshold...
-				if(r.getReadingNorm() > KFACTOR && 
-						r.getReadingNorm() > PEAKTHRESHFACTOR*peakMean) {
-					// Push a new StepReading object and add it to the list
-//					steps.pushReading(new StepReading(r));
-					pushReading(new StepReading(r));
-				}				
+						// FIXME Remove after testing
+						executeRunnable();
+					}
+				}
+				
+				// Clear the peak list
+				peakData.clearMeanData();
 			}
-			
-			// Clear the peak list
-			peakData.clearMeanData();
 		}
 	}
 
@@ -197,7 +210,6 @@ public class StepAnalyser extends Analyser {
 
 	@Override
 	public void update(ReadingSource rs, SensorReading reading) {
-		synchronized(this){
 			// Determine the type of ReadingSource/Filter that was pushed
 			if(rs instanceof Filter)
 				updateFromFilter((ReadingSource) rs, reading);
@@ -210,38 +222,48 @@ public class StepAnalyser extends Analyser {
 			
 			// ...and Process the state
 			processState();
-		}
 	}
 	
 	public void updateFromFilter(ReadingSource f, Object reading){
-		if(f instanceof MovingAverageFilter){
-			// Get this filter's order and the latest reading
-			int order = ((MovingAverageFilter) f).getAverageOrder();
-			SensorReading currentReading = (SensorReading) f.getBuffer().getCurrentReading();
-	
-			// Adds the reading to the buffer with the associated order
-			addAvgReading(order, currentReading);
-		} else if(f instanceof ButterworthFilter){
-			// Get this filter's order and the latest reading
-			int order = ((ButterworthFilter) f).getFilterOrder();
-			SensorReading currentReading = (SensorReading) f.getBuffer().getCurrentReading();
-	
-			// Adds the reading to the buffer with the associated order
-			addAvgReading(order, currentReading);
-		} else {
-			throw new UnsupportedOperationException("Tried to update Analyser from '"
-					+ f.getClass().getSimpleName() + "' filter type." );
-		}
+		synchronized(avgBuffers){
+			if(f instanceof MovingAverageFilter){
+				// Get this filter's order and the latest reading
+				int order = ((MovingAverageFilter) f).getAverageOrder();
+				SensorReading currentReading = (SensorReading) f.getBuffer().getCurrentReading();
 		
+				// Adds the reading to the buffer with the associated order
+				addAvgReading(order, currentReading);
+			} else if(f instanceof ButterworthFilter){
+				// Get this filter's order and the latest reading
+				int order = ((ButterworthFilter) f).getFilterOrder();
+				SensorReading currentReading = (SensorReading) f.getBuffer().getCurrentReading();
+		
+				// Adds the reading to the buffer with the associated order
+				addAvgReading(order, currentReading);
+			} else {
+				throw new UnsupportedOperationException("Tried to update Analyser from '"
+						+ f.getClass().getSimpleName() + "' filter type." );
+			}
+		}
 	}
 	
 	public void updateFromRaw(ReadingSource rs, Object reading){
-		// Get this ReadingSource's latest reading
-		SensorReading currentReading = (SensorReading) rs.getBuffer().getCurrentReading();
-
-		// Adds the reading to the buffer with the associated 
-		// order (adding to an AverageCircularBuffer should be
-		// the same thing)
-		addRawReading(currentReading);
+		synchronized(rawBuffer) {
+			// Get this ReadingSource's latest reading
+			SensorReading currentReading = (SensorReading) rs.getBuffer().getCurrentReading();
+	
+			// Adds the reading to the buffer with the associated 
+			// order (adding to an AverageCircularBuffer should be
+			// the same thing)
+			addRawReading(currentReading);
+		}
+	}
+	
+	// FIXME Remove after testing
+	public void setRunnable(Runnable r){
+		runnable = r;
+	}
+	public void executeRunnable(){
+		if(runnable != null) runnable.run();
 	}
 }

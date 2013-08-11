@@ -46,7 +46,7 @@ public class AutoGaitModelerAnalyserTest {
 			gpa.setCurrentSegment(seg);
 			
 			// Test if SL in-between
-			assertTrue(gpa.isCurrentSegmentSL());
+			assertTrue(gpa.hasCurrentSegmentSL());
 		}
 		
 		// Test Segments that have SL at the beginning, middle and end
@@ -70,7 +70,7 @@ public class AutoGaitModelerAnalyserTest {
 		for (int i = 0; i < segments.length; i++) {
 			// Test for straight line
 			gpa.setCurrentSegment(segments[i]);
-			assertTrue(!gpa.isCurrentSegmentSL());
+			assertTrue(!gpa.hasCurrentSegmentSL());
 		}
 	}
 	
@@ -93,7 +93,7 @@ public class AutoGaitModelerAnalyserTest {
 		for (int i = 0; i < segments.length; i++) {
 			// Test for straight line
 			gpa.setCurrentSegment(segments[i]);
-			assertTrue(gpa.isCurrentSegmentSL());
+			assertTrue(gpa.hasCurrentSegmentSL());
 			
 			// Test if resulting segment is the expected
 			assertTrue(expected[i].equals(gpa.getCurrentSegment()));
@@ -244,7 +244,7 @@ public class AutoGaitModelerAnalyserTest {
 			
 			// Set it and test it
 			gpa.setCurrentSegment(s);
-			assertTrue(!gpa.isCurrentSegmentSL());
+			assertTrue(!gpa.hasCurrentSegmentSL());
 	}
 	
 	/**

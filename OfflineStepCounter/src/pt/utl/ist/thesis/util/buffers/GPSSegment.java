@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import pt.utl.ist.thesis.sensor.exception.StepOutsideSegmentBoundariesException;
 import pt.utl.ist.thesis.sensor.reading.GPSReading;
 import pt.utl.ist.thesis.sensor.reading.StepReading;
+import pt.utl.ist.thesis.signalprocessor.AutoGaitModel;
 import pt.utl.ist.thesis.util.MathUtils;
 
 public class GPSSegment extends ArrayList<GPSReading> {
@@ -268,5 +269,24 @@ public class GPSSegment extends ArrayList<GPSReading> {
 	public Double getAverageStepFrequency() {
 		// Return the average step length value
 		return stepFreqAverage.getCurrentValue();
+	}
+	
+	/**
+	 * Returns this {@link GPSSegment}'s valid step
+	 * samples, ready to be inserted into the
+	 * {@link AutoGaitModel}.
+	 * 
+	 * 
+	 * @return	An array containing the samples.
+	 */
+	public double[][] getSegmentStepSamples(){
+		
+		// TODO Should return a double[] for each average step freq and length
+		double[][] stepSamples = new double[][]{
+				new double[]{
+				getAverageStepFrequency(), 
+				getAverageStepLength()}};
+		
+		return stepSamples;
 	}
 }

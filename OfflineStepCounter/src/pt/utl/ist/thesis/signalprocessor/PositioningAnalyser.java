@@ -54,8 +54,13 @@ public class PositioningAnalyser extends Analyser implements Observer {
 	 * @param startPos	The absolute position to start from.
 	 */
 	public PositioningAnalyser(int rate, AutoGaitModel agm, GPSReading startPos){
-		this(rate);
+		// Creates the orientation filter with the given rate
+		orientationFilter = new MovingAverageFilter(rate);
 		
+		// Add first RelativePositionReading
+		rprBuffer.add(new RelativePositionReading(0D, 0D, 0D));
+		
+		// Sets the AutoGait model and starting position 
 		autoGaitModel = agm;
 		startingPosition = startPos;
 	}
@@ -82,10 +87,7 @@ public class PositioningAnalyser extends Analyser implements Observer {
 	 * @param rate	The sampling rate to be considered.
 	 */
 	public PositioningAnalyser(int rate){
-		orientationFilter = new MovingAverageFilter(rate);
-		
-		// Add first RelativePositionReading
-		rprBuffer.add(new RelativePositionReading(0D, 0D, 0D));
+		this(rate, null);
 	}
 
 	/**
