@@ -2,9 +2,11 @@ package pt.utl.ist.thesis.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.internal.runners.statements.Fail;
 
 import pt.utl.ist.thesis.sensor.reading.AccelReading;
 import pt.utl.ist.thesis.sensor.reading.GPSReading;
@@ -79,25 +81,26 @@ public class AutoGaitModelerAnalyserTest {
 	 */
 	@Test
 	public void testSemiSL() {
-		// Create begining, middle and end SL segments
-		GPSSegment[] segments = new GPSSegment[]{
-			new GPSSegment(getBeginingSegmentReadings()[0]),
-			new GPSSegment(getMiddleSegmentReadings()[0]),
-			new GPSSegment(getEndSegmentReadings()[0])};
-		GPSSegment[] expected = new GPSSegment[]{
-				new GPSSegment(getBeginingSegmentReadings()[1]),
-				new GPSSegment(getMiddleSegmentReadings()[1]),
-				new GPSSegment(getEndSegmentReadings()[1])};
-		
-		// Test all for SL and validity
-		for (int i = 0; i < segments.length; i++) {
-			// Test for straight line
-			gpa.setCurrentSegment(segments[i]);
-			assertTrue(gpa.hasCurrentSegmentSL());
-			
-			// Test if resulting segment is the expected
-			assertTrue(expected[i].equals(gpa.getCurrentSegment()));
-		}
+//		// Create begining, middle and end SL segments
+//		GPSSegment[] segments = new GPSSegment[]{
+//			new GPSSegment(getBeginingSegmentReadings()[0]),
+//			new GPSSegment(getMiddleSegmentReadings()[0]),
+//			new GPSSegment(getEndSegmentReadings()[0])};
+//		GPSSegment[] expected = new GPSSegment[]{
+//				new GPSSegment(getBeginingSegmentReadings()[1]),
+//				new GPSSegment(getMiddleSegmentReadings()[1]),
+//				new GPSSegment(getEndSegmentReadings()[1])};
+//		
+//		// Test all for SL and validity
+//		for (int i = 0; i < segments.length; i++) {
+//			// Test for straight line
+//			gpa.setCurrentSegment(segments[i]);
+//			assertTrue(gpa.hasCurrentSegmentSL());
+//			
+//			// Test if resulting segment is the expected
+//			assertTrue(expected[i].equals(gpa.getCurrentSegment()));
+//		}
+		fail("Unimplemented");
 	}
 	
 	@Test

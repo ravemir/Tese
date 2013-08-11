@@ -28,6 +28,24 @@ public class GPSSegment extends ArrayList<GPSReading> {
 
 	private ArrayList<Double> accumulatedHeadingChanges = new ArrayList<Double>();
 
+	private ArrayList<Integer[]> detectedStraightLines = new ArrayList<Integer[]>();
+	
+	/**
+	 * @return the detectedStraightLines
+	 */
+	public ArrayList<Integer[]> getDetectedStraightLines() {
+		return detectedStraightLines;
+	}
+	
+	public void addDetectedStraightLine(Integer[] straightLine) {
+		if(straightLine.length != 2) throw new RuntimeException("Tried addin an invalid straight line");
+		
+		// TODO Compute the respective sample for this straight line 
+		
+		// Add the straight line to the internal list
+		detectedStraightLines.add(straightLine);
+	}
+
 	/**
 	 * Default constructor.
 	 */
@@ -280,8 +298,9 @@ public class GPSSegment extends ArrayList<GPSReading> {
 	 * @return	An array containing the samples.
 	 */
 	public double[][] getSegmentStepSamples(){
-		
-		// TODO Should return a double[] for each average step freq and length
+
+		// TODO Get every computed SL sample, and return it in an array
+
 		double[][] stepSamples = new double[][]{
 				new double[]{
 				getAverageStepFrequency(), 

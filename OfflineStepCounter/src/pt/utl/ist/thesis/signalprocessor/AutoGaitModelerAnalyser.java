@@ -27,16 +27,15 @@ public class AutoGaitModelerAnalyser extends Analyser implements Observer {
 	private AutoGaitModel autoGaitModel;
 	private Double middleThreshold;
 	private Double endThreshold;
-	
+
 	// Buffers and lists
 	private ArrayList<GPSSegment> segments = new ArrayList<GPSSegment>();
 	private ArrayList<StepReading> stepBuffer = new ArrayList<StepReading>();
-	
+
 	// State and statistical variables
 	private GPSSegment currentSegment;
 	private SynchronizedSummaryStatistics speedStats = new SynchronizedSummaryStatistics();
 	private SampleRunnable sampleRunnable;
-	private ArrayList<Double[]> straightLines = new ArrayList<Double[]>();
 
 	/**
 	 * Builds a new {@link AutoGaitModelerAnalyser} object
@@ -47,7 +46,7 @@ public class AutoGaitModelerAnalyser extends Analyser implements Observer {
 	public AutoGaitModelerAnalyser() {
 		this(35D, 10D);
 	}
-	
+
 	/**
 	 * Builds a new {@link AutoGaitModelerAnalyser} object
 	 * while specifying the Middle-point and End-point
@@ -62,7 +61,7 @@ public class AutoGaitModelerAnalyser extends Analyser implements Observer {
 		endThreshold = ET;
 		autoGaitModel = new AutoGaitModel();
 	}
-	
+
 	/**
 	 * Takes a 2D array of data samples and restores the
 	 * {@link AutoGaitModel} object with them.
@@ -85,8 +84,15 @@ public class AutoGaitModelerAnalyser extends Analyser implements Observer {
 				&& currentSegment.getStepCount() > 1) {
 			processCurrentSegment();
 		}
-		
+
 		// Create new GPSSegment
+		resetCurrentSegment();
+	}
+
+	/**
+	 * 
+	 */
+	public void resetCurrentSegment() {
 		currentSegment = new GPSSegment();
 	}
 
@@ -95,24 +101,21 @@ public class AutoGaitModelerAnalyser extends Analyser implements Observer {
 	 * resulting samples to the AutoGait model.
 	 */
 	private void processCurrentSegment() {
-		// TODO Take the current segment, analyse the SL's identified
-		// TODO Readjust the starting segment to the SL's, and store them
-		// TODO Take each newly readjusted segment and add its step samples
-		
+
 		// Compute step lengths and add currentSegment to array
-		currentSegment.computeStepFrequencyAndLength();
+		currentSegment.computeStepFrequencyAndLength();			// TODO Remove this
 		segments.add(currentSegment);
-		
+
 		// Add this segment's samples to the model
 		double[][] samples = currentSegment.getSegmentStepSamples();
 		for(double[] s : samples) {
 			autoGaitModel.addSampleToModel(s);
-			
+
 			// Run the sampleRunnable
 			if(sampleRunnable != null) sampleRunnable.run(s);
 		}
 	}
-	
+
 	public void forceStepAdd(StepReading read){
 		currentSegment.forceAddStepReading(read);
 	}
@@ -124,67 +127,142 @@ public class AutoGaitModelerAnalyser extends Analyser implements Observer {
 	 * 			is a straight line or not.
 	 */
 	public boolean hasCurrentSegmentSL() {
-		// TODO Check if SLs have been identified, 
-		// and return true immediately
-		if(!straightLines.isEmpty()) return true;
-		
-		
+		// Check if SLs have been identified, and if so 
+		// return true immediately
+		if(!currentSegment.getDetectedStraightLines().isEmpty()) return true;
+
 		// Get Cumulative Heading Change values
 		GPSSegment seg = currentSegment;
 		ArrayList<Double> cumHC = new ArrayList<Double>(seg.getCumulativeHeadingChanges());
-		
-		// Do SLI Algorithm
-		int baseIndex = 0;
-		int maximumIndex = 0;
-		int minimumIndex = baseIndex;
-		while(!cumHC.isEmpty() && maximumIndex == 0) { // FIXME For the 10-08-2013 log, this has a bug on the "1.37614857E12" timestamp reading
-			Boolean minNeedsUpdate = false;
-			// Find the maximum cumulative heading value that...
-			for(int i = 1; i < cumHC.size(); i++) {
-				// If previous value is inside the MT value...
-				if(cumHC.get(i-1) < middleThreshold && cumHC.get(i-1) > -middleThreshold){
-					// If minimum index needs an update, update it
-					minimumIndex = (minNeedsUpdate ? i-1 : minimumIndex);
-					minNeedsUpdate = false;
-					
-					// ...and if this one is inside the ET value
-					if((cumHC.get(i) < endThreshold && cumHC.get(i) > -endThreshold)){
-						maximumIndex = i + baseIndex;
-					}
-				} else
-					minNeedsUpdate = true;
-			}
-			
-			// If we reach the end of the segment 
-			// and no straight line is found
-			if(maximumIndex == 0){
-				// Discard the first value, recompute the cumHC
-				for (int i = 1; i < cumHC.size(); i++) {
-					// Remove the value of this cumulative heading
-					// from the other cumulative headings
-					double newHC = cumHC.get(i)-cumHC.get(0);
-					cumHC.set(i, newHC);
+
+		int latestInET = -1;
+		int latestRem = -1;
+		double toRemove = 0;
+		// TODO For every cumHC value...
+		for (int i = 0; i < cumHC.size() - 1;) {
+			Double currentHC = cumHC.get(i);
+
+			// TODO If it is inside MT...
+			if(currentHC < middleThreshold && currentHC > -middleThreshold) {
+				Double nextHC = cumHC.get(i+1);
+
+				// TODO ...if so, check if next is inside ET...
+				if(nextHC < endThreshold && nextHC > -endThreshold) {
+					// TODO ...if so, record the latest value inside ET
+					latestInET = i+1;
 				}
-				cumHC.remove(0);
 				
-				// ...and set the base index a unit higher 
-				// than the starting position
-				baseIndex++;
+				// TODO Set the index as the next
+				i++;
+			// TODO ...if not, ...
+			} else {
+				int firstRemove = 0, lastRemove = 0;
+				// ...check if there is a recorded lastest value inside ET
+				if (latestInET >= 0){
+					// TODO ...if so,...
+					Integer[] slStartEnd = new Integer[]{0, 0};
+
+					// TODO Convert current indices	to full cumHC array representation (sum last index
+					// removed + 1, unless there is no previous removed index),...
+					slStartEnd[0] += 0 + (latestRem + 1);				// CHECKED
+					slStartEnd[1] += latestInET + (latestRem + 1);
+
+					// TODO ...convert this value to represent actual segment positions, by summing 1 to the SL end and...
+					slStartEnd[1] += 1;									// CHECKED
+
+					// TODO ...register the SL from the start, until the latest recorded value inside ET
+					currentSegment.addDetectedStraightLine(slStartEnd);
+
+					// TODO Register all the SL values from cumHC list for removal
+					firstRemove = 0;
+					lastRemove = latestInET;
+
+					// TODO Register the final SL value for subtraction
+					toRemove = cumHC.get(lastRemove);
+				// TODO ...if not,...
+				} else {
+					
+					// TODO Register the first value from the list for removal
+					firstRemove = 0;
+					lastRemove = 0;
+
+					// TODO Register the first value for subtraction
+					toRemove = cumHC.get(lastRemove);
+				}
+
+				// TODO Remove the registered indices from the cumHC list
+				int countToRemove = (lastRemove - firstRemove) + 1;
+				for (int removed = 0; removed < countToRemove; removed++) 
+					cumHC.remove(0);
 				
-				// Also adjust the minimumIndex
-				minimumIndex = baseIndex;
+				// TODO Subtract the registered value from all the remaining cumHC's
+				for (int k = 0; k < cumHC.size(); k++) 
+					cumHC.set(k, cumHC.get(k)-toRemove);
+
+				// TODO Clear the lastest value inside ET as -1, and set the latest removed
+				latestRem += countToRemove;
+				latestInET = -1;
+				
+
+				// TODO Set the next index as zero
+				i = 0;
 			}
 		}
+
+		return !currentSegment.getDetectedStraightLines().isEmpty();
 		
-		// If the segment has a straight line...
-		if(maximumIndex != 0){
-			// Adjust it to match
-			adjustSegment(minimumIndex, maximumIndex+1);
-			return true;
-		} else {
-			// ...or return false
-			return false;
-		}
+//		// Do SLI Algorithm
+//		int baseIndex = 0;
+//		int maximumIndex = 0;
+//		int minimumIndex = baseIndex;
+//		while(!cumHC.isEmpty() && maximumIndex == 0) { // FIXME For the 10-08-2013 log, this has a bug on the "1.37614857E12" timestamp reading
+//			Boolean minNeedsUpdate = false;
+//			// Find the maximum cumulative heading value that...
+//			for(int i = 1; i < cumHC.size(); i++) {
+//				// If previous value is inside the MT value...
+//				if(cumHC.get(i-1) < middleThreshold && cumHC.get(i-1) > -middleThreshold){
+//					// If minimum index needs an update, update it
+//					minimumIndex = (minNeedsUpdate ? i-1 : minimumIndex);
+//					minNeedsUpdate = false;
+//
+//					// ...and if this one is inside the ET value
+//					if((cumHC.get(i) < endThreshold && cumHC.get(i) > -endThreshold)){
+//						maximumIndex = i + baseIndex;
+//					}
+//				} else
+//					minNeedsUpdate = true;
+//			}
+//
+//			// If we reach the end of the segment 
+//			// and no straight line is found
+//			if(maximumIndex == 0){
+//				// Discard the first value, recompute the cumHC
+//				for (int i = 1; i < cumHC.size(); i++) {
+//					// Remove the value of this cumulative heading
+//					// from the other cumulative headings
+//					double newHC = cumHC.get(i)-cumHC.get(0);
+//					cumHC.set(i, newHC);
+//				}
+//				cumHC.remove(0);
+//
+//				// ...and set the base index a unit higher 
+//				// than the starting position
+//				baseIndex++;
+//
+//				// Also adjust the minimumIndex
+//				minimumIndex = baseIndex;
+//			}
+//		}
+//
+//		// If the segment has a straight line...
+//		if(maximumIndex != 0){
+//			// Adjust it to match
+//			adjustSegment(minimumIndex, maximumIndex+1);
+//			return true;
+//		} else {
+//			// ...or return false
+//			return false;
+//		}
 	}
 
 	/**
@@ -201,10 +279,10 @@ public class AutoGaitModelerAnalyser extends Analyser implements Observer {
 		List<GPSReading> subList = currentSegment.subList(minimumIndex, maximumIndex+1);
 		GPSReading[] adjustedGPS = new GPSReading[subList.size()];
 		subList.toArray(adjustedGPS);
-		
+
 		// Create new segment with adjusted GPS readings
 		currentSegment = new GPSSegment(adjustedGPS);
-		
+
 		// Reinsert step readings
 		for(StepReading step : currentSegment.getSteps()){
 			try {
@@ -230,11 +308,11 @@ public class AutoGaitModelerAnalyser extends Analyser implements Observer {
 	public GPSSegment getCurrentSegment(){
 		return currentSegment;
 	}
-	
+
 	public void setCurrentSegment(GPSSegment currentSegment) {
 		this.currentSegment = currentSegment;
 	}
-	
+
 	public Double getMiddleThreshold() {
 		return middleThreshold;
 	}
@@ -249,11 +327,11 @@ public class AutoGaitModelerAnalyser extends Analyser implements Observer {
 			if(reading instanceof GPSReading){
 				// Perform updates referring to
 				// segmentation, smoothing and SLI.
-				
+
 				// Update mean and standard deviation
 				GPSReading gpsReading = (GPSReading) reading;
 				speedStats.addValue(gpsReading.getSpeed());
-				
+
 				// If segmentation conditions verify...
 				Double speedLimit = getCurrentSpeedLimit();
 				boolean speedConditions = (gpsReading.getSpeed() > speedLimit);
@@ -261,10 +339,10 @@ public class AutoGaitModelerAnalyser extends Analyser implements Observer {
 				if(stepConditions || speedConditions){
 					segment();
 				}
-				
+
 				// Add value to currentSegment
 				currentSegment.addGPSReading(gpsReading);
-				
+
 				// Add all steps to the currentSegment
 				try {
 					for(StepReading step : stepBuffer)
@@ -272,13 +350,13 @@ public class AutoGaitModelerAnalyser extends Analyser implements Observer {
 				} catch(StepOutsideSegmentBoundariesException e) {
 					e.printStackTrace();
 				}
-				
+
 				// Clear the step buffer
 				stepBuffer.clear();
 			} else if (reading instanceof StepReading){
 				// Perform updates referring to
 				// segmentation, smoothing and SLI.
-				
+
 				// Add StepReading to buffer 
 				stepBuffer.add((StepReading) reading);
 			} else {
@@ -288,7 +366,7 @@ public class AutoGaitModelerAnalyser extends Analyser implements Observer {
 			}
 		}
 	}
-	
+
 	public void setSampleUpdater(SampleRunnable r){
 		sampleRunnable = r;
 	}
