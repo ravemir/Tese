@@ -7,9 +7,9 @@ import org.apache.commons.math.linear.RealMatrix;
 
 import pt.utl.ist.thesis.acceldir.R;
 import pt.utl.ist.thesis.acceldir.util.AndroidUtils;
-import pt.utl.ist.util.sensor.reading.AccelReading;
-import pt.utl.ist.util.sensor.source.RawReadingSource;
-import pt.utl.ist.util.source.filters.MovingAverageFilter;
+import pt.utl.ist.thesis.sensor.reading.AccelReading;
+import pt.utl.ist.thesis.sensor.source.RawReadingSource;
+import pt.utl.ist.thesis.source.filters.MovingAverageFilter;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences.Editor;
@@ -130,6 +130,15 @@ public class CalibrationActivity extends Activity {
 		public void onAccuracyChanged(Sensor sensor, int accuracy) {}
 	}
 
+	public void calibration(View v){
+		// Register the CalibrationEventListener
+		calibrationEventListener = new CalibrationEventListener(250,250);
+		sm.registerListener(calibrationEventListener, accel, SensorManager.SENSOR_DELAY_FASTEST);
+
+		// Make button unclickable
+		((Button) v).setVisibility(View.INVISIBLE);
+	}
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -152,30 +161,7 @@ public class CalibrationActivity extends Activity {
 		((TextView) findViewById(R.id.calibrationView))
 			.setText(instructions[calibrationRound]);
 	}
-
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.activity_calibration, menu);
-		return true;
-	}
-
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-			default: return super.onOptionsItemSelected(item);
-		}
-	}
-
-	public void calibration(View v){
-		// Register the CalibrationEventListener
-		calibrationEventListener = new CalibrationEventListener(250,250);
-		sm.registerListener(calibrationEventListener, accel, SensorManager.SENSOR_DELAY_FASTEST);
-
-		// Make button unclickable
-		((Button) v).setVisibility(View.INVISIBLE);
-	}
-
+	
 	@Override
 	protected void onResume() {
 		super.onResume();
@@ -193,5 +179,19 @@ public class CalibrationActivity extends Activity {
 
 		// Release the wake-lock
 		mWakeLock.release();
-	}	
+	}
+	
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		// Inflate the menu; this adds items to the action bar if it is present.
+		getMenuInflater().inflate(R.menu.activity_calibration, menu);
+		return true;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+			default: return super.onOptionsItemSelected(item);
+		}
+	}
 }

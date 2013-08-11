@@ -11,13 +11,14 @@ import org.apache.commons.math.stat.descriptive.SynchronizedSummaryStatistics;
 import pt.utl.ist.thesis.acceldir.sql.AutoGaitSegmentDataSource;
 import pt.utl.ist.thesis.acceldir.util.AndroidUtils;
 import pt.utl.ist.thesis.acceldir.util.UIUpdater;
+import pt.utl.ist.thesis.sensor.reading.AccelReading;
+import pt.utl.ist.thesis.sensor.reading.GPSReading;
+import pt.utl.ist.thesis.sensor.source.RawReadingSource;
 import pt.utl.ist.thesis.signalprocessor.AutoGaitModelerAnalyser;
 import pt.utl.ist.thesis.signalprocessor.StepAnalyser;
+import pt.utl.ist.thesis.source.filters.ButterworthFilter;
+import pt.utl.ist.thesis.util.PushThread;
 import pt.utl.ist.thesis.util.SampleRunnable;
-import pt.utl.ist.util.sensor.reading.AccelReading;
-import pt.utl.ist.util.sensor.reading.GPSReading;
-import pt.utl.ist.util.sensor.source.RawReadingSource;
-import pt.utl.ist.util.source.filters.ButterworthFilter;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
@@ -50,6 +51,12 @@ public class AutoGaitCollectionActivity extends Activity {
 
 		public AccelGPSListener(int sRate){
 			SAMPLERATE = sRate;
+			
+			accelRS = new RawReadingSource(CIRCBUFFSIZE);
+			locRS = new RawReadingSource(CIRCBUFFSIZE);
+			bwF = new ButterworthFilter(10, 5, SAMPLERATE, true);
+			stepA = new StepAnalyser(SAMPLERATE);
+			agmA = new AutoGaitModelerAnalyser();
 		}
 
 		// Sensor-related attributes and methods (sized 4 to be compatible with 4x4 matrices)
@@ -59,11 +66,11 @@ public class AutoGaitCollectionActivity extends Activity {
 		//		 sampling rate)
 
 		// AutoGait related attributes
-		private RawReadingSource accelRS = new RawReadingSource(CIRCBUFFSIZE);
-		private RawReadingSource locRS = new RawReadingSource();
-		private ButterworthFilter filter = new ButterworthFilter(10, 5, SAMPLERATE, true);
-		private StepAnalyser stepA = new StepAnalyser(SAMPLERATE);
-		private AutoGaitModelerAnalyser agma = new AutoGaitModelerAnalyser();
+		private RawReadingSource accelRS;
+		private RawReadingSource locRS;
+		private ButterworthFilter bwF;
+		private StepAnalyser stepA;
+		private AutoGaitModelerAnalyser agmA;
 
 		@Override
 		public void onSensorChanged(SensorEvent event) {
@@ -89,7 +96,12 @@ public class AutoGaitCollectionActivity extends Activity {
 						event.accuracy + "\n";
 
 				// Push Acceleration reading
-				accelRS.pushReading(new AccelReading(tsString, accel));
+				new PushThread(new AccelReading(tsString, 
+						new double[]{accel[0], accel[1], accel[2]})){
+					public void run(){
+						accelRS.pushReading(reading);
+					}
+				}.run();
 
 				// Write it to a file
 				writeToFile(accelLine);
@@ -179,16 +191,16 @@ public class AutoGaitCollectionActivity extends Activity {
 		 * to perform the AutoGait model calibration.
 		 */
 		public void attachFiltersAndAnalysers(){
-			// Attach the Butterworth filter to the RawReadingSource
-			accelRS.plugFilterIntoOutput(filter);
+			// Attach the Butterworth bwF to the RawReadingSource
+			accelRS.plugFilterIntoOutput(bwF);
 
-			// Attach StepAnalyser to filter
-			filter.plugAnalyserIntoOutput(stepA);
+			// Attach StepAnalyser to bwF
+			bwF.plugAnalyserIntoOutput(stepA);
 
 			// Attach the StepAnalyser and the GPSReading
 			// RawReadingSource to the AutoGaitModelerAnalyser
-			stepA.plugAnalyserIntoOutput(agma);
-			locRS.plugAnalyserIntoOutput(agma);
+			stepA.plugAnalyserIntoOutput(agmA);
+			locRS.plugAnalyserIntoOutput(agmA);
 		}
 
 		@Override
@@ -206,19 +218,12 @@ public class AutoGaitCollectionActivity extends Activity {
 	private Sensor mMagnetometer;
 	private AccelGPSListener mAccelGPSListener;
 
-	// External storage attributes
-	private String logFolder;
-	private String filename;
-
 	// Database attributes
 	private AutoGaitSegmentDataSource agsds;
 
 	// Application attributes
 	private WakeLock mWakeLock;
 	private UIUpdater mUIUpdater;
-
-	// Log attributes
-	private static final String LOGSEPARATOR = ",";
 
 	// Class runnables
 	private final Runnable uiUpdaterRunnable = new Runnable() {
@@ -240,95 +245,27 @@ public class AutoGaitCollectionActivity extends Activity {
 		}
 	};
 
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-
-		// Set it as a fullscreen activity
-		setFullScreen();
-
-		// Set the View content
-		setContentView(R.layout.activity_collection);
-
-		// Get extra attributes from extras bundle
-		logFolder = (String) getIntent().getExtras().get("logFolder");
-
-		// Get date from system and set the file name to save
-		String date = getDateForFilename();
-		filename = logFolder + date + ".log";
-
-		// Create the DB DAO object
-		agsds = new AutoGaitSegmentDataSource(this);
-		agsds.open();
-
-		// Initialize and attach the Listener-related attributes
-		initializeListeners();
-		attachListeners();
-
-		// Display toast message with the filename being written to
-		String message = getString(R.string.log_file_message) + filename + "\"";
-		AndroidUtils.displayToast(getApplicationContext(), message);
-
-		mUIUpdater = new UIUpdater(this, uiUpdaterRunnable);
-
-		// Create screen-dim wake lock
-		PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-		mWakeLock = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK,
-				getString(R.string.wake_lock_log));
-	}
+	
 
 	/**
-	 * 
+	 * Initializes AutoGait related attributes.
 	 */
 	public void initializeAutoGaitModeler() {
-		// Attach all the filter and analyser objects acoordingly
+		// Attach all the bwF and analyser objects acoordingly
 		mAccelGPSListener.attachFiltersAndAnalysers();
 
 		// Get the stored samples and insert them into the model
 		double[][] storedSamples = agsds.getAllSegmentDataSamples();
-		mAccelGPSListener.agma.restoreDataSamples(storedSamples);
+		mAccelGPSListener.agmA.restoreDataSamples(storedSamples);
 
 		// Set the SampleRunnable object to update the data model
-		mAccelGPSListener.agma.setSampleUpdater(new SampleRunnable() {
+		mAccelGPSListener.agmA.setSampleUpdater(new SampleRunnable() {
 			@Override
 			public void run() {
 				// Add the sample value to the application's DAO
 				agsds.createSegmentData(sample[0], sample[1]);
 			}
 		});
-	}
-
-	/**
-	 * 
-	 */
-	private void setFullScreen() {
-		requestWindowFeature(Window.FEATURE_NO_TITLE); 
-		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-				WindowManager.LayoutParams.FLAG_FULLSCREEN);
-	}
-
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.activity_collection, menu);
-		return true;
-	}
-
-
-	/**
-	 * This function opens a file, writes the given line and closes it.
-	 * 
-	 * @param line The line to be written.
-	 */
-	private void writeToFile(String line)  {
-		try {
-			// Write line to file
-			FileWriter fw = new FileWriter(filename, true);
-			fw.write(line);
-			fw.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 	}
 
 	/**
@@ -410,12 +347,135 @@ public class AutoGaitCollectionActivity extends Activity {
 			writeToFile("I" + LOGSEPARATOR + timestamp + LOGSEPARATOR + getString(R.string.accel_magnet_listeners_dettached));
 		}
 		mLocationManager.removeUpdates(mAccelGPSListener);
+	}	
+	
+	// File Writing attributes and methods
+	private String logFolder;
+	private String filename;
+	private static final String LOGSEPARATOR = ",";
+	private FileWriter mFileWriter;
+	private int writingToFile = 0;
+	
+	/**
+	 * Initializes the filewriter for this activity.
+	 */
+	public void initializeFileWriter() {
+		if(mFileWriter == null)
+		try {
+			mFileWriter = new FileWriter(filename, true);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
+	
+	/**
+	 * This function writes the given line to a file 
+	 * in a separate thread.
+	 * 
+	 * @param line The line to be written.
+	 */
+	private void writeToFile(final String line)  {
+		new Thread(){
+			public void run(){
+				synchronized(mFileWriter){
+					writingToFile++;
+					
+					try {
+						// Write line to file
+						mFileWriter.write(line);
+					} catch (IOException e) {
+						e.printStackTrace();
+					} finally {
+						writingToFile--;
+						mFileWriter.notifyAll();
+					}
+				}
+			}
+		}.run();
+	}
+	
+	/**
+	 * Closes the filewriter and clears the field.
+	 */
+	public void closeFileWriter() {
+		// Waits for other writers to finish...
+		synchronized (mFileWriter) {
+			try {
+				// Waits for writers to finish writing
+				while(writingToFile > 0) mFileWriter.wait();
+				
+				// Close the FileWriter
+				mFileWriter.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	/**
+	 * Function used to return the current date, ready to be used in a filename.
+	 * 
+	 * @return A string representing the date in a "YYYY-MM-DD_HH:MM" format
+	 */
+	private String getDateForFilename() {
+		Calendar c = Calendar.getInstance();
+		SimpleDateFormat sdf = (SimpleDateFormat) java.text.DateFormat.getDateTimeInstance();
+		sdf.applyPattern("yyyy-MM-dd_HH'h'mm");
+		String date = sdf.format(c.getTime());
 
+		return date;
+	}
+	
+	// Activity life-cycle
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+
+		// Set it as a fullscreen activity
+		setFullScreen();
+
+		// Set the View content
+		setContentView(R.layout.activity_collection);
+
+		// Get extra attributes from extras bundle
+		logFolder = (String) getIntent().getExtras().get("logFolder");
+
+		// Get date from system and set the file name to save
+		String date = getDateForFilename();
+		filename = logFolder + date + ".log";
+
+		// Create the DB DAO object
+		agsds = new AutoGaitSegmentDataSource(this);
+		agsds.open();
+
+		// Initialize Filewriter
+		initializeFileWriter();
+		
+		// Initialize and attach the Listener-related attributes
+		initializeListeners();
+		attachListeners();
+
+		// Display toast message with the filename being written to
+		String message = getString(R.string.log_file_message) + filename + "\"";
+		AndroidUtils.displayToast(getApplicationContext(), message);
+
+		mUIUpdater = new UIUpdater(this, uiUpdaterRunnable);
+
+		// Create screen-dim wake lock
+		PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+		mWakeLock = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK,
+				getString(R.string.wake_lock_log));
+	}
+	
 	@Override
 	protected void onResume() {
 		super.onResume();
 
+		// Initialize Filewriter
+		initializeFileWriter();
+		
 		// Write to file pause error
 		long timestamp = new Date().getTime();
 		writeToFile("I" + LOGSEPARATOR + timestamp + LOGSEPARATOR + 
@@ -453,8 +513,18 @@ public class AutoGaitCollectionActivity extends Activity {
 
 		// Release the wake-lock
 		mWakeLock.release();
+		
+		// Close the FileWriter
+		closeFileWriter();
 	}
 
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		// Inflate the menu; this adds items to the action bar if it is present.
+		getMenuInflater().inflate(R.menu.activity_collection, menu);
+		return true;
+	}
+	
 	// Back-button functionality
 	private static final int PERIOD = 2000;
 	private Boolean backWasPressed = false;
@@ -476,18 +546,13 @@ public class AutoGaitCollectionActivity extends Activity {
 				@Override public void run() {backWasPressed = false;}}, PERIOD);
 		}
 	}
-
+	
 	/**
-	 * Function used to return the current date, ready to be used in a filename.
-	 * 
-	 * @return A string representing the date in a "YYYY-MM-DD_HH:MM" format
+	 * Sets the screen appearance to Fullscreen.
 	 */
-	private String getDateForFilename() {
-		Calendar c = Calendar.getInstance();
-		SimpleDateFormat sdf = (SimpleDateFormat) java.text.DateFormat.getDateTimeInstance();
-		sdf.applyPattern("yyyy-MM-dd_HH'h'mm");
-		String date = sdf.format(c.getTime());
-
-		return date;
+	private void setFullScreen() {
+		requestWindowFeature(Window.FEATURE_NO_TITLE); 
+		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+				WindowManager.LayoutParams.FLAG_FULLSCREEN);
 	}
 }

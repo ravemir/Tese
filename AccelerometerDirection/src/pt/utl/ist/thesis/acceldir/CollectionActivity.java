@@ -11,15 +11,15 @@ import org.apache.commons.math.stat.descriptive.SynchronizedSummaryStatistics;
 import pt.utl.ist.thesis.acceldir.sql.AutoGaitSegmentDataSource;
 import pt.utl.ist.thesis.acceldir.util.AndroidUtils;
 import pt.utl.ist.thesis.acceldir.util.UIUpdater;
+import pt.utl.ist.thesis.sensor.reading.AccelReading;
+import pt.utl.ist.thesis.sensor.reading.GPSReading;
+import pt.utl.ist.thesis.sensor.reading.OrientationReading;
+import pt.utl.ist.thesis.sensor.source.RawReadingSource;
 import pt.utl.ist.thesis.signalprocessor.PositioningAnalyser;
 import pt.utl.ist.thesis.signalprocessor.StepAnalyser;
+import pt.utl.ist.thesis.source.filters.ButterworthFilter;
+import pt.utl.ist.thesis.util.PushThread;
 import pt.utl.ist.thesis.util.SensorReadingRunnable;
-import pt.utl.ist.util.copy.PushThread;
-import pt.utl.ist.util.sensor.reading.AccelReading;
-import pt.utl.ist.util.sensor.reading.GPSReading;
-import pt.utl.ist.util.sensor.reading.OrientationReading;
-import pt.utl.ist.util.sensor.source.RawReadingSource;
-import pt.utl.ist.util.source.filters.ButterworthFilter;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
@@ -43,6 +43,8 @@ import android.view.WindowManager;
 import android.widget.TextView;
 
 public class CollectionActivity extends Activity {
+
+	private static final int SENSOR_DELAY = SensorManager.SENSOR_DELAY_FASTEST;
 
 	// Inner-class Listeners
 	private final class AccelGPSListener implements LocationListener, SensorEventListener {
@@ -104,7 +106,8 @@ public class CollectionActivity extends Activity {
 						event.accuracy + "\n";
 
 				// Push Acceleration reading
-				new PushThread(new AccelReading(tsString, accel)){
+				new PushThread(new AccelReading(tsString, 
+						new double[]{accel[0], accel[1], accel[2]})){
 					public void run(){
 						accelRS.pushReading(reading);
 					}
@@ -137,7 +140,8 @@ public class CollectionActivity extends Activity {
 								orientations[2] + "\n";						// Roll
 						
 						// Push OrientationReading
-						new PushThread(new OrientationReading(tsString, orientations)){
+						new PushThread(new OrientationReading(tsString, 
+								new double[]{orientations[0], orientations[1], orientations[2]})){
 							public void run(){
 								oriRS.pushReading(reading);
 							}
@@ -250,6 +254,14 @@ public class CollectionActivity extends Activity {
 			// MovingAverageFilter to the PositioningAnalyser
 			stepA.plugAnalyserIntoOutput(positioningA);
 			oriRS.getFilters().get(0).plugAnalyserIntoOutput(positioningA);
+			
+			// FIXME Remove after testing
+			stepA.setRunnable(new Runnable() {
+				@Override
+				public void run() {
+					Log.e("AccelDir", " Caught Step! ");
+				}
+			});
 		}
 
 		@Override
@@ -267,20 +279,12 @@ public class CollectionActivity extends Activity {
 	private Sensor mMagnetometer;
 	private AccelGPSListener mAccelGPSListener;
 
-	// External storage attributes
-	private String logFolder;
-	private String filename;
-
 	// Database attributes
 	private AutoGaitSegmentDataSource agsds;
 
 	// Application attributes
 	private WakeLock mWakeLock;
 	private UIUpdater mUIUpdater;
-	private FileWriter mFileWriter;
-
-	// Log attributes
-	private static final String LOGSEPARATOR = ",";
 
 	// Class runnables
 	private final Runnable uiUpdaterRunnable = new Runnable() {
@@ -308,6 +312,197 @@ public class CollectionActivity extends Activity {
 		}
 	};
 
+	/**
+	 * Initialize acceleration sensors on pre-Gingerbread phones.
+	 */
+	public void initializeAutoGaitModeler() {
+		// Attach all the accelBWF and analyser objects acoordingly
+		mAccelGPSListener.attachFiltersAndAnalysers();
+
+		// Get the stored samples and insert them into the model
+		double[][] storedSamples = agsds.getAllSegmentDataSamples();
+		mAccelGPSListener.positioningA.restoreDataSamples(storedSamples);
+
+		// Set the SampleRunnable object to update the data model
+		mAccelGPSListener.positioningA.setSensorReadingUpdater(new SensorReadingRunnable() {
+			@Override
+			public void run() {
+				// Write the new coordinates to a file
+				String line = "P" + LOGSEPARATOR + reading.getTimestampString();
+				for (double d : reading.getReading())
+					line +=	LOGSEPARATOR + d;
+				line += "\n";
+				
+				writeToFile(line);
+				
+				Log.v("AccelDir", "Retrieved position: " + line);
+			}
+		});
+	}
+
+	/**
+	 * Method that initializes the Listener-related Activity attributes
+	 * (to be called on the activity's first run or on orientation changes)
+	 */
+	private void initializeListeners(){
+		// Initialize sensor and location manager and magnetometer sensor
+		mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+		mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+		mMagnetometer = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+
+		// Gravity and LinearAcceleration sensors only available from Gingerbread and up
+		if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD)
+			initializeAcceleration();
+		else
+			initializeAccelerationPreGingerbread();
+
+		// Get average sample rate value
+		double avgSampleRate = getIntent().getExtras().
+				getDouble(AccelerometerDirectionApplication.ratePrefName);
+		AndroidUtils.displayToast(this, "Rate: " + avgSampleRate);
+
+		// Define both the location and accelerometer listeners
+		mAccelGPSListener = new AccelGPSListener((int) Math.round(avgSampleRate));
+
+		// Initialize the AutoGait model, if appropriate
+		initializeAutoGaitModeler();
+	}
+
+	/**
+	 * Initialize acceleration sensors on pre-Gingerbread phones.
+	 */
+	public void initializeAccelerationPreGingerbread() {
+		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+		mGravity = mAccelerometer;
+	}
+
+	/**
+	 * Initialize acceleration sensors on Gingerbread+ phones.
+	 */
+	@TargetApi(Build.VERSION_CODES.GINGERBREAD)
+	public void initializeAcceleration() {
+//		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION); // Removed Linear Acceleration sensor because it is pre-filtered
+		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+		mGravity = mSensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
+	}
+
+	/**
+	 * This function attaches the listeners to both the sensors and location services.
+	 * It also defines the behavior of both those listeners.
+	 */
+	private void attachListeners() {
+		// Get the timestamp
+		long timestamp = new Date().getTime();
+
+		// Listen to accelerometer, magnetometer and GPS events
+		if(mAccelerometer != null && mGravity != null){
+			mSensorManager.registerListener(mAccelGPSListener, mAccelerometer, SENSOR_DELAY);
+			mSensorManager.registerListener(mAccelGPSListener, mGravity, SENSOR_DELAY);
+			writeToFile("I" + LOGSEPARATOR + timestamp + LOGSEPARATOR + getString(R.string.accel_listener_attached));
+		}
+		if(mMagnetometer != null){
+			mSensorManager.registerListener(mAccelGPSListener, mMagnetometer, SENSOR_DELAY);
+			writeToFile("I" + LOGSEPARATOR + timestamp + LOGSEPARATOR + getString(R.string.magnet_listener_attached));
+		}
+		mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, mAccelGPSListener);
+	}
+
+	/**
+	 * This function detaches the previously attached listeners for sensor
+	 * and location services.
+	 */
+	private void detachListeners() {
+		// Get the timestamp
+		long timestamp = new Date().getTime();
+
+		// Detach both Sensor and GPS listeners
+		if(mAccelGPSListener != null) {
+			mSensorManager.unregisterListener(mAccelGPSListener);
+			writeToFile("I" + LOGSEPARATOR + timestamp + LOGSEPARATOR + getString(R.string.accel_magnet_listeners_dettached));
+		}
+		mLocationManager.removeUpdates(mAccelGPSListener);
+	}
+	
+	// File Writing contents
+	private String logFolder;
+	private String filename;
+	private static final String LOGSEPARATOR = ",";
+	private FileWriter mFileWriter;
+	private int writingToFile = 0;
+	
+	/**
+	 * Initializes the filewriter for this activity.
+	 */
+	public void initializeFileWriter() {
+		if(mFileWriter == null)
+		try {
+			mFileWriter = new FileWriter(filename, true);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * This function writes the given line to a file 
+	 * in a separate thread.
+	 * 
+	 * @param line The line to be written.
+	 */
+	private void writeToFile(final String line)  {
+		new Thread(){
+			public void run(){
+				synchronized(mFileWriter){
+					writingToFile++;
+					
+					try {
+						// Write line to file
+						mFileWriter.write(line);
+					} catch (IOException e) {
+						e.printStackTrace();
+					} finally {
+						writingToFile--;
+						mFileWriter.notifyAll();
+					}
+				}
+			}
+		}.run();
+	}
+	
+	/**
+	 * Closes the filewriter and clears the field.
+	 */
+	public void closeFileWriter() {
+		// Waits for other writers to finish...
+		synchronized (mFileWriter) {
+			try {
+				// Waits for writers to finish writing
+				while(writingToFile > 0) mFileWriter.wait();
+				
+				// Close the FileWriter
+				mFileWriter.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	/**
+	 * Function used to return the current date, ready to be used in a filename.
+	 * 
+	 * @return A string representing the date in a "YYYY-MM-DD_HH:MM" format
+	 */
+	private String getDateForFilename() {
+		Calendar c = Calendar.getInstance();
+		SimpleDateFormat sdf = (SimpleDateFormat) java.text.DateFormat.getDateTimeInstance();
+		sdf.applyPattern("yyyy-MM-dd_HH'h'mm");
+		String date = sdf.format(c.getTime());
+
+		return date;
+	}
+
+	// Activity lifecycle
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -347,161 +542,7 @@ public class CollectionActivity extends Activity {
 		mWakeLock = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK,
 				getString(R.string.wake_lock_log));
 	}
-
-	/**
-	 * 
-	 */
-	public void initializeAutoGaitModeler() {
-		// Attach all the accelBWF and analyser objects acoordingly
-		mAccelGPSListener.attachFiltersAndAnalysers();
-
-		// Get the stored samples and insert them into the model
-		double[][] storedSamples = agsds.getAllSegmentDataSamples();
-		mAccelGPSListener.positioningA.restoreDataSamples(storedSamples);
-
-		// Set the SampleRunnable object to update the data model
-		mAccelGPSListener.positioningA.setSensorReadingUpdater(new SensorReadingRunnable() {
-			@Override
-			public void run() {
-				// Write the new coordinates to a file
-				String line = "P" + LOGSEPARATOR + reading.getTimestampString();
-				for (double d : reading.getReading())
-					line +=	LOGSEPARATOR + d;
-				line += "\n";
-				
-				writeToFile(line);
-				
-				Log.v("AccelDir", "Retrieved position: " + line);
-			}
-		});
-	}
-
-	/**
-	 * 
-	 */
-	private void setFullScreen() {
-		requestWindowFeature(Window.FEATURE_NO_TITLE); 
-		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-				WindowManager.LayoutParams.FLAG_FULLSCREEN);
-	}
-
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.activity_collection, menu);
-		return true;
-	}
-
-
-	/**
-	 * This function writes the given line to a file 
-	 * in a separate thread.
-	 * 
-	 * @param line The line to be written.
-	 */
-	private void writeToFile(final String line)  {
-		new Thread(){
-			public void run(){
-				synchronized(mFileWriter){
-					writingToFile++;
-					
-					try {
-						// Write line to file
-						mFileWriter.write(line);
-					} catch (IOException e) {
-						e.printStackTrace();
-					} finally {
-						writingToFile--;
-						mFileWriter.notifyAll();
-					}
-				}
-			}
-		}.run();
-		
-	}
-
-	/**
-	 * Method that initializes the Listener-related Activity attributes
-	 * (to be called on the activity's first run or on orientation changes)
-	 */
-	private void initializeListeners(){
-		// Initialize sensor and location manager and magnetometer sensor
-		mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-		mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-		mMagnetometer = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
-
-		// Gravity and LinearAcceleration sensors only available from Gingerbread and up
-		if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD)
-			initializeAcceleration();
-		else
-			initializeAccelerationPreGingerbread();
-
-		// Get average sample rate value
-		double avgSampleRate = getIntent().getExtras().
-				getDouble(AccelerometerDirectionApplication.ratePrefName);
-
-		// Define both the location and accelerometer listeners
-		mAccelGPSListener = new AccelGPSListener((int) Math.round(avgSampleRate));
-
-		// Initialize the AutoGait model, if appropriate
-		initializeAutoGaitModeler();
-	}
-
-	/**
-	 * Initialize acceleration sensors on pre-Gingerbread phones.
-	 */
-	public void initializeAccelerationPreGingerbread() {
-		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-		mGravity = mAccelerometer;
-	}
-
-	/**
-	 * Initialize acceleration sensors on Gingerbread+ phones.
-	 */
-	@TargetApi(Build.VERSION_CODES.GINGERBREAD)
-	public void initializeAcceleration() {
-//		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION); // Removed Linear Acceleration sensor because it is pre-filtered
-		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-		mGravity = mSensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
-	}
-
-	/**
-	 * This function attaches the listeners to both the sensors and location services.
-	 * It also defines the behavior of both those listeners.
-	 */
-	private void attachListeners() {
-		// Get the timestamp
-		long timestamp = new Date().getTime();
-
-		// Listen to accelerometer, magnetometer and GPS events
-		if(mAccelerometer != null && mGravity != null){
-			mSensorManager.registerListener(mAccelGPSListener, mAccelerometer, SensorManager.SENSOR_DELAY_FASTEST);
-			mSensorManager.registerListener(mAccelGPSListener, mGravity, SensorManager.SENSOR_DELAY_FASTEST);
-			writeToFile("I" + LOGSEPARATOR + timestamp + LOGSEPARATOR + getString(R.string.accel_listener_attached));
-		}
-		if(mMagnetometer != null){
-			mSensorManager.registerListener(mAccelGPSListener, mMagnetometer, SensorManager.SENSOR_DELAY_FASTEST);
-			writeToFile("I" + LOGSEPARATOR + timestamp + LOGSEPARATOR + getString(R.string.magnet_listener_attached));
-		}
-		mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, mAccelGPSListener);
-	}
-
-	/**
-	 * This function detaches the previously attached listeners for sensor
-	 * and location services.
-	 */
-	private void detachListeners() {
-		// Get the timestamp
-		long timestamp = new Date().getTime();
-
-		// Detach both Sensor and GPS listeners
-		if(mAccelGPSListener != null) {
-			mSensorManager.unregisterListener(mAccelGPSListener);
-			writeToFile("I" + LOGSEPARATOR + timestamp + LOGSEPARATOR + getString(R.string.accel_magnet_listeners_dettached));
-		}
-		mLocationManager.removeUpdates(mAccelGPSListener);
-	}
-
+	
 	@Override
 	protected void onResume() {
 		super.onResume();
@@ -524,18 +565,7 @@ public class CollectionActivity extends Activity {
 		mWakeLock.acquire();
 	}
 
-	/**
-	 * 
-	 */
-	public void initializeFileWriter() {
-		if(mFileWriter == null)
-		try {
-			mFileWriter = new FileWriter(filename, true);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
+	
 
 	@Override
 	protected void onPause() {
@@ -563,33 +593,26 @@ public class CollectionActivity extends Activity {
 		// Close the FileWriter
 		closeFileWriter();
 	}
-
-	/**
-	 * Closes the filewriter and clears the field.
-	 */
-	public void closeFileWriter() {
-		// Waits for other writers to finish...
-		synchronized (mFileWriter) {
-			try {
-				// Waits for writers to finish writing
-				while(writingToFile > 0) mFileWriter.wait();
-				
-				// Close the FileWriter
-				mFileWriter.close();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
+	
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		// Inflate the menu; this adds items to the action bar if it is present.
+		getMenuInflater().inflate(R.menu.activity_collection, menu);
+		return true;
 	}
-
+	
+	/**
+	 * 
+	 */
+	private void setFullScreen() {
+		requestWindowFeature(Window.FEATURE_NO_TITLE); 
+		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+				WindowManager.LayoutParams.FLAG_FULLSCREEN);
+	}
+	
 	// Back-button functionality
 	private static final int PERIOD = 2000;
 	private Boolean backWasPressed = false;
-	private int writingToFile = 0;
 
 	@Override
 	public void onBackPressed() {
@@ -607,19 +630,5 @@ public class CollectionActivity extends Activity {
 			new Handler().postDelayed(new Runnable() {
 				@Override public void run() {backWasPressed = false;}}, PERIOD);
 		}
-	}
-
-	/**
-	 * Function used to return the current date, ready to be used in a filename.
-	 * 
-	 * @return A string representing the date in a "YYYY-MM-DD_HH:MM" format
-	 */
-	private String getDateForFilename() {
-		Calendar c = Calendar.getInstance();
-		SimpleDateFormat sdf = (SimpleDateFormat) java.text.DateFormat.getDateTimeInstance();
-		sdf.applyPattern("yyyy-MM-dd_HH'h'mm");
-		String date = sdf.format(c.getTime());
-
-		return date;
 	}
 }
