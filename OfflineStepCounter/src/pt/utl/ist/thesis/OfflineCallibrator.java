@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 
 import pt.utl.ist.thesis.sensor.reading.AccelReading;
@@ -17,6 +18,8 @@ import pt.utl.ist.thesis.signalprocessor.AutoGaitModelerAnalyser;
 import pt.utl.ist.thesis.signalprocessor.StepAnalyser;
 import pt.utl.ist.thesis.source.filters.ButterworthFilter;
 import pt.utl.ist.thesis.util.PushThread;
+import pt.utl.ist.thesis.util.SampleRunnable;
+import pt.utl.ist.thesis.util.buffers.GPSSegment;
 
 public class OfflineCallibrator {
 
@@ -26,7 +29,7 @@ public class OfflineCallibrator {
 //	public static final String accelLogName = "2013-03-06_18h30.log.accel";
 //	public static final String locLogName = "2013-03-06_18h30.log.loc";
 //	public static final String baseFolder = "C:\\Users\\Carlos\\Dropbox\\Tese\\Dissertacao\\Dados\\05-08-2013\\logs\\conv\\";
-//	public static final String baseFilename = "2013-08-05_10h14.log";
+//	public static final String baseFilename = "2013-08-05_10h06.log";
 	public static final String baseFolder = "C:\\Users\\Carlos\\Dropbox\\Tese\\Dissertacao\\Dados\\10-08-2013\\logs\\conv\\";
 	public static final String baseFilename = "2013-08-10_16h27.log";
 	
@@ -38,6 +41,7 @@ public class OfflineCallibrator {
 	private static RawReadingSource accelRs;
 	private static PushThread accelPushThread;
 	private static PushThread locPushThread;
+	private static String print = "";
 
 
 	/**
@@ -58,7 +62,7 @@ public class OfflineCallibrator {
 		}
 
 		// Create buffer w/two average observers
-		int sampleFreq = 100;
+		int sampleFreq = 50;
 		int size = sampleFreq;
 		accelRs = new RawReadingSource(size);
 		accelRs.plugFilterIntoOutput(new ButterworthFilter(10, 5, sampleFreq, true));
@@ -77,6 +81,13 @@ public class OfflineCallibrator {
 		AutoGaitModelerAnalyser agma = new AutoGaitModelerAnalyser();
 		sa.plugAnalyserIntoOutput(agma);
 		locRs.plugAnalyserIntoOutput(agma);
+		
+		agma.setSampleUpdater(new SampleRunnable() {
+			@Override
+			public void run() {
+				print += "Got sample: " + sample[0] + ", " + sample[1] + "\n";
+			}
+		});
 
 		// Get the first lines
 		String accelLine = null; String gpsLine = null;
@@ -127,6 +138,7 @@ public class OfflineCallibrator {
 		// Push SensorReading objects into their
 		// respective reading sources
 		for(SensorReading sr : readingQueue){
+			try{
 			if(sr instanceof AccelReading) {
 				accelPushThread = new PushThread(sr){
 					public void run(){
@@ -142,15 +154,16 @@ public class OfflineCallibrator {
 				};
 				locPushThread.run();
 			}
+			} catch(Exception e){}
 		}
 		
 		// Output relevant states
-		for(AccelReading a :  sa.getNormPeaks()){	// Count peaks
-			System.out.println("Peak: " + a);
-		}
-		for(StepReading s :  sa.getSteps()){		// Count steps
-			System.out.println("Step: " + s);
-		}
+//		for(AccelReading a :  sa.getNormPeaks()){	// Count peaks
+//			System.out.println("Peak: " + a);
+//		}
+//		for(StepReading s :  sa.getSteps()){		// Count steps
+//			System.out.println("Step: " + s);
+//		}
 
 		// Close the line reader
 		try {
@@ -159,6 +172,25 @@ public class OfflineCallibrator {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+
+		List<GPSSegment> l1 = agma.getSegments();
+		List<StepReading> l2 = sa.getSteps();
+		int j = 0;
+		for (int i = 0; i < l1.size(); i++) {
+			GPSSegment s = l1.get(i);
+			GPSReading gpsReadingStart = s.get(0);
+			GPSReading gpsReadingEnd = s.get(s.size()-1);
+			System.out.println("Segment: " + gpsReadingStart + " to " + gpsReadingEnd);
+			
+			for (; j < l2.size(); j++) {
+				StepReading r = l2.get(j);
+				if(r.getTimestamp() <= gpsReadingEnd.getTimestamp())
+					System.out.println("Step: " + r.getTimestampString());
+				else break;
+			}
+		}
+		
+		System.out.println(print);
 		
 		long endTime = System.nanoTime();
 		System.out.println("Took "+(endTime - startTime)/1000000 + " ms");
@@ -180,7 +212,7 @@ public class OfflineCallibrator {
 	 */
 	private static GPSReading getGPSReadingFromLine(String line) {
 		String[] bSplit = line.split(",");
-		return new GPSReading(new Double(bSplit[0]), new Double(bSplit[1]), 
+		return new GPSReading(bSplit[0], new Double(bSplit[1]), 
 				new Double(bSplit[2]), new Double(bSplit[4]), new Double(bSplit[5]));
 	}
 }

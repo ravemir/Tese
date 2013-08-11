@@ -14,10 +14,11 @@ import pt.utl.ist.thesis.util.PushThread;
 
 public class OfflineStepCounter {
 
-	public static final String baseFolder = "C:\\Users\\Carlos\\Dropbox\\Tese\\Dissertacao\\Dados\\06-03-2013\\logs\\conv\\";
+//	public static final String baseFolder = "C:\\Users\\Carlos\\Dropbox\\Tese\\Dissertacao\\Dados\\06-03-2013\\logs\\conv\\";
 //	public static final String baseFolder = "C:\\Users\\Carlos\\Dropbox\\Tese\\Dissertacao\\Dados\\05-08-2013\\logs\\conv\\";
+	public static final String baseFolder = "C:\\Users\\Carlos\\Dropbox\\Tese\\Dissertacao\\Dados\\10-08-2013\\logs\\conv\\";
 //	public static final String accelLogName = "2013-03-06_18h17.log.accel";
-	public static final String accelLogName = "2013-03-06_18h30.log.accel";
+	public static final String accelLogName = "2013-08-10_16h27.log.accel";
 //	public static final String accelLogName = "2013-08-05_10h11.log.accel";
 //	public static final String accelLogName = "2013-08-05_10h05.log.accel";
 	private static RawReadingSource rs;

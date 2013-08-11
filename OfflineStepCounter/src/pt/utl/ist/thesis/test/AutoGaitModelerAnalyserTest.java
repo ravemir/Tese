@@ -2,11 +2,9 @@ package pt.utl.ist.thesis.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.internal.runners.statements.Fail;
 
 import pt.utl.ist.thesis.sensor.reading.AccelReading;
 import pt.utl.ist.thesis.sensor.reading.GPSReading;
@@ -36,7 +34,7 @@ public class AutoGaitModelerAnalyserTest {
 			// Create segment adding GPSReadings
 			segs[i] = new GPSSegment(gpsReads[i]);
 			
-			// Add StepReadings, with updates frequencies
+			// Add StepReadings, with updated frequencies
 			for (int j = 0; j < segs.length; j++) {
 				stepReads[i][j].setStepFrequency(stepFreqs[i][j]);
 				segs[i].forceAddStepReading(stepReads[i][j]);
@@ -50,12 +48,6 @@ public class AutoGaitModelerAnalyserTest {
 			// Test if SL in-between
 			assertTrue(gpa.hasCurrentSegmentSL());
 		}
-		
-		// Test Segments that have SL at the beginning, middle and end
-		testSemiSL();
-		
-		// Old test with a segment with a SL in the middle
-		testFaultySL();
 	}
 
 	/**
@@ -81,26 +73,26 @@ public class AutoGaitModelerAnalyserTest {
 	 */
 	@Test
 	public void testSemiSL() {
-//		// Create begining, middle and end SL segments
-//		GPSSegment[] segments = new GPSSegment[]{
-//			new GPSSegment(getBeginingSegmentReadings()[0]),
-//			new GPSSegment(getMiddleSegmentReadings()[0]),
-//			new GPSSegment(getEndSegmentReadings()[0])};
-//		GPSSegment[] expected = new GPSSegment[]{
-//				new GPSSegment(getBeginingSegmentReadings()[1]),
-//				new GPSSegment(getMiddleSegmentReadings()[1]),
-//				new GPSSegment(getEndSegmentReadings()[1])};
-//		
-//		// Test all for SL and validity
-//		for (int i = 0; i < segments.length; i++) {
-//			// Test for straight line
-//			gpa.setCurrentSegment(segments[i]);
-//			assertTrue(gpa.hasCurrentSegmentSL());
-//			
-//			// Test if resulting segment is the expected
-//			assertTrue(expected[i].equals(gpa.getCurrentSegment()));
-//		}
-		fail("Unimplemented");
+		// Create begining, middle and end SL segments
+		GPSSegment[] segments = new GPSSegment[]{
+			new GPSSegment(getBeginingSegmentReadings()[0]),
+			new GPSSegment(getMiddleSegmentReadings()[0]),
+			new GPSSegment(getEndSegmentReadings()[0])};
+		GPSSegment[] expected = new GPSSegment[]{
+				new GPSSegment(getBeginingSegmentReadings()[1]),
+				new GPSSegment(getMiddleSegmentReadings()[1]),
+				new GPSSegment(getEndSegmentReadings()[1])};
+		
+		// Test all for SL and validity
+		for (int i = 0; i < segments.length; i++) {
+			// Test for straight line
+			gpa.setCurrentSegment(segments[i]);
+			assertTrue(gpa.hasCurrentSegmentSL());
+			
+			// Test if resulting segment is the expected
+			GPSSegment currentSegment = gpa.getCurrentSegment();
+			assertTrue(expected[i].equals(currentSegment.getStraightLineSegments()[0]));
+		}
 	}
 	
 	@Test
@@ -207,7 +199,6 @@ public class AutoGaitModelerAnalyserTest {
 					new GPSReading(38.7600279200000, -9.16737057000000, base-(MT+0.5D), 0.7D),
 					new GPSReading(38.7600279200000, -9.16737057000000, base+(MT+0.5D), 0.7D)},
 				new GPSReading[]{
-						new GPSReading(38.7600279200000, -9.16737057000000, base+(MT+0.5D), 0.7D),
 						new GPSReading(38.7600279200000, -9.16737057000000, base, 0.7D),
 						new GPSReading(38.7600279200000, -9.16737057000000, base, 0.7D),
 						new GPSReading(38.7600279200000, -9.16737057000000, base, 0.7D),
@@ -234,14 +225,13 @@ public class AutoGaitModelerAnalyserTest {
 					new GPSReading(38.7600279200000, -9.16737057000000, base, 0.7D),
 					new GPSReading(38.7600279200000, -9.16737057000000, base, 0.7D)},
 				new GPSReading[]{
-					new GPSReading(38.7600279200000, -9.16737057000000, base+(MT+0.5D), 0.7D),
 					new GPSReading(38.7600279200000, -9.16737057000000, base, 0.7D),
 					new GPSReading(38.7600279200000, -9.16737057000000, base, 0.7D),
 					new GPSReading(38.7600279200000, -9.16737057000000, base, 0.7D),
 					new GPSReading(38.7600279200000, -9.16737057000000, base, 0.7D)}};
 	}
 
-
+	@Test
 	public void testFaultySL(){
 			GPSSegment s = new GPSSegment(getFaultyReads());
 			

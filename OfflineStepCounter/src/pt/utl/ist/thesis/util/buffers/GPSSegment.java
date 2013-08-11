@@ -1,6 +1,7 @@
 package pt.utl.ist.thesis.util.buffers;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import pt.utl.ist.thesis.sensor.exception.StepOutsideSegmentBoundariesException;
 import pt.utl.ist.thesis.sensor.reading.GPSReading;
@@ -30,6 +31,8 @@ public class GPSSegment extends ArrayList<GPSReading> {
 
 	private ArrayList<Integer[]> detectedStraightLines = new ArrayList<Integer[]>();
 	
+	private ArrayList<Double[]> slSamples = new ArrayList<Double[]>();
+	
 	/**
 	 * @return the detectedStraightLines
 	 */
@@ -37,13 +40,30 @@ public class GPSSegment extends ArrayList<GPSReading> {
 		return detectedStraightLines;
 	}
 	
+	/**
+	 * Returns true if this {@link GPSSegment} currently has
+	 * detected straight lines stored.
+	 * 
+	 * @return	If this {@link GPSSegment} has straight lines or not.
+	 */
+	public boolean hasDetectedStraightLines(){
+		return !detectedStraightLines.isEmpty();
+	}
+	
 	public void addDetectedStraightLine(Integer[] straightLine) {
-		if(straightLine.length != 2) throw new RuntimeException("Tried addin an invalid straight line");
-		
-		// TODO Compute the respective sample for this straight line 
+		// The received array must have two positions
+		if(straightLine.length != 2) 
+			throw new RuntimeException("Tried adding an invalid straight line");
 		
 		// Add the straight line to the internal list
 		detectedStraightLines.add(straightLine);
+		
+		// TODO Compute the respective sample for this straight line
+		GPSSegment s = returnAdjustedSegment(straightLine[0], straightLine[1]);
+		s.computeStepFrequencyAndLength();
+		slSamples.add(new Double[]{
+				s.getAverageStepFrequency(), 
+				s.getAverageStepLength()});
 	}
 
 	/**
@@ -56,17 +76,33 @@ public class GPSSegment extends ArrayList<GPSReading> {
 	/**
 	 * Creates a {@link GPSSegment} object, initialized with 
 	 * the {@link GPSReading} objects inside the given
+	 * array, with or without perfoming smoothing.
+	 * 
+	 * @param	array An array containing the {@link GPSReading}s to 
+	 * 			initialize the segment with.
+	 * @param	doForceAdd Whether to perform force add with
+	 * 			the {@link GPSReading}s
+	 */
+	public GPSSegment(GPSReading[] array, boolean doForceAdd){
+		this();
+		
+		// Add each of the supplied readings
+		for(GPSReading read: array) {
+			if(doForceAdd) forceAddGPSReading(read);
+			else addGPSReading(read);
+		}
+	}
+	
+	/**
+	 * Creates a {@link GPSSegment} object, initialized with 
+	 * the {@link GPSReading} objects inside the given
 	 * array.
 	 * 
 	 * @param	array An array containing the objects to 
 	 * 			initialize the segment with.
 	 */
 	public GPSSegment(GPSReading[] array){
-		this();
-		
-		// Add each of the supplied readings
-		for(GPSReading read: array)
-			addGPSReading(read);
+		this(array, false);
 	}
 	
 	/**
@@ -103,12 +139,16 @@ public class GPSSegment extends ArrayList<GPSReading> {
 		// Check if the step is within this segment's
 		// boundaries and throw an exception otherwise
 		Double stepTs = step.getTimestamp();
-		Double startSegTs = get(0).getTimestamp();
-		Double endSegTs = get(size()-1).getTimestamp();
+		GPSReading startGpsReading = get(0);
+		GPSReading endGpsReading = get(size()-1);
+		Double startSegTs = startGpsReading.getTimestamp();
+		Double endSegTs = endGpsReading.getTimestamp();
 		if(!(stepTs >= startSegTs && stepTs <= endSegTs)){ // FIXME Verificar se este critério é bom para incluir ou não
-			throw new StepOutsideSegmentBoundariesException("The supplied step is outside " +
-					"of this segment's timespan. (should be between '" + startSegTs + "' and '" 
-					+ endSegTs + "' and was '" +	step.getTimestampString() + "')");
+			throw new StepOutsideSegmentBoundariesException("The supplied step " +
+					"is outside of this segment's timespan. (should be between '" + 
+					startGpsReading.getTimestampString() + "' and '" + 
+					endGpsReading.getTimestampString() + "' and was '" +
+					step.getTimestampString() + "')", stepTs > endSegTs);
 		}
 		
 		// From this point, this method has the same behavior
@@ -133,38 +173,14 @@ public class GPSSegment extends ArrayList<GPSReading> {
 	}
 
 	/**
-	 * Adds a {@link GPSReading} to this segment.
+	 * Adds a {@link GPSReading} to this segment, performing
+	 * all the smoothing operations.
 	 * 
 	 * @param r	The GPS reading to be added.
 	 */
 	public void addGPSReading(GPSReading r){
-//		// If reading's speed is 0
-//		if(r.getSpeed() == 0){
-//			// Compute it and set it
-//			double newSpeed = MathUtils.distFrom(getLastGPSReading().getLatitude(), lng1, lat2, lng2);
-//			r.setSpeed(newSpeed);
-//		}
-		
-		// Add reading to internal queue
-		add(r);
-		
-		// If this isn't the first reading
-		if(size() > 1){
-			// Acumulate segment distance (sum-up method)
-			GPSReading lastReading = getPreviousGPSReading();
-			Double long2 = r.getLongitude();
-			Double long1 = lastReading.getLongitude();
-			Double lat2 = r.getLatitude();
-			Double lat1 = lastReading.getLatitude();
-			dist += MathUtils.distFrom(lat1, long1, 
-					lat2, long2);
-			
-			// Compute Heading Change and accumulate it 
-			Double headingChange =
-					MathUtils.headingChangeFromBearings(
-							lastReading.getBearing(), r.getBearing());
-			updateCumulativeHeadingChanges(headingChange);
-		}
+		// Add the GPSReading as if forced
+		forceAddGPSReading(r);
 		
 		// Perform smoothing operations and add it to the secondary list
 		if(size() > 2){
@@ -189,6 +205,42 @@ public class GPSSegment extends ArrayList<GPSReading> {
 					newLatitude, newLongitude, convolved[1].getBearing(), convolved[1].getSpeed());
 			smoothed.add(smoothedReading);
 		}
+	}
+
+	/**
+	 * Adds a {@link GPSReading} to this segment, without
+	 * performing all the smoothing operations.
+	 * 
+	 * @param r	The GPS reading to be added.
+	 */
+	public void forceAddGPSReading(GPSReading r) {
+		//		// If reading's speed is 0
+		//		if(r.getSpeed() == 0){
+		//			// Compute it and set it
+		//			double newSpeed = MathUtils.distFrom(getLastGPSReading().getLatitude(), lng1, lat2, lng2);
+		//			r.setSpeed(newSpeed);
+		//		}
+				
+				// Add reading to internal queue
+				add(r);
+				
+				// If this isn't the first reading
+				if(size() > 1){
+					// Acumulate segment distance (sum-up method)
+					GPSReading lastReading = getPreviousGPSReading();
+					Double long2 = r.getLongitude();
+					Double long1 = lastReading.getLongitude();
+					Double lat2 = r.getLatitude();
+					Double lat1 = lastReading.getLatitude();
+					dist += MathUtils.distFrom(lat1, long1, 
+							lat2, long2);
+					
+					// Compute Heading Change and accumulate it 
+					Double headingChange =
+							MathUtils.headingChangeFromBearings(
+									lastReading.getBearing(), r.getBearing());
+					updateCumulativeHeadingChanges(headingChange);
+				}
 	}
 
 	/**
@@ -232,8 +284,12 @@ public class GPSSegment extends ArrayList<GPSReading> {
 		return get(size()-2);
 	}
 
+	/**
+	 * Computes the average values for this {@link GPSSegment}'s
+	 * {@link StepReading}s frequency and length,
+	 * TODO
+	 */
 	public void computeStepFrequencyAndLength() {
-		
 		// Compute average step length
 		Double stepLength = getAverageStepLength();
 		
@@ -275,7 +331,7 @@ public class GPSSegment extends ArrayList<GPSReading> {
 		int stepCount = getStepCount();
 		
 		// Compute average step length
-		Double stepLength = dist / stepCount;
+		Double stepLength = (dist / stepCount != 0 ? dist / stepCount : 0);
 		return stepLength;
 	}
 	
@@ -286,7 +342,7 @@ public class GPSSegment extends ArrayList<GPSReading> {
 	 */
 	public Double getAverageStepFrequency() {
 		// Return the average step length value
-		return stepFreqAverage.getCurrentValue();
+		return (getStepCount() > 0 ? stepFreqAverage.getCurrentValue() : 0);
 	}
 	
 	/**
@@ -294,18 +350,52 @@ public class GPSSegment extends ArrayList<GPSReading> {
 	 * samples, ready to be inserted into the
 	 * {@link AutoGaitModel}.
 	 * 
-	 * 
-	 * @return	An array containing the samples.
+	 * @return	An ArrayList containing the samples.
 	 */
-	public double[][] getSegmentStepSamples(){
+	public List<Double[]> getSegmentStepSamples(){
+		return slSamples;
+	}
+	
+	/**
+	 * Readjusts a segment to start and end on the specified
+	 * {@link GPSReading} values' indexes.
+	 * 
+	 * @param minimumIndex	The index indicating the beginning 
+	 * 						of the new segment.
+	 * @param maximumIndex	The index indicating the end of
+	 * 						the new segment.
+	 */
+	private GPSSegment returnAdjustedSegment(int minimumIndex, int maximumIndex) {
+		// Get an adjusted sublist of GPSReading values
+		List<GPSReading> subList = subList(minimumIndex, maximumIndex+1);
+		GPSReading[] adjustedGPS = new GPSReading[subList.size()];
+		subList.toArray(adjustedGPS);
 
-		// TODO Get every computed SL sample, and return it in an array
+		// Create new segment with adjusted GPS readings, force added (no smoothing)
+		GPSSegment adjustedSegment = new GPSSegment(adjustedGPS, true);
 
-		double[][] stepSamples = new double[][]{
-				new double[]{
-				getAverageStepFrequency(), 
-				getAverageStepLength()}};
+		// Reinsert step readings
+		for(StepReading step : getSteps()){
+			try {
+				adjustedSegment.addStepReading(step);
+			} catch (StepOutsideSegmentBoundariesException e) {
+				// This Step shouldn't be included in the new segment
+			}
+		}
 		
-		return stepSamples;
+		return adjustedSegment;
+	}
+	
+	public GPSSegment[] getStraightLineSegments(){
+		GPSSegment[] slSegments = new GPSSegment[detectedStraightLines.size()];
+		
+		for (int i = 0; i < detectedStraightLines.size(); i++) {
+			slSegments[i] = returnAdjustedSegment(
+					detectedStraightLines.get(i)[0], 
+					detectedStraightLines.get(i)[1]);
+		}
+		
+		return slSegments;
 	}
 }
+
