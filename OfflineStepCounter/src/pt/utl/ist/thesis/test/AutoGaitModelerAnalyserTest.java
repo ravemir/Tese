@@ -32,7 +32,7 @@ public class AutoGaitModelerAnalyserTest {
 		GPSSegment[] segs = new GPSSegment[5];
 		for (int i = 0; i < segs.length; i++) {
 			// Create segment adding GPSReadings
-			segs[i] = new GPSSegment(gpsReads[i]);
+			segs[i] = new GPSSegment(gpsReads[i], false);
 			
 			// Add StepReadings, with updated frequencies
 			for (int j = 0; j < segs.length; j++) {
@@ -57,8 +57,8 @@ public class AutoGaitModelerAnalyserTest {
 	public void testNonSL() {
 		// Create begining, middle and end SL segments
 		GPSSegment[] segments = new GPSSegment[]{
-			new GPSSegment(getCrossMTReads()),
-			new GPSSegment(getCrossETReads())};
+			new GPSSegment(getCrossMTReads(), false),
+			new GPSSegment(getCrossETReads(), false)};
 		
 		// Test all for non-SL and validity
 		for (int i = 0; i < segments.length; i++) {
@@ -75,13 +75,13 @@ public class AutoGaitModelerAnalyserTest {
 	public void testSemiSL() {
 		// Create begining, middle and end SL segments
 		GPSSegment[] segments = new GPSSegment[]{
-			new GPSSegment(getBeginingSegmentReadings()[0]),
-			new GPSSegment(getMiddleSegmentReadings()[0]),
-			new GPSSegment(getEndSegmentReadings()[0])};
+			new GPSSegment(getBeginingSegmentReadings()[0], false),
+			new GPSSegment(getMiddleSegmentReadings()[0], false),
+			new GPSSegment(getEndSegmentReadings()[0], false)};
 		GPSSegment[] expected = new GPSSegment[]{
-				new GPSSegment(getBeginingSegmentReadings()[1]),
-				new GPSSegment(getMiddleSegmentReadings()[1]),
-				new GPSSegment(getEndSegmentReadings()[1])};
+				new GPSSegment(getBeginingSegmentReadings()[1], false),
+				new GPSSegment(getMiddleSegmentReadings()[1], false),
+				new GPSSegment(getEndSegmentReadings()[1], false)};
 		
 		// Test all for SL and validity
 		for (int i = 0; i < segments.length; i++) {
@@ -147,6 +147,15 @@ public class AutoGaitModelerAnalyserTest {
 		assertEquals(1, gpa.getCurrentSegment().size());
 	}
 
+	@Test
+	public void testFaultySL(){
+			GPSSegment s = new GPSSegment(getFaultyReads(), false);
+			
+			// Set it and test it
+			gpa.setCurrentSegment(s);
+			assertTrue(!gpa.hasCurrentSegmentSL());
+	}
+	
 	/**
 	 * @return
 	 */
@@ -204,7 +213,7 @@ public class AutoGaitModelerAnalyserTest {
 						new GPSReading(38.7600279200000, -9.16737057000000, base, 0.7D),
 						new GPSReading(38.7600279200000, -9.16737057000000, base, 0.7D)}};
 	}
-
+	
 	/**
 	 * @return
 	 */
@@ -229,15 +238,6 @@ public class AutoGaitModelerAnalyserTest {
 					new GPSReading(38.7600279200000, -9.16737057000000, base, 0.7D),
 					new GPSReading(38.7600279200000, -9.16737057000000, base, 0.7D),
 					new GPSReading(38.7600279200000, -9.16737057000000, base, 0.7D)}};
-	}
-
-	@Test
-	public void testFaultySL(){
-			GPSSegment s = new GPSSegment(getFaultyReads());
-			
-			// Set it and test it
-			gpa.setCurrentSegment(s);
-			assertTrue(!gpa.hasCurrentSegmentSL());
 	}
 	
 	/**
@@ -280,6 +280,7 @@ public class AutoGaitModelerAnalyserTest {
 				new GPSReading(38.7599134566667, -9.16737220000000, base - (MT+0.5D), 0.7D)};
 		return faultyReads;
 	}
+	
 	/**
 	 * 
 	 * @return

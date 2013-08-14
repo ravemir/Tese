@@ -36,7 +36,7 @@ public class MathUtils {
 	 * @param values The vales to be averaged.
 	 * @return		 The valued of the mean.
 	 */
-	public static double plainAverage(double[] values){
+	public static double arithmeticAverage(double[] values){
 		// Sum all the values
 		double result = sum(values);
 		
@@ -47,8 +47,12 @@ public class MathUtils {
 	}
 
 	/**
-	 * @param values
-	 * @return 
+	 * Returns the summation of all the values in
+	 * a given array.
+	 * 
+	 * @param values	The array containing the values
+	 * 					to sum.
+	 * @return			The sum of all the given values.
 	 */
 	public static double sum(double[] values) {
 		double sum = 0;
@@ -91,46 +95,72 @@ public class MathUtils {
     }
 	
 	/**
-	 * @param angle
-	 * @return
+	 * Computes the resulting angle transformation 
+	 * from the [0; 360[ to the [-180; 180[ interval.
+	 * 
+	 * @param angle	The angle to compute the change from.
+	 * @return		The new angle, in the [-180; 180[ interval.
 	 */
 	public static double rangeTo180(Double angle) {
 //		double tmp = angle + 180;
 		return (angle < 180? angle : -180 + (angle-180));
 	}
+	
 	/**
-	 * @param lat2
-	 * @param long2
-	 * @param lat1
-	 * @param long1
+	 * Returns the Heading value between two decimal 
+	 * degree coordinate pairs. (based of the method 
+	 * in 'AutoGait: A Mobile Platform that Accurately 
+	 * Estimates the Distance Walked Dae-Ki', page 3).
+	 * 
+	 * @param lat1	Latitude value of the starting coordinate.
+	 * @param long1	Longitude value of the starting coordinate.
+	 * @param lat2	Latitude value of the ending coordinate.
+	 * @param long2	Longitude value of the endingcoordinate.
+	 * @return		The Heading value, placed in the [0; 360[ 
+	 * 				degree interval.
 	 */
-	public static double calculateHeadingChange(Double lat2, Double long2, Double lat1,
-			Double long1) {
+	public static double calculateHeading(Double lat1, Double long1,
+			Double lat2, Double long2) {
 		double dLon = (long2-long1);
 		double y = sin(dLon) * cos(lat2);
 		double x = cos(lat1)*sin(lat2) - 
 				sin(lat1)*cos(lat2)*cos(dLon);
-		return toDegrees((atan2(y, x)));
+		return map180to360(toDegrees((atan2(y, x))));
 	}
 	
 	/**
-	 * Computes the Heading change from two given headings.
+	 * Maps an angle ranged [-pi; pi[ to a
+	 * [0; 360[ interval.
+	 * (based off of 'http://stackoverflow.com/questions/1311049/how-to-map-atan2-to-degrees-0-360')
 	 * 
-	 * @param b1	The first bearing value, in decimal degrees.
-	 * @param b2	The second bearing value, in decimal degrees.
-	 * @return		The heading change value.
+	 * @param angle	The angle, in degrees, to be remapped.
+	 * @return		The remapped angle, in degrees.
 	 */
-	public static double headingChangeFromBearings(double b1, double b2){
-		double diff = b2 - b1;
+	public static double map180to360(double angle){
+		return (angle > 0 ? 
+				angle : 
+				(360 + angle));
+	}
+	
+	/**
+	 * Computes the change in direction, from two 
+	 * given bearings or headings.
+	 * 
+	 * @param d1	The first direction value, in decimal degrees.
+	 * @param d2	The second direction value, in decimal degrees.
+	 * @return		The direction change value.
+	 */
+	public static double headingChangeFromDirections(double d1, double d2){
+		double diff = d2 - d1;
 		
 		// If the difference between b2 and b1 is bigger than 180º...
 		if(abs(diff) > 180)
 			// ...return the angle to origin of both, 
 			// multiplied by a coefficient that denotes 
 			// the direction
-			return (b1 > b2? 1 : -1) *
-					(smallerAngleToOrigin(b1)+
-					smallerAngleToOrigin(b2));
+			return (d1 > d2? 1 : -1) *
+					(smallerAngleToOrigin(d1)+
+					smallerAngleToOrigin(d2));
 		else
 			return diff;
 	}
@@ -212,9 +242,9 @@ public class MathUtils {
 	}
 	
 	/**
-	 * Converts a set o northing, easting and 
-	 * coordinates to Latitude, Longitude and
-	 * altitude decimal degree coordinates.
+	 * Converts a set o northing, easting and coordinates 
+	 * to Latitude, Longitude and altitude decimal 
+	 * degree coordinates.
 	 * 
 	 * @param x
 	 * @param y
@@ -234,9 +264,15 @@ public class MathUtils {
 		
 		return new double[]{pLx, pLy, h};
 	}
+	
 	/**
 	 * Returns the Atan2 value, placed within
 	 * the [0;2Pi[ interval.
+	 * 
+	 * @param y	The atan2 Y value.
+	 * @param x	The atan2 X value.
+	 * @return	The resulting atan2 value, placed
+	 * 			in the [0; 2pi[ interval.
 	 */
 	public static double atan2PositiveRange(double y, double x) {
 		double res = Math.atan2(y, x);

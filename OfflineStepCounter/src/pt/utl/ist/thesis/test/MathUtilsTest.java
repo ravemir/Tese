@@ -63,16 +63,16 @@ public class MathUtilsTest {
 	@Test
 	public void testPlainAverage() {
 		// (-1+0+1)/3 = 0
-		assertEquals(0, MathUtils.plainAverage(new double[]{-1,0,1}), 0);
+		assertEquals(0, MathUtils.arithmeticAverage(new double[]{-1,0,1}), 0);
 		
 		// (-2+-1+0+1+2)/5 =0 
-		assertEquals(0, MathUtils.plainAverage(new double[]{-2,-1,0,1,2}), 0);
+		assertEquals(0, MathUtils.arithmeticAverage(new double[]{-2,-1,0,1,2}), 0);
 		
 		// (1+2+3)/3 = 2
-		assertEquals(2, MathUtils.plainAverage(new double[]{1,2,3}), 0);
+		assertEquals(2, MathUtils.arithmeticAverage(new double[]{1,2,3}), 0);
 		
 		// (1.1+2.22+3.333)/3 = 2.217666666
-		assertEquals(2.217666666, MathUtils.plainAverage(new double[]{1.1,2.22,3.333}), 0.000000001);
+		assertEquals(2.217666666, MathUtils.arithmeticAverage(new double[]{1.1,2.22,3.333}), 0.000000001);
 	}
 	
 	@Test
@@ -90,10 +90,10 @@ public class MathUtilsTest {
 	@Test
 	public void testHeadingChangeFromBearings(){
 		// 355º -> 4º
-		assertEquals(9D, MathUtils.headingChangeFromBearings(355, 4), 0.000000001);
+		assertEquals(9D, MathUtils.headingChangeFromDirections(355, 4), 0.000000001);
 		
 		// 4º -> 355º
-		assertEquals(-9D, MathUtils.headingChangeFromBearings(4, 355), 0.000000001);
+		assertEquals(-9D, MathUtils.headingChangeFromDirections(4, 355), 0.000000001);
 	}
 	
 	@Test
