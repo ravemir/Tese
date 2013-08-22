@@ -15,28 +15,28 @@ public class GPSSegment extends ArrayList<GPSReading> {
 	// Raw GPSReading Attributes
 	private Double dist = 0D;
 	private ArrayList<Double> accumulatedHeadingChanges = new ArrayList<Double>();
-	
+
 	// Smoothing Attributes
 	private boolean doSmoothing;
+	
 	private ArrayList<GPSReading> smoothedReadings = new ArrayList<GPSReading>();
 	private Double smoothedDistance = 0D;
 	private ArrayList<Double> accumulatedSmoothedHeadingChanges = new ArrayList<Double>();
-	
 	// Step Attributes
 	private ArrayList<StepReading> steps = new ArrayList<StepReading>();
-	private ArithmeticAverageBuffer stepFreqAverage = new ArithmeticAverageBuffer();
 	
+	private ArithmeticAverageBuffer stepFreqAverage = new ArithmeticAverageBuffer();
 	// SLI state Attributes
 	private ArrayList<Integer[]> detectedStraightLines = new ArrayList<Integer[]>();
+	
 	private ArrayList<Double[]> slSamples = new ArrayList<Double[]>();
-
 	/**
 	 * Default constructor, with smoothing.
 	 */
 	public GPSSegment(){
 		this(true);
 	}
-	
+
 	/**
 	 * Creates a {@link GPSSegment}, with or without
 	 * {@link GPSReading} smoothing activated.
@@ -81,7 +81,7 @@ public class GPSSegment extends ArrayList<GPSReading> {
 			else forceAddGPSReading(read);
 		}
 	}
-
+	
 	/**
 	 * Creates a {@link GPSSegment} object, initialized with
 	 * both the {@link GPSReading} and {@link StepReading}
@@ -103,7 +103,7 @@ public class GPSSegment extends ArrayList<GPSReading> {
 		for(StepReading step : stepArray)
 			addStepReading(step);
 	}
-	
+
 	/**
 	 * Adds a detected Straight Line to the list.
 	 *  
@@ -240,7 +240,7 @@ public class GPSSegment extends ArrayList<GPSReading> {
 		
 		return result;
 	}
-
+	
 	/**
 	 * Adds a {@link GPSReading} to this segment, without
 	 * performing all the smoothing operations.
@@ -323,7 +323,7 @@ public class GPSSegment extends ArrayList<GPSReading> {
 	public ArrayList<Double> getCumulativeHeadingChanges() {
 		return accumulatedHeadingChanges;
 	}
-	
+
 	/**
 	 * Returns the currently detected StraightLines
 	 * 
@@ -331,6 +331,13 @@ public class GPSSegment extends ArrayList<GPSReading> {
 	 */
 	public ArrayList<Integer[]> getDetectedStraightLines() {
 		return detectedStraightLines;
+	}
+	
+	/**
+	 * @return the dist
+	 */
+	public final Double getDistance() {
+		return dist;
 	}
 	
 	/**

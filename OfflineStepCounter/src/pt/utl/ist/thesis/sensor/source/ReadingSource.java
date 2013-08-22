@@ -7,6 +7,7 @@ import java.util.Observable;
 import pt.utl.ist.thesis.sensor.reading.SensorReading;
 import pt.utl.ist.thesis.signalprocessor.Analyser;
 import pt.utl.ist.thesis.source.filters.Filter;
+import pt.utl.ist.thesis.util.SensorReadingRunnable;
 import pt.utl.ist.thesis.util.buffers.ReadingCircularBuffer;
 
 public abstract class ReadingSource extends Observable {
@@ -17,7 +18,7 @@ public abstract class ReadingSource extends Observable {
 	
 	
 	// A user-definable Runnable
-	protected Runnable runnable = null;
+	protected SensorReadingRunnable runnable = null;
 
 	public ReadingSource(ReadingCircularBuffer rcb){
 		buffer = rcb;
@@ -39,13 +40,19 @@ public abstract class ReadingSource extends Observable {
 	 */
 	public void pushReading(SensorReading read){
 		// If a buffer was created, add the reading to it
-		if(buffer != null) buffer.addReading(read);
+		SensorReading pushReading = read;
+		if(buffer != null) {
+			buffer.addReading(read);
+			
+			// ...and set the buffered value to be pushed
+			pushReading = buffer.getCurrentReading();
+		}
 
 		// FIXME Remove after testing the runnable issue
-		executeRunnable();
+		executeRunnable(pushReading);
 		
 		// Notify the filters (observer pattern)
-		notifyFilters(read);
+		notifyFilters(pushReading);
 	}
 
 	/**
@@ -82,16 +89,16 @@ public abstract class ReadingSource extends Observable {
 	 * Set this {@link ReadingSource}'s {@link Runnable}
 	 * object, making it possible to be executed.
 	 * 
-	 * @param r	The {@link Runnable} to be set.
+	 * @param sensorReadingRunnable	The {@link Runnable} to be set.
 	 */
-	public void setRunnable(Runnable r){
-		runnable = r;
+	public void setRunnable(SensorReadingRunnable sensorReadingRunnable){
+		runnable = sensorReadingRunnable;
 	}
 	
 	/**
 	 * Executes the saved runnable, if it exists.
 	 */
-	public void executeRunnable(){
-		if(runnable != null) runnable.run();
+	public void executeRunnable(SensorReading sr){
+		if(runnable != null) runnable.run(sr);
 	}
 }

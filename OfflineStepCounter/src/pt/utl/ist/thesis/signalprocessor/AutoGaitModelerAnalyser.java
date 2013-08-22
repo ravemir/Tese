@@ -283,4 +283,9 @@ public class AutoGaitModelerAnalyser extends Analyser implements Observer {
 			}
 		}
 	}
+	
+	public double[] getAGCoefficients(){
+		return new double[]{autoGaitModel.getAlpha(),
+				autoGaitModel.getBeta()};
+	}
 }

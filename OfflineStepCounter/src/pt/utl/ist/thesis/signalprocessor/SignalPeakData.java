@@ -3,6 +3,8 @@ package pt.utl.ist.thesis.signalprocessor;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import org.apache.commons.math.stat.descriptive.SynchronizedDescriptiveStatistics;
+
 import pt.utl.ist.thesis.sensor.reading.AccelReading;
 import pt.utl.ist.thesis.sensor.reading.SensorReading;
 
@@ -14,17 +16,12 @@ public class SignalPeakData {
 	private double currentNormMean = 0;
 	private SensorReading oldestUnaveragedPeak;
 	
-												
-	static final double PEAKTHRESHFACTOR = 0.7;	//	Value before which a peak is always discarded.
-												//	Gravity magnitude is a good pick.
-	
-	
-	static final double KFACTOR = 10.5;			// Multiplication factor to lower the step threshold
-												// Depends on the variance of intensity of each step
-												// i.e. if a step is a lot smaller than the previous,
-												// this value should be lower to accommodate it.
-												// TODO Chosen heuristically. Should be computed?
 
+	private SynchronizedDescriptiveStatistics sdsRatio = new SynchronizedDescriptiveStatistics(10);
+	private SynchronizedDescriptiveStatistics sdsStep = new SynchronizedDescriptiveStatistics();
+	private SynchronizedDescriptiveStatistics sdsPeak = new SynchronizedDescriptiveStatistics(15);
+	
+	
 	public SignalPeakData() {
 		allPeaks = new ArrayList<AccelReading>();
 		unaveragedPeaks = new ArrayList<AccelReading>();
@@ -52,6 +49,9 @@ public class SignalPeakData {
 			// Add peak to lists
 			unaveragedPeaks.add(r);
 			allPeaks.add(r);
+			
+			// FIXME Add peak to average
+			sdsPeak.addValue(r.getReadingNorm());
 		}
 	}
 
@@ -66,7 +66,7 @@ public class SignalPeakData {
 		
 		// Recompute acceleration values
 		for (int i = 0; i < currentMean.length; i++) {
-			currentMean[i] = ((currentNormMean * unaveragedPeaks.size()) 
+			currentMean[i] = ((currentMean[i] * unaveragedPeaks.size()) 
 					+ accelR[i])/(unaveragedPeaks.size()+1);
 		}
 		
@@ -96,5 +96,59 @@ public class SignalPeakData {
 		currentMean = new double[]{0,0,0};
 		currentNormMean = 0;
 		oldestUnaveragedPeak = null;
+	}
+	
+	/**
+	 * Adds a peak/step ratio value to the rolling average
+	 * calculations.
+	 * 
+	 * @param v	The value to be added.
+	 */
+	public void addRatioValue(double v) {
+		sdsRatio.addValue(v);
+	}
+	
+	/**
+	 * Returns the current rolling average value of
+	 * the added peak/step ratio values.
+	 * 
+	 * @return	The current rolling average value of
+	 * 			the added values.
+	 */
+	public double getRatioAverage(){
+		double currMeanValue = sdsRatio.getMean();
+		
+		return (Double.isNaN(currMeanValue) ? 
+				0 : currMeanValue);
+	}
+	
+	/**
+	 * Adds a step norm value to the rolling average
+	 * calculations.
+	 * 
+	 * @param v	The value to be added.
+	 */
+	public void addStepValue(double v) {
+		sdsStep.addValue(v);
+	}
+	
+	/**
+	 * Returns the current rolling average value of
+	 * the added step norm values.
+	 * 
+	 * @return	The current rolling average value of
+	 * 			the added values.
+	 */
+	public double getStepAverage(){
+		double currMeanValue = sdsStep.getMean();
+		
+		return (Double.isNaN(currMeanValue) ? 
+				0 : currMeanValue);
+	}
+	
+	public double getPeakMean(){
+		double currMeanValue = sdsPeak.getMean();
+		return ((Double.isNaN(currMeanValue)) ? 
+				0 : currMeanValue);
 	}
 }

@@ -5,11 +5,13 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 
 import pt.utl.ist.thesis.sensor.reading.AccelReading;
 import pt.utl.ist.thesis.sensor.reading.GPSReading;
 import pt.utl.ist.thesis.sensor.reading.SensorReading;
+import pt.utl.ist.thesis.sensor.reading.StepReading;
 import pt.utl.ist.thesis.sensor.source.RawReadingSource;
 import pt.utl.ist.thesis.sensor.source.ReadingSource;
 import pt.utl.ist.thesis.signalprocessor.AutoGaitModelerAnalyser;
@@ -17,6 +19,7 @@ import pt.utl.ist.thesis.signalprocessor.StepAnalyser;
 import pt.utl.ist.thesis.source.filters.ButterworthFilter;
 import pt.utl.ist.thesis.util.PushThread;
 import pt.utl.ist.thesis.util.SampleRunnable;
+import pt.utl.ist.thesis.util.buffers.GPSSegment;
 
 public class OfflineCallibrator {
 
@@ -27,8 +30,10 @@ public class OfflineCallibrator {
 //	public static final String locLogName = "2013-03-06_18h30.log.loc";
 //	public static final String baseFolder = "C:\\Users\\Carlos\\Dropbox\\Tese\\Dissertacao\\Dados\\05-08-2013\\logs\\conv\\";
 //	public static final String baseFilename = "2013-08-05_10h06.log";
-	public static final String baseFolder = "C:\\Users\\Carlos\\Dropbox\\Tese\\Dissertacao\\Dados\\10-08-2013\\logs\\conv\\";
-	public static final String baseFilename = "2013-08-10_16h27.log";
+//	public static final String baseFolder = "C:\\Users\\Carlos\\Dropbox\\Tese\\Dissertacao\\Dados\\10-08-2013\\logs\\conv\\";
+//	public static final String baseFilename = "2013-08-10_16h27.log";
+	public static final String baseFolder = "C:\\Users\\Carlos\\Dropbox\\Tese\\Dissertacao\\Dados\\16-08-2013\\logs\\conv\\";
+	public static final String baseFilename = "2013-08-16_13h31.log";
 	
 //	public static final String oriLogName = baseFilename + ".ori";
 	public static final String accelLogName = baseFilename + ".accel";
@@ -59,7 +64,7 @@ public class OfflineCallibrator {
 		}
 
 		// Create buffer w/two average observers
-		int sampleFreq = 50;
+		int sampleFreq = 71;
 		int size = sampleFreq;
 		accelRs = new RawReadingSource(size);
 		accelRs.plugFilterIntoOutput(new ButterworthFilter(10, 5, sampleFreq, true));
@@ -166,27 +171,28 @@ public class OfflineCallibrator {
 			e.printStackTrace();
 		}
 
-//		List<GPSSegment> l1 = agma.getSegments();
-//		List<StepReading> l2 = sa.getSteps();
-//		int j = 0;
-//		for (int i = 0; i < l1.size(); i++) {
-//			GPSSegment s = l1.get(i);
-//			GPSReading gpsReadingStart = s.get(0);
-//			GPSReading gpsReadingEnd = s.get(s.size()-1);
-//			System.out.println("Segment: " + gpsReadingStart + " to " + gpsReadingEnd);
-//			
-//			for (; j < l2.size(); j++) {
-//				StepReading r = l2.get(j);
-//				if(r.getTimestamp() <= gpsReadingEnd.getTimestamp())
-//					System.out.println("Step: " + r.getTimestampString());
-//				else break;
-//			}
-//		}
+		List<GPSSegment> l1 = agma.getSegments();
+		List<StepReading> l2 = sa.getSteps();
+		int j = 0;
+		for (int i = 0; i < l1.size(); i++) {
+			GPSSegment s = l1.get(i);
+			GPSReading gpsReadingStart = s.get(0);
+			GPSReading gpsReadingEnd = s.get(s.size()-1);
+			System.out.println("Segment: " + gpsReadingStart + " to " + gpsReadingEnd + "(" + s.getDistance() + "m)");
+			
+			for (; j < l2.size(); j++) {
+				StepReading r = l2.get(j);
+				if(r.getTimestamp() <= gpsReadingEnd.getTimestamp())
+					System.out.println("Step: " + r.getTimestampString());
+				else break;
+			}
+		}
 		
 		System.out.println(print);
+		System.out.println("Alpha: " + agma.getAGCoefficients()[0] + "; Beta: " + agma.getAGCoefficients()[1]);
 		
 		long endTime = System.nanoTime();
-		System.out.println("Took "+(endTime - startTime)/1000000 + " ms");
+		System.out.println("\nTook "+(endTime - startTime)/1000000 + " ms");
 	}
 
 	/**

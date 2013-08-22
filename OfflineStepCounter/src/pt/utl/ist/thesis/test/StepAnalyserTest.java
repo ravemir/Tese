@@ -38,35 +38,37 @@ public class StepAnalyserTest {
 	@Test
 	public void testGetPeaks() {
 		// Create analyser and attach it to the average filter
-		StepAnalyser fa = new StepAnalyser(50);
-		rs.getFilters().get(0).plugAnalyserIntoOutput(fa);
+		StepAnalyser sa = new StepAnalyser(50);
+		rs.getFilters().get(0).plugAnalyserIntoOutput(sa);
+		sa.set_analysisBufferSize(3);
 		
 		// Add readings
 		rs.pushReading(new AccelReading("0", new double[]{0,0,0}));
-		rs.pushReading(new AccelReading("1", new double[]{1,1,1}));
+		rs.pushReading(new AccelReading("1", new double[]{1*55,1*55,1*55}));
 		rs.pushReading(new AccelReading("2", new double[]{-1,-1,-1}));
 		
 		// Count peaks (there should be one)
-		ArrayList<AccelReading> normPeaks = fa.getNormPeaks();
+		ArrayList<AccelReading> normPeaks = sa.getNormPeaks();
 		assertEquals(1, normPeaks.size());
 		assertEquals("1", normPeaks.get(0).getTimestampString());
 		
 		// Create a new reading source, attaching the 
 		// analyser to the raw source
 		rs = new RawReadingSource(50);
-		rs.plugAnalyserIntoOutput(fa);
+		rs.plugAnalyserIntoOutput(sa);
 		
-		// Add readings
+		// Add readings (there are some extra readings, in order to force detection)
 		rs.pushReading(new AccelReading("3", new double[]{-1,-1,-1}));
 		rs.pushReading(new AccelReading("4", new double[]{0,0,0}));
 		rs.pushReading(new AccelReading("5", new double[]{20,20,20}));
 		rs.pushReading(new AccelReading("6", new double[]{-2,-2,-2}));
+		rs.pushReading(new AccelReading("7", new double[]{-2,-2,-2}));
+		rs.pushReading(new AccelReading("8", new double[]{-2,-2,-2}));
 		
 		// Count peaks (a new one should be counted, added to the first one)
-		normPeaks = fa.getNormPeaks();
+		normPeaks = sa.getNormPeaks();
 		assertEquals(2, normPeaks.size());
 		assertEquals("1", normPeaks.get(0).getTimestampString());
 		assertEquals("5", normPeaks.get(1).getTimestampString());
 	}
-
 }

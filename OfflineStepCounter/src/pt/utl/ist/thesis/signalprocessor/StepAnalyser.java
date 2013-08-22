@@ -15,14 +15,12 @@ import pt.utl.ist.thesis.util.buffers.ReadingCircularBuffer;
 
 public class StepAnalyser extends Analyser {
 
-	private static final int _analysisBufferSize = 100;
-
-//	private final int sampleRate;
+	private int _analysisBufferSize = 71;
 	
-	private static final double KFACTOR = 10.5; // TODO Chosen heuristically. Should be computed?
-												// 		Value before which a peak is always discarded.
-												//		Gravity magnitude is a good pick.
-	private static final double PEAKTHRESHFACTOR = 0.7; // Multiplication factor to lower the step threshold
+	private static final double KFACTOR = 12.46;	// Chosen heuristically. Should be computed?
+												// Value before which a peak is always discarded.
+												// Gravity magnitude is a good pick.
+	private static final double PEAKTHRESHFACTOR = 0.7;	// Multiplication factor to lower the step threshold
 														// Depends on the variance of intensity of each step
 														// i.e. if a step is a lot smaller than the previous,
 														// this value should be lower to accommodate it.
@@ -30,11 +28,11 @@ public class StepAnalyser extends Analyser {
 	private ReadingCircularBuffer rawBuffer = new ReadingCircularBuffer(_analysisBufferSize);
 	private TreeMap<Integer, ReadingCircularBuffer> avgBuffers = new TreeMap<Integer, ReadingCircularBuffer>();
 	private SignalPeakData peakData = new SignalPeakData();
-
-//	private StepReadingSource steps = new StepReadingSource();
 	
 	// FIXME Remove after testing
 	private Runnable runnable;
+
+	private int readCount = 0;
 
 	public StepAnalyser(int sampleRate){
 		super(new StepReadingSource());
@@ -97,15 +95,18 @@ public class StepAnalyser extends Analyser {
 		return targetBuffer;
 	}
 
+	
+	
 	/**
 	 * Takes the gathered data and processes it into a
 	 * new state.
 	 */
-	public void processState(){
+	public void processState() {
 		synchronized(avgBuffers) {
 			synchronized(rawBuffer) {
 				// Get the buffers to analyse (first the average buffers, then the raw buffer)
-				ArrayList<ReadingCircularBuffer> bufferCollection = new ArrayList<ReadingCircularBuffer>(avgBuffers.values()); 
+				ArrayList<ReadingCircularBuffer> bufferCollection = 
+						new ArrayList<ReadingCircularBuffer>(avgBuffers.values()); 
 				bufferCollection.add(rawBuffer);
 				
 				for(ReadingCircularBuffer circBuffer : bufferCollection){
@@ -135,14 +136,25 @@ public class StepAnalyser extends Analyser {
 			if(unaveragedPeaks.size() >= 2){
 				// Compute the average peakValue
 				double peakMean = peakData.getCurrentNormMean();
+//				double peakMean = peakData.getStepAverage();
+//				double peakMean = peakData.getPeakMean();
+				
+				// Computes the rolling average of the Peak/Step ratio
+//				double currentRatioAverage = (peakData.getRatioAverage() == 0? 
+//								PEAKTHRESHFACTOR : peakData.getRatioAverage());
+				double currentRatioAverage = PEAKTHRESHFACTOR;
 				
 				for(AccelReading r : unaveragedPeaks){
 					// If a peak is bigger than threshold...
 					if(r.getReadingNorm() > KFACTOR && 
-							r.getReadingNorm() > PEAKTHRESHFACTOR*peakMean) {
+							r.getReadingNorm() > currentRatioAverage*peakMean) {
 						// Push a new StepReading object and add it to the list
 						pushReading(new StepReading(r));
-			
+
+						// Adds a Peak Ratio value to the average
+						peakData.addRatioValue(peakMean/r.getReadingNorm());
+						peakData.addStepValue(r.getReadingNorm());
+						
 						// FIXME Remove after testing
 						executeRunnable();
 					}
@@ -172,7 +184,8 @@ public class StepAnalyser extends Analyser {
 			// Detect peak in X, if case
 				// If so, detect if it is lower than previous.
 			
-			// Detect peak in the norm value, if case
+			// Detect peak in the norm value, if the slopes are right
+			// and the norm is high enough
 			double fwdSlope = computeNormSlope(bufferValues, i-1, i);
 			double bwdSlope = computeNormSlope(bufferValues, i-2, i-1);
 			if(fwdSlope < 0 && bwdSlope > 0){
@@ -196,8 +209,8 @@ public class StepAnalyser extends Analyser {
 	private double computeNormSlope(SensorReading[] bufferValues, int backIndex, int frontIndex) {
 		double x = ((AccelReading) bufferValues[frontIndex]).getReadingNorm()-
 				((AccelReading) bufferValues[backIndex]).getReadingNorm();
-		double y = ((SensorReading) bufferValues[frontIndex]).getTimestamp()-
-				((SensorReading) bufferValues[backIndex]).getTimestamp();
+		double y = (bufferValues[frontIndex]).getTimestamp()-
+				(bufferValues[backIndex]).getTimestamp();
 		
 		return x / y;
 	}
@@ -220,8 +233,12 @@ public class StepAnalyser extends Analyser {
 						+ rs.getClass().getSimpleName() + "' observable type." );
 			}
 			
-			// ...and Process the state
-			processState();
+			//... and if the sufficient number of readings has passed, process the state
+			readCount++;
+			if(readCount >= _analysisBufferSize) {
+				processState();
+				readCount = 0;
+			}
 	}
 	
 	public void updateFromFilter(ReadingSource f, Object reading){
@@ -265,5 +282,12 @@ public class StepAnalyser extends Analyser {
 	}
 	public void executeRunnable(){
 		if(runnable != null) runnable.run();
+	}
+	
+	/**
+	 * @param _analysisBufferSize the _analysisBufferSize to set
+	 */
+	public final void set_analysisBufferSize(int analysisBufferSize) {
+		_analysisBufferSize = analysisBufferSize;
 	}
 }

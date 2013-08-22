@@ -90,4 +90,14 @@ public class AutoGaitModel {
 	public Double getFrequencyFromLength(Double length){
 		return (length - getBeta()) / getAlpha();
 	}
+	
+	/**
+	 * Returns the coefficient of determination for
+	 * the underlying linear regression. A value of 1
+	 * denotes a perfect fit.
+	 * @return
+	 */
+	public double getRegressionFit(){
+		return reg.getRSquare();
+	}
 }

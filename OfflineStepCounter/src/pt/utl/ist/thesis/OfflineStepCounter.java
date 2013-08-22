@@ -9,18 +9,21 @@ import pt.utl.ist.thesis.sensor.reading.AccelReading;
 import pt.utl.ist.thesis.sensor.source.RawReadingSource;
 import pt.utl.ist.thesis.signalprocessor.StepAnalyser;
 import pt.utl.ist.thesis.source.filters.ButterworthFilter;
-import pt.utl.ist.thesis.source.filters.GravityFilter;
 import pt.utl.ist.thesis.util.PushThread;
+import pt.utl.ist.thesis.util.SensorReadingRunnable;
 
 public class OfflineStepCounter {
-
 //	public static final String baseFolder = "C:\\Users\\Carlos\\Dropbox\\Tese\\Dissertacao\\Dados\\06-03-2013\\logs\\conv\\";
 //	public static final String baseFolder = "C:\\Users\\Carlos\\Dropbox\\Tese\\Dissertacao\\Dados\\05-08-2013\\logs\\conv\\";
-	public static final String baseFolder = "C:\\Users\\Carlos\\Dropbox\\Tese\\Dissertacao\\Dados\\10-08-2013\\logs\\conv\\";
+//	public static final String baseFolder = "C:\\Users\\Carlos\\Dropbox\\Tese\\Dissertacao\\Dados\\10-08-2013\\logs\\conv\\";
 //	public static final String accelLogName = "2013-03-06_18h17.log.accel";
-	public static final String accelLogName = "2013-08-10_16h27.log.accel";
+//	public static final String accelLogName = "2013-08-10_16h27.log.accel";
 //	public static final String accelLogName = "2013-08-05_10h11.log.accel";
 //	public static final String accelLogName = "2013-08-05_10h05.log.accel";
+	
+	public static final String baseFolder = "C:\\Users\\Carlos\\Dropbox\\Tese\\Dissertacao\\Dados\\16-08-2013\\logs\\conv\\";
+	public static final String baseFilename = "2013-08-16_12h42.log";
+	public static final String accelLogName = baseFilename + ".accel";
 	private static RawReadingSource rs;
 	private static Object fileLock = new Object();
 	private static PushThread accelPushThread;
@@ -41,17 +44,27 @@ public class OfflineStepCounter {
 		
 		// Create buffer w/two average observers
 		int size = 50;
-		rs = new RawReadingSource(size);		
-		rs.plugFilterIntoOutput(new ButterworthFilter(10, 5, 50, true));
-		rs.plugFilterIntoOutput(new GravityFilter());
+		int sampleRate = 71;
+		rs = new RawReadingSource(size);	
+		ButterworthFilter bwf = new ButterworthFilter(10, 5, sampleRate, true);
+		rs.plugFilterIntoOutput(bwf);
 		//rs.addMovingAverageFilter(1);
 		//rs.addMovingAverageFilter(25);
 		//rs.addMovingAverageFilter(50);
 		
 		// Create the filter analyser
-		StepAnalyser fa = new StepAnalyser(50);
-		rs.getFilters().get(0).plugAnalyserIntoOutput(fa);
+		StepAnalyser sa = new StepAnalyser(50);
+		rs.getFilters().get(0).plugAnalyserIntoOutput(sa);
 //		rs.attachAnalyser(fa);
+		
+		
+		bwf.setRunnable(new SensorReadingRunnable() {
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+//				System.out.print(reading.getReadingAndNorm()[3] + "/");
+			}
+		});
 		
 		// Loop until end of file
 		String line = null;
@@ -72,7 +85,6 @@ public class OfflineStepCounter {
 			};
 			accelPushThread.run();
 			
-			
 			// Compute averages, etc. (done in the background)
 			
 			// Print current state
@@ -91,11 +103,16 @@ public class OfflineStepCounter {
 		}
 		
 		// Output relevant states
-		for(AccelReading a :  fa.getNormPeaks()){
-			System.out.println("Peak: " + a.getTimestampString() + ", " + a.getReadingNorm() + ", " + a);
-		}
-		for(AccelReading a :  fa.getSteps()){
-			System.out.println("Step: " + a.getTimestampString() + ", " + a.getReadingNorm() + ", " + a);
+		int i = 0;
+//		for(AccelReading a :  sa.getNormPeaks()){
+//			System.out.print(a.getTimestampString() + "," + a.getReadingNorm() + ";");
+//			if (i==3) System.out.print("\n");
+//			i = (i+1)%4;
+//		}
+		for(AccelReading a :  sa.getSteps()){
+			System.out.print(a.getTimestampString() + ", " + a.getReadingNorm() + "; ");
+			if (i==3) System.out.print("\n");
+			i = (i+1)%4;
 		}
 		
 		// Close the line reader
@@ -104,6 +121,8 @@ public class OfflineStepCounter {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		
+		System.out.println("\nCounted " + sa.getSteps().size() + " steps");
 		
 		long endTime = System.nanoTime();
 		System.out.println("Took "+(endTime - startTime)/1000000 + " ms");
