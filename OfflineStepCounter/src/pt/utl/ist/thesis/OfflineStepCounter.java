@@ -21,8 +21,10 @@ public class OfflineStepCounter {
 //	public static final String accelLogName = "2013-08-05_10h11.log.accel";
 //	public static final String accelLogName = "2013-08-05_10h05.log.accel";
 	
-	public static final String baseFolder = "C:\\Users\\Carlos\\Dropbox\\Tese\\Dissertacao\\Dados\\16-08-2013\\logs\\conv\\";
-	public static final String baseFilename = "2013-08-16_12h42.log";
+//	public static final String baseFolder = "C:\\Users\\Carlos\\Dropbox\\Tese\\Dissertacao\\Dados\\16-08-2013\\logs\\conv\\";
+//	public static final String baseFilename = "2013-08-16_13h26.log";
+	public static final String baseFolder = "C:\\Users\\Carlos\\Dropbox\\Tese\\Dissertacao\\Dados\\24-08-2013\\logs\\conv\\";
+	public static final String baseFilename = "2013-08-24_12h56.log";
 	public static final String accelLogName = baseFilename + ".accel";
 	private static RawReadingSource rs;
 	private static Object fileLock = new Object();
@@ -62,7 +64,7 @@ public class OfflineStepCounter {
 			@Override
 			public void run() {
 				// TODO Auto-generated method stub
-//				System.out.print(reading.getReadingAndNorm()[3] + "/");
+//				System.out.print(reading.getTimestampString() + "/");
 			}
 		});
 		
@@ -109,11 +111,11 @@ public class OfflineStepCounter {
 //			if (i==3) System.out.print("\n");
 //			i = (i+1)%4;
 //		}
-		for(AccelReading a :  sa.getSteps()){
-			System.out.print(a.getTimestampString() + ", " + a.getReadingNorm() + "; ");
-			if (i==3) System.out.print("\n");
-			i = (i+1)%4;
-		}
+//		for(AccelReading a :  sa.getSteps()){
+//			System.out.print(a.getTimestampString() + ", " + a.getReadingNorm() + "; ");
+//			if (i==3) System.out.print("\n");
+//			i = (i+1)%4;
+//		}
 		
 		// Close the line reader
 		try {

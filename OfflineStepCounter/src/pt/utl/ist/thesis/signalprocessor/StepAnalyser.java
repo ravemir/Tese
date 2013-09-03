@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.TreeMap;
 
 import pt.utl.ist.thesis.sensor.reading.AccelReading;
+import pt.utl.ist.thesis.sensor.reading.ExtremityType;
 import pt.utl.ist.thesis.sensor.reading.SensorReading;
 import pt.utl.ist.thesis.sensor.reading.StepReading;
 import pt.utl.ist.thesis.sensor.source.ReadingSource;
@@ -15,9 +16,11 @@ import pt.utl.ist.thesis.util.buffers.ReadingCircularBuffer;
 
 public class StepAnalyser extends Analyser {
 
+	private static final double GRAVITY = 9.44;
+
 	private int _analysisBufferSize = 71;
 	
-	private static final double KFACTOR = 12.46;	// Chosen heuristically. Should be computed?
+	private static final double KFACTOR = 11.5;	// Chosen heuristically. Should be computed?
 												// Value before which a peak is always discarded.
 												// Gravity magnitude is a good pick.
 	private static final double PEAKTHRESHFACTOR = 0.7;	// Multiplication factor to lower the step threshold
@@ -25,14 +28,20 @@ public class StepAnalyser extends Analyser {
 														// i.e. if a step is a lot smaller than the previous,
 														// this value should be lower to accommodate it.
 	
-	private ReadingCircularBuffer rawBuffer = new ReadingCircularBuffer(_analysisBufferSize);
-	private TreeMap<Integer, ReadingCircularBuffer> avgBuffers = new TreeMap<Integer, ReadingCircularBuffer>();
+	private TreeMap<Integer, ReadingCircularBuffer> buffersByOrder = new TreeMap<Integer, ReadingCircularBuffer>();
 	private SignalPeakData peakData = new SignalPeakData();
 	
 	// FIXME Remove after testing
 	private Runnable runnable;
 
 	private int readCount = 0;
+
+	// TODO Move this attribute into PeakData
+	private boolean isStepArmed = true;
+
+	private boolean wasDisarmedStepDetected = false;
+
+	private double lastStepTimestamp = 0;
 
 	public StepAnalyser(int sampleRate){
 		super(new StepReadingSource());
@@ -67,11 +76,11 @@ public class StepAnalyser extends Analyser {
 	 */
 	private void addAvgReading(int order, SensorReading reading) {
 		// Gets the respective buffer if exists, creates if not
-		ReadingCircularBuffer targetBuffer = getAvgBuffer(order);
+		ReadingCircularBuffer targetBuffer = getBufferByOrder(order);
 		
 		// Adds the reading to the respective buffer
 		targetBuffer.addReading(reading);
-		avgBuffers.put(order, targetBuffer);
+		buffersByOrder.put(order, targetBuffer);
 	}
 
 	/**
@@ -81,13 +90,13 @@ public class StepAnalyser extends Analyser {
 	 * @param order The order associated with the intended buffer.
 	 * @return The intended buffer.
 	 */
-	private ReadingCircularBuffer getAvgBuffer(int order) {
+	private ReadingCircularBuffer getBufferByOrder(int order) {
 		ReadingCircularBuffer targetBuffer;
 		
 		// If the buffer was previously created..
-		if(avgBuffers.containsKey(order))
+		if(buffersByOrder.containsKey(order))
 			// Get it from the list
-			targetBuffer = avgBuffers.get(order);
+			targetBuffer = buffersByOrder.get(order);
 		else
 			// ...or create it
 			targetBuffer = new ReadingCircularBuffer(_analysisBufferSize);
@@ -102,31 +111,30 @@ public class StepAnalyser extends Analyser {
 	 * new state.
 	 */
 	public void processState() {
-		synchronized(avgBuffers) {
-			synchronized(rawBuffer) {
-				// Get the buffers to analyse (first the average buffers, then the raw buffer)
-				ArrayList<ReadingCircularBuffer> bufferCollection = 
-						new ArrayList<ReadingCircularBuffer>(avgBuffers.values()); 
-				bufferCollection.add(rawBuffer);
+		synchronized(buffersByOrder) {
+			// Get the buffers to analyse (first the average buffers, then the raw buffer)
+			ArrayList<ReadingCircularBuffer> bufferCollection = 
+					new ArrayList<ReadingCircularBuffer>(buffersByOrder.values());
+			
+			for(ReadingCircularBuffer circBuffer : bufferCollection){
+				// Count peaks
+				ArrayList<AccelReading> peakList = countPeaksInBuffer(circBuffer);
+				Boolean wasPeakDetected = !(peakList.isEmpty());
 				
-				for(ReadingCircularBuffer circBuffer : bufferCollection){
-					// Count peaks
-					ArrayList<AccelReading> peakList = countPeaksInBuffer(circBuffer);
-					Boolean wasPeakDetected = !(peakList.isEmpty());
-					
-					// Add them to the peak list
-					synchronized(peakData) {
-						peakData.addAll(peakList);
-					}
-					
-					// Clear state
-					if(wasPeakDetected) {
-						for(ReadingCircularBuffer rcb : avgBuffers.values()){
-							rcb.clearOld();
-						}
-						rawBuffer.clearOld();
-					}
+				// Add them to the peak list
+				synchronized(peakData) {
+					peakData.addAll(peakList);
 				}
+				
+				// Clear state
+				if(wasPeakDetected) {
+					for(ReadingCircularBuffer rcb : buffersByOrder.values()){
+						rcb.clearOld();
+					}
+				} else	// ...if no peaks were detected, might  
+						// aswell assume that last peak was an 
+						// oscillation or an incomplete step
+					isStepArmed = true;
 			}
 		}
 		
@@ -143,20 +151,45 @@ public class StepAnalyser extends Analyser {
 //				double currentRatioAverage = (peakData.getRatioAverage() == 0? 
 //								PEAKTHRESHFACTOR : peakData.getRatioAverage());
 				double currentRatioAverage = PEAKTHRESHFACTOR;
-				
 				for(AccelReading r : unaveragedPeaks){
-					// If a peak is bigger than threshold...
-					if(r.getReadingNorm() > KFACTOR && 
-							r.getReadingNorm() > currentRatioAverage*peakMean) {
+					// Calculate the time since the latest peak
+					// and obtain the elapsed step time average
+					double elapsedTime = getPeakElapsedTime(r);
+					double elapsedStepTimeAverage = peakData.getElapsedStepTimeAverage();
+					
+					double stepTimeRelaxationCoefficient = getStepTimeRelaxationCoefficient(r);
+					if(r.getExtremityType() == ExtremityType.PEAK
+							&& r.getReadingNorm() > KFACTOR
+//							&& isStepArmed
+							&& !wasDisarmedStepDetected
+							&& elapsedTime > stepTimeRelaxationCoefficient * elapsedStepTimeAverage
+//							&& r.getReadingNorm() > currentRatioAverage*peakMean
+							) {
 						// Push a new StepReading object and add it to the list
-						pushReading(new StepReading(r));
-
+						
+						// Disarm the the step, if it hasn't, or trigger "disarmed step"
+						if(isStepArmed)
+							isStepArmed = false;
+						else
+							wasDisarmedStepDetected = true;
+						
+						// Register a new step
+						registerNewStep(r, elapsedTime);
+						
 						// Adds a Peak Ratio value to the average
 						peakData.addRatioValue(peakMean/r.getReadingNorm());
-						peakData.addStepValue(r.getReadingNorm());
+						
 						
 						// FIXME Remove after testing
 						executeRunnable();
+					} else if(r.getExtremityType() == ExtremityType.VALLEY
+							&& r.getReadingNorm() < GRAVITY
+							&& !isStepArmed
+//							&& wasDisarmedStepDetected
+							){
+						// Rearm the step, reset "disarmed step" detection
+						isStepArmed = true;
+						wasDisarmedStepDetected = false;
 					}
 				}
 				
@@ -164,6 +197,41 @@ public class StepAnalyser extends Analyser {
 				peakData.clearMeanData();
 			}
 		}
+	}
+
+	/**
+	 * @param r
+	 * @return
+	 */
+	public double getStepTimeRelaxationCoefficient(AccelReading r) {
+		return r.getReadingNorm() >= 19 ? 0.4 : 0.6;
+	}
+
+	/**
+	 * @param r
+	 * @return
+	 */
+	public double getPeakElapsedTime(AccelReading r) {
+		Double currentTimestamp = r.getTimestamp();
+		return currentTimestamp - 
+				(lastStepTimestamp == 0? 
+						currentTimestamp - 1000 : 
+						lastStepTimestamp);
+	}
+
+	/**
+	 * @param r
+	 */
+	public void registerNewStep(AccelReading r, double elapsedTime) {
+		// Create the StepReading and push it
+		StepReading step = new StepReading(r);
+		pushReading(step);
+		
+		// Register this step's timestamp
+		lastStepTimestamp = step.getTimestamp();
+		
+		// Register the elapsed time of the latest step 
+		peakData.addElapsedStepTimeValue((elapsedTime >= 1500 ? 1500 : elapsedTime));
 	}
 
 	/**
@@ -181,16 +249,20 @@ public class StepAnalyser extends Analyser {
 		
 		// Count peaks
 		for(int i = 2; i < circBuffer.samplesWarmed() ; i++) {
-			// Detect peak in X, if case
-				// If so, detect if it is lower than previous.
-			
 			// Detect peak in the norm value, if the slopes are right
-			// and the norm is high enough
-			double fwdSlope = computeNormSlope(bufferValues, i-1, i);
-			double bwdSlope = computeNormSlope(bufferValues, i-2, i-1);
+//			double fwdSlope = computeNormSlope(bufferValues, i-1, i);
+//			double bwdSlope = computeNormSlope(bufferValues, i-2, i-1);
+			double fwdSlope = computeNormSlope(circBuffer, i-1, i);
+			double bwdSlope = computeNormSlope(circBuffer, i-2, i-1);
+//			AccelReading extremity = (AccelReading) bufferValues[i-1];
+			AccelReading extremity = (AccelReading) circBuffer.getFromIndex(i-1);
 			if(fwdSlope < 0 && bwdSlope > 0){
-				// If so, see if bigger than thresholds
-				peaks.add((AccelReading) bufferValues[i-1]);
+				extremity.setExtremityType(ExtremityType.PEAK);
+				peaks.add(extremity);
+			} // ...or a valley
+			else if (fwdSlope > 0 && bwdSlope < 0){
+				extremity.setExtremityType(ExtremityType.VALLEY);
+				peaks.add(extremity);
 			}
 		}
 		
@@ -215,8 +287,26 @@ public class StepAnalyser extends Analyser {
 		return x / y;
 	}
 	
+	private double computeNormSlope(ReadingCircularBuffer rcb, int backIndex, int frontIndex) {
+//		private double computeNormSlope(SensorReading[] bufferValues, int backIndex, int frontIndex) {
+//			double x = ((AccelReading) bufferValues[frontIndex]).getReadingNorm()-
+//					((AccelReading) bufferValues[backIndex]).getReadingNorm();
+//			double y = (bufferValues[frontIndex]).getTimestamp()-
+//					(bufferValues[backIndex]).getTimestamp();
+			// FIXME Remove after tested
+			
+			double x = (rcb.getFromIndex(frontIndex)).getTimestamp()-
+					(rcb.getFromIndex(backIndex)).getTimestamp();
+			double y = ((AccelReading) rcb.getFromIndex(frontIndex)).getReadingNorm()-
+					((AccelReading) rcb.getFromIndex(backIndex)).getReadingNorm();
+			
+			return y / x;
+		}
+	
 	private void addRawReading(SensorReading currentReading) {
-		rawBuffer.addReading(currentReading);
+		ReadingCircularBuffer rcb = getBufferByOrder(0);
+		
+		rcb.addReading(currentReading);
 	}
 
 	
@@ -232,28 +322,34 @@ public class StepAnalyser extends Analyser {
 				throw new UnsupportedOperationException("Tried to update Analyser from '"
 						+ rs.getClass().getSimpleName() + "' observable type." );
 			}
-			
-			//... and if the sufficient number of readings has passed, process the state
 			readCount++;
+			
+			//... and if the sufficient number of readings has passed,...
+			
 			if(readCount >= _analysisBufferSize) {
+				// ...process the state...
 				processState();
-				readCount = 0;
+				
+				// ... and set the readCount to account for the first two values
+				readCount = 2;
 			}
 	}
 	
 	public void updateFromFilter(ReadingSource f, Object reading){
-		synchronized(avgBuffers){
+		synchronized(buffersByOrder){
 			if(f instanceof MovingAverageFilter){
 				// Get this filter's order and the latest reading
 				int order = ((MovingAverageFilter) f).getAverageOrder();
-				SensorReading currentReading = (SensorReading) f.getBuffer().getCurrentReading();
+//				SensorReading currentReading = (SensorReading) f.getBuffer().getCurrentReading();
+				SensorReading currentReading = (SensorReading) reading;
 		
 				// Adds the reading to the buffer with the associated order
 				addAvgReading(order, currentReading);
 			} else if(f instanceof ButterworthFilter){
 				// Get this filter's order and the latest reading
 				int order = ((ButterworthFilter) f).getFilterOrder();
-				SensorReading currentReading = (SensorReading) f.getBuffer().getCurrentReading();
+//				SensorReading currentReading = (SensorReading) f.getBuffer().getCurrentReading();
+				SensorReading currentReading = (SensorReading) reading;
 		
 				// Adds the reading to the buffer with the associated order
 				addAvgReading(order, currentReading);
@@ -265,7 +361,7 @@ public class StepAnalyser extends Analyser {
 	}
 	
 	public void updateFromRaw(ReadingSource rs, Object reading){
-		synchronized(rawBuffer) {
+		synchronized(buffersByOrder) {
 			// Get this ReadingSource's latest reading
 			SensorReading currentReading = (SensorReading) rs.getBuffer().getCurrentReading();
 	
@@ -287,7 +383,7 @@ public class StepAnalyser extends Analyser {
 	/**
 	 * @param _analysisBufferSize the _analysisBufferSize to set
 	 */
-	public final void set_analysisBufferSize(int analysisBufferSize) {
+	public final void setAnalysisBufferSize(int analysisBufferSize) {
 		_analysisBufferSize = analysisBufferSize;
 	}
 }

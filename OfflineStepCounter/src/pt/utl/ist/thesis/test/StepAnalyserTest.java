@@ -40,7 +40,7 @@ public class StepAnalyserTest {
 		// Create analyser and attach it to the average filter
 		StepAnalyser sa = new StepAnalyser(50);
 		rs.getFilters().get(0).plugAnalyserIntoOutput(sa);
-		sa.set_analysisBufferSize(3);
+		sa.setAnalysisBufferSize(3);
 		
 		// Add readings
 		rs.pushReading(new AccelReading("0", new double[]{0,0,0}));
@@ -65,10 +65,11 @@ public class StepAnalyserTest {
 		rs.pushReading(new AccelReading("7", new double[]{-2,-2,-2}));
 		rs.pushReading(new AccelReading("8", new double[]{-2,-2,-2}));
 		
-		// Count peaks (a new one should be counted, added to the first one)
+		// Count peaks and valleys (two new should be counted, added to the first one)
 		normPeaks = sa.getNormPeaks();
-		assertEquals(2, normPeaks.size());
+		assertEquals(3, normPeaks.size());
 		assertEquals("1", normPeaks.get(0).getTimestampString());
-		assertEquals("5", normPeaks.get(1).getTimestampString());
+		assertEquals("4", normPeaks.get(1).getTimestampString());
+		assertEquals("5", normPeaks.get(2).getTimestampString());
 	}
 }

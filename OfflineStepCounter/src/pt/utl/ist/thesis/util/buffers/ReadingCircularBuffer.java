@@ -179,4 +179,18 @@ public class ReadingCircularBuffer {
 		for (int i = 0; i < readings.length; i++)
 			addReading(getEmptyReading());
 	}
+	
+	/**
+	 * TODO
+	 * @param i
+	 * @return
+	 */
+	public SensorReading getFromIndex(int i){
+		// Get the number of warmed readings, and use that to determine the beginning
+		int beginning = MathUtils.altMod(positionIndex - ((readings.length - samplesToWarm()) - 1), readings.length);
+		int index = beginning + i;
+		SensorReading read = readings[MathUtils.altMod(index, readings.length)];
+		
+		return (read != null? read: getEmptyReading());
+	}
 }

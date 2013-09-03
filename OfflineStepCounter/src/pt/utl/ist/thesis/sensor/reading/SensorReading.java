@@ -6,22 +6,40 @@ public abstract class SensorReading {
 	// value in millisecond units.
 	private final Double timestamp;
 	protected final String formattedTs;
+	protected ExtremityType extType = ExtremityType.NONE;
 	
-	/**
-	 * @return The formatted timestamp string.
-	 */
-	public final String getTimestampString() {
-		return formattedTs;
-	}
-
 	public SensorReading(Double ts){
 		timestamp = ts;
 		formattedTs = ts.toString();
 	}
-	
+
 	public SensorReading(String ts){
 		timestamp = Double.valueOf(ts);
 		formattedTs = ts;
+	}
+
+	public double[] getAverageableReading(){
+		return getReading();
+	}
+
+	/**
+	 * @return the extType
+	 */
+	public final ExtremityType getExtremityType() {
+		return extType;
+	}
+	
+	public abstract double[] getReading();
+	
+	public double[] getReadingAndNorm(){
+		double[] reading = getReading();
+		double[] tmp = new double[reading.length+1];
+		for (int i = 0; i < reading.length; i++) {
+			tmp[i] = reading[i];
+		}
+		tmp[tmp.length] = 0;
+		
+		return tmp;
 	}
 	
 	/**
@@ -34,20 +52,17 @@ public abstract class SensorReading {
 	public Double getTimestamp() {
 		return timestamp;
 	}
-	
-	public abstract double[] getReading();
-	public double[] getAverageableReading(){
-		return getReading();
+	/**
+	 * @return The formatted timestamp string.
+	 */
+	public final String getTimestampString() {
+		return formattedTs;
 	}
 	
-	public double[] getReadingAndNorm(){
-		double[] reading = getReading();
-		double[] tmp = new double[reading.length+1];
-		for (int i = 0; i < reading.length; i++) {
-			tmp[i] = reading[i];
-		}
-		tmp[tmp.length] = 0;
-		
-		return tmp;
+	/**
+	 * @param extType the extType to set
+	 */
+	public final void setExtremityType(ExtremityType extType) {
+		this.extType = extType;
 	}
 }

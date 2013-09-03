@@ -18,7 +18,7 @@ public class SignalPeakData {
 	
 
 	private SynchronizedDescriptiveStatistics sdsRatio = new SynchronizedDescriptiveStatistics(10);
-	private SynchronizedDescriptiveStatistics sdsStep = new SynchronizedDescriptiveStatistics();
+	private SynchronizedDescriptiveStatistics sdsElapsedStepValue = new SynchronizedDescriptiveStatistics(15);
 	private SynchronizedDescriptiveStatistics sdsPeak = new SynchronizedDescriptiveStatistics(15);
 	
 	
@@ -128,8 +128,8 @@ public class SignalPeakData {
 	 * 
 	 * @param v	The value to be added.
 	 */
-	public void addStepValue(double v) {
-		sdsStep.addValue(v);
+	public void addElapsedStepTimeValue(double v) {
+		sdsElapsedStepValue.addValue(v);
 	}
 	
 	/**
@@ -139,8 +139,8 @@ public class SignalPeakData {
 	 * @return	The current rolling average value of
 	 * 			the added values.
 	 */
-	public double getStepAverage(){
-		double currMeanValue = sdsStep.getMean();
+	public double getElapsedStepTimeAverage(){
+		double currMeanValue = sdsElapsedStepValue.getMean();
 		
 		return (Double.isNaN(currMeanValue) ? 
 				0 : currMeanValue);
