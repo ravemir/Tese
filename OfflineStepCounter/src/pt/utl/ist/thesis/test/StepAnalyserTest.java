@@ -54,10 +54,11 @@ public class StepAnalyserTest {
 		
 		// Create a new reading source, attaching the 
 		// analyser to the raw source
-		rs = new RawReadingSource(50);
-		rs.plugAnalyserIntoOutput(sa);
+//		rs = new RawReadingSource(50);
+//		rs.plugAnalyserIntoOutput(sa);
 		
 		// Add readings (there are some extra readings, in order to force detection)
+		rs.pushReading(new AccelReading("3", new double[]{-1,-1,-1}));
 		rs.pushReading(new AccelReading("3", new double[]{-1,-1,-1}));
 		rs.pushReading(new AccelReading("4", new double[]{0,0,0}));
 		rs.pushReading(new AccelReading("5", new double[]{20,20,20}));

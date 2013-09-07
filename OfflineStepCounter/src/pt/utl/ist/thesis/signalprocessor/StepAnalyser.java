@@ -23,7 +23,7 @@ public class StepAnalyser extends Analyser {
 	private static final double KFACTOR = 11.5;	// Chosen heuristically. Should be computed?
 												// Value before which a peak is always discarded.
 												// Gravity magnitude is a good pick.
-	private static final double PEAKTHRESHFACTOR = 0.7;	// Multiplication factor to lower the step threshold
+//	private static final double PEAKTHRESHFACTOR = 0.7;	// Multiplication factor to lower the step threshold
 														// Depends on the variance of intensity of each step
 														// i.e. if a step is a lot smaller than the previous,
 														// this value should be lower to accommodate it.
@@ -150,7 +150,7 @@ public class StepAnalyser extends Analyser {
 				// Computes the rolling average of the Peak/Step ratio
 //				double currentRatioAverage = (peakData.getRatioAverage() == 0? 
 //								PEAKTHRESHFACTOR : peakData.getRatioAverage());
-				double currentRatioAverage = PEAKTHRESHFACTOR;
+//				double currentRatioAverage = PEAKTHRESHFACTOR;
 				for(AccelReading r : unaveragedPeaks){
 					// Calculate the time since the latest peak
 					// and obtain the elapsed step time average
@@ -160,9 +160,9 @@ public class StepAnalyser extends Analyser {
 					double stepTimeRelaxationCoefficient = getStepTimeRelaxationCoefficient(r);
 					if(r.getExtremityType() == ExtremityType.PEAK
 							&& r.getReadingNorm() > KFACTOR
-//							&& isStepArmed
 							&& !wasDisarmedStepDetected
 							&& elapsedTime > stepTimeRelaxationCoefficient * elapsedStepTimeAverage
+//							&& isStepArmed
 //							&& r.getReadingNorm() > currentRatioAverage*peakMean
 							) {
 						// Push a new StepReading object and add it to the list
@@ -244,17 +244,13 @@ public class StepAnalyser extends Analyser {
 	 */
 	private ArrayList<AccelReading> countPeaksInBuffer(ReadingCircularBuffer circBuffer) {
 		// Get the values from the buffer and create a list to store the peaks
-		SensorReading[] bufferValues = circBuffer.getBufferValues();
 		ArrayList<AccelReading> peaks = new ArrayList<AccelReading>();
 		
 		// Count peaks
 		for(int i = 2; i < circBuffer.samplesWarmed() ; i++) {
 			// Detect peak in the norm value, if the slopes are right
-//			double fwdSlope = computeNormSlope(bufferValues, i-1, i);
-//			double bwdSlope = computeNormSlope(bufferValues, i-2, i-1);
 			double fwdSlope = computeNormSlope(circBuffer, i-1, i);
 			double bwdSlope = computeNormSlope(circBuffer, i-2, i-1);
-//			AccelReading extremity = (AccelReading) bufferValues[i-1];
 			AccelReading extremity = (AccelReading) circBuffer.getFromIndex(i-1);
 			if(fwdSlope < 0 && bwdSlope > 0){
 				extremity.setExtremityType(ExtremityType.PEAK);
@@ -270,6 +266,7 @@ public class StepAnalyser extends Analyser {
 	}
 
 	/**
+	 * TODO REVIEW JAVADOC (FROM PREVIOUS IMPLEMENTATION)
 	 * Computes the slope on the array position
 	 * described by the index values.
 	 * 
@@ -278,15 +275,6 @@ public class StepAnalyser extends Analyser {
 	 * @param frontIndex The index of the next value in the slope.
 	 * @return The computed slope value.
 	 */
-	private double computeNormSlope(SensorReading[] bufferValues, int backIndex, int frontIndex) {
-		double x = ((AccelReading) bufferValues[frontIndex]).getReadingNorm()-
-				((AccelReading) bufferValues[backIndex]).getReadingNorm();
-		double y = (bufferValues[frontIndex]).getTimestamp()-
-				(bufferValues[backIndex]).getTimestamp();
-		
-		return x / y;
-	}
-	
 	private double computeNormSlope(ReadingCircularBuffer rcb, int backIndex, int frontIndex) {
 //		private double computeNormSlope(SensorReading[] bufferValues, int backIndex, int frontIndex) {
 //			double x = ((AccelReading) bufferValues[frontIndex]).getReadingNorm()-

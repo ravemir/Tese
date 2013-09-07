@@ -105,7 +105,7 @@ public class OfflineStepCounter {
 		}
 		
 		// Output relevant states
-		int i = 0;
+//		int i = 0;
 //		for(AccelReading a :  sa.getNormPeaks()){
 //			System.out.print(a.getTimestampString() + "," + a.getReadingNorm() + ";");
 //			if (i==3) System.out.print("\n");
