@@ -15,9 +15,10 @@ import pt.utl.ist.thesis.sensor.reading.AccelReading;
 import pt.utl.ist.thesis.sensor.reading.GPSReading;
 import pt.utl.ist.thesis.sensor.reading.OrientationReading;
 import pt.utl.ist.thesis.sensor.source.RawReadingSource;
+import pt.utl.ist.thesis.sensordir.R;
 import pt.utl.ist.thesis.signalprocessor.PositioningAnalyser;
 import pt.utl.ist.thesis.signalprocessor.StepAnalyser;
-import pt.utl.ist.thesis.source.filters.ButterworthFilter;
+import pt.utl.ist.thesis.sensor.source.filters.ButterworthFilter;
 import pt.utl.ist.thesis.util.PushThread;
 import pt.utl.ist.thesis.util.SensorReadingRunnable;
 import android.annotation.TargetApi;
@@ -358,7 +359,7 @@ public class CollectionActivity extends Activity {
 
 		// Get average sample rate value
 		double avgSampleRate = getIntent().getExtras().
-				getDouble(AccelerometerDirectionApplication.ratePrefName);
+				getDouble(SensorDirectionApplication.ratePrefName);
 		AndroidUtils.displayToast(this, "Rate: " + avgSampleRate);
 
 		// Define both the location and accelerometer listeners
@@ -578,8 +579,8 @@ public class CollectionActivity extends Activity {
 
 		// Save the sample rate to the preferences
 		float castSampleRate = (float) mAccelGPSListener.sss.getGeometricMean();
-		getSharedPreferences(AccelerometerDirectionApplication.COLLECTION_PREFERENCES, MODE_PRIVATE).
-			edit().putFloat(AccelerometerDirectionApplication.ratePrefName, castSampleRate).commit();
+		getSharedPreferences(SensorDirectionApplication.COLLECTION_PREFERENCES, MODE_PRIVATE).
+			edit().putFloat(SensorDirectionApplication.ratePrefName, castSampleRate).commit();
 
 		// Detach listeners
 		detachListeners();

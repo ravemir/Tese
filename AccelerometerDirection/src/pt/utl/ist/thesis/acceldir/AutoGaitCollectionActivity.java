@@ -14,9 +14,10 @@ import pt.utl.ist.thesis.acceldir.util.UIUpdater;
 import pt.utl.ist.thesis.sensor.reading.AccelReading;
 import pt.utl.ist.thesis.sensor.reading.GPSReading;
 import pt.utl.ist.thesis.sensor.source.RawReadingSource;
+import pt.utl.ist.thesis.sensordir.R;
 import pt.utl.ist.thesis.signalprocessor.AutoGaitModelerAnalyser;
 import pt.utl.ist.thesis.signalprocessor.StepAnalyser;
-import pt.utl.ist.thesis.source.filters.ButterworthFilter;
+import pt.utl.ist.thesis.sensor.source.filters.ButterworthFilter;
 import pt.utl.ist.thesis.util.PushThread;
 import pt.utl.ist.thesis.util.SampleRunnable;
 import android.annotation.TargetApi;
@@ -286,7 +287,7 @@ public class AutoGaitCollectionActivity extends Activity {
 
 		// Get average sample rate value
 		double avgSampleRate = getIntent().getExtras().
-				getDouble(AccelerometerDirectionApplication.ratePrefName);
+				getDouble(SensorDirectionApplication.ratePrefName);
 
 		// Define both the location and accelerometer listeners
 		mAccelGPSListener = new AccelGPSListener((int) Math.round(avgSampleRate));
@@ -502,8 +503,8 @@ public class AutoGaitCollectionActivity extends Activity {
 
 		// Save the sample rate to the preferences
 		float castSampleRate = (float) mAccelGPSListener.sss.getGeometricMean();
-		getSharedPreferences(AccelerometerDirectionApplication.COLLECTION_PREFERENCES, MODE_PRIVATE).
-			edit().putFloat(AccelerometerDirectionApplication.ratePrefName, castSampleRate).commit();
+		getSharedPreferences(SensorDirectionApplication.COLLECTION_PREFERENCES, MODE_PRIVATE).
+			edit().putFloat(SensorDirectionApplication.ratePrefName, castSampleRate).commit();
 
 		// Detach listeners
 		detachListeners();

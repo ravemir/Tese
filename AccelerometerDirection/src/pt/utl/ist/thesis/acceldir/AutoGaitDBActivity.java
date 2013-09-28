@@ -1,6 +1,7 @@
 package pt.utl.ist.thesis.acceldir;
 
 import pt.utl.ist.thesis.acceldir.sql.AutoGaitSegmentDataSource;
+import pt.utl.ist.thesis.sensordir.R;
 import pt.utl.ist.thesis.signalprocessor.AutoGaitModel;
 import android.app.ListActivity;
 import android.os.Bundle;

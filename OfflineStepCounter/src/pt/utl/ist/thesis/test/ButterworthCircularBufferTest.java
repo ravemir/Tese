@@ -8,7 +8,7 @@ import org.junit.Test;
 
 import pt.utl.ist.thesis.sensor.reading.AccelReading;
 import pt.utl.ist.thesis.sensor.reading.SensorReading;
-import pt.utl.ist.thesis.source.filters.ButterworthData;
+import pt.utl.ist.thesis.sensor.source.filters.ButterworthData;
 import pt.utl.ist.thesis.util.buffers.ButterworthCircularBuffer;
 
 public class ButterworthCircularBufferTest {

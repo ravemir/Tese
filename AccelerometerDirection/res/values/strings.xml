@@ -7,7 +7,7 @@
 
     <!-- UI-related resources -->
     <!-- Titles -->
-    <string name="app_name">AccelerometerDirection</string>
+    <string name="app_name">SensorDirection</string>
     <string name="title_activity_collection">CollectionActivity</string>
     <string name="title_activity_calibration">CalibrationActivity</string>
     <string name="title_activity_auto_gait_db">Auto Gait Data in the DB</string>

@@ -7,7 +7,7 @@ import pt.utl.ist.thesis.sensor.reading.AccelReading;
 import pt.utl.ist.thesis.sensor.reading.GPSReading;
 import pt.utl.ist.thesis.sensor.reading.OrientationReading;
 import pt.utl.ist.thesis.sensor.reading.SensorReading;
-import pt.utl.ist.thesis.source.filters.Filter;
+import pt.utl.ist.thesis.sensor.source.filters.Filter;
 import pt.utl.ist.thesis.util.MathUtils;
 
 public class ReadingCircularBuffer {

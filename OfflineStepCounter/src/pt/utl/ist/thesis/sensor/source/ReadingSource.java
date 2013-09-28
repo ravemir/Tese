@@ -5,8 +5,8 @@ import java.util.List;
 import java.util.Observable;
 
 import pt.utl.ist.thesis.sensor.reading.SensorReading;
+import pt.utl.ist.thesis.sensor.source.filters.Filter;
 import pt.utl.ist.thesis.signalprocessor.Analyser;
-import pt.utl.ist.thesis.source.filters.Filter;
 import pt.utl.ist.thesis.util.SensorReadingRunnable;
 import pt.utl.ist.thesis.util.buffers.ReadingCircularBuffer;
 

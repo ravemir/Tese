@@ -12,7 +12,7 @@ import pt.utl.ist.thesis.sensor.reading.RelativePositionReading;
 import pt.utl.ist.thesis.sensor.reading.SensorReading;
 import pt.utl.ist.thesis.sensor.reading.StepReading;
 import pt.utl.ist.thesis.sensor.source.ReadingSource;
-import pt.utl.ist.thesis.source.filters.MovingAverageFilter;
+import pt.utl.ist.thesis.sensor.source.filters.MovingAverageFilter;
 import pt.utl.ist.thesis.util.SensorReadingRunnable;
 
 /**

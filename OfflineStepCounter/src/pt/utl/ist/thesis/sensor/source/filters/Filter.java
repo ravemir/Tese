@@ -1,4 +1,4 @@
-package pt.utl.ist.thesis.source.filters;
+package pt.utl.ist.thesis.sensor.source.filters;
 
 import java.util.Observer;
 

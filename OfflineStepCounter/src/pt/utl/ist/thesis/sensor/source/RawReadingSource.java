@@ -2,10 +2,10 @@ package pt.utl.ist.thesis.sensor.source;
 
 import java.util.List;
 
+import pt.utl.ist.thesis.sensor.source.filters.Filter;
+import pt.utl.ist.thesis.sensor.source.filters.MovingAverageFilter;
+import pt.utl.ist.thesis.sensor.source.filters.UnboundedOrientationFilter;
 import pt.utl.ist.thesis.signalprocessor.Analyser;
-import pt.utl.ist.thesis.source.filters.Filter;
-import pt.utl.ist.thesis.source.filters.MovingAverageFilter;
-import pt.utl.ist.thesis.source.filters.UnboundedOrientationFilter;
 import pt.utl.ist.thesis.util.buffers.ReadingCircularBuffer;
 
 public class RawReadingSource extends ReadingSource {

@@ -12,9 +12,9 @@ import pt.utl.ist.thesis.sensor.reading.GPSReading;
 import pt.utl.ist.thesis.sensor.reading.SensorReading;
 import pt.utl.ist.thesis.sensor.source.RawReadingSource;
 import pt.utl.ist.thesis.sensor.source.ReadingSource;
+import pt.utl.ist.thesis.sensor.source.filters.ButterworthFilter;
 import pt.utl.ist.thesis.signalprocessor.AutoGaitModelerAnalyser;
 import pt.utl.ist.thesis.signalprocessor.StepAnalyser;
-import pt.utl.ist.thesis.source.filters.ButterworthFilter;
 import pt.utl.ist.thesis.util.PushThread;
 import pt.utl.ist.thesis.util.SampleRunnable;
 

@@ -5,11 +5,11 @@ import org.apache.commons.math.linear.DecompositionSolver;
 import org.apache.commons.math.linear.LUDecompositionImpl;
 import org.apache.commons.math.linear.RealMatrix;
 
-import pt.utl.ist.thesis.acceldir.R;
+import pt.utl.ist.thesis.sensordir.R;
 import pt.utl.ist.thesis.acceldir.util.AndroidUtils;
 import pt.utl.ist.thesis.sensor.reading.AccelReading;
 import pt.utl.ist.thesis.sensor.source.RawReadingSource;
-import pt.utl.ist.thesis.source.filters.MovingAverageFilter;
+import pt.utl.ist.thesis.sensor.source.filters.MovingAverageFilter;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences.Editor;
@@ -106,7 +106,7 @@ public class CalibrationActivity extends Activity {
 					
 					
 					// Save it in preferences
-					Editor editor = getSharedPreferences(AccelerometerDirectionApplication.COLLECTION_PREFERENCES,
+					Editor editor = getSharedPreferences(SensorDirectionApplication.COLLECTION_PREFERENCES,
 							MODE_PRIVATE).edit();
 					for (int i = 0; i < calibrationMatrix.getColumnDimension(); i++) {
 						for (int j = 0; j < calibrationMatrix.getRowDimension(); j++) {

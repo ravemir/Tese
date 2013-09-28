@@ -4,6 +4,7 @@ import java.util.List;
 
 import pt.utl.ist.thesis.acceldir.sql.AutoGaitSegmentData;
 import pt.utl.ist.thesis.acceldir.sql.AutoGaitSegmentDataSource;
+import pt.utl.ist.thesis.sensordir.R;
 import android.os.Bundle;
 import android.app.Activity;
 import android.view.Menu;

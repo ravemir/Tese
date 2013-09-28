@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="pt.utl.ist.thesis.acceldir"
+    package="pt.utl.ist.thesis.sensordir"
     android:installLocation="auto"
     android:versionCode="8"
     android:versionName="1.2" >
@@ -23,7 +23,7 @@
         android:smallScreens="true" />
 
     <application
-        android:name="pt.utl.ist.thesis.acceldir.AccelerometerDirectionApplication"
+        android:name="pt.utl.ist.thesis.acceldir.SensorDirectionApplication"
         android:allowBackup="true"
         android:enabled="true"
         android:icon="@drawable/ic_launcher"

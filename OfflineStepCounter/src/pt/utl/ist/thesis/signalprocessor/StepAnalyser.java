@@ -9,24 +9,18 @@ import pt.utl.ist.thesis.sensor.reading.SensorReading;
 import pt.utl.ist.thesis.sensor.reading.StepReading;
 import pt.utl.ist.thesis.sensor.source.ReadingSource;
 import pt.utl.ist.thesis.sensor.source.StepReadingSource;
-import pt.utl.ist.thesis.source.filters.ButterworthFilter;
-import pt.utl.ist.thesis.source.filters.Filter;
-import pt.utl.ist.thesis.source.filters.MovingAverageFilter;
+import pt.utl.ist.thesis.sensor.source.filters.ButterworthFilter;
+import pt.utl.ist.thesis.sensor.source.filters.Filter;
+import pt.utl.ist.thesis.sensor.source.filters.MovingAverageFilter;
 import pt.utl.ist.thesis.util.buffers.ReadingCircularBuffer;
 
 public class StepAnalyser extends Analyser {
 
-	private static final double GRAVITY = 9.44;
-
 	private int _analysisBufferSize = 71;
 	
-	private static final double KFACTOR = 11.5;	// Chosen heuristically. Should be computed?
-												// Value before which a peak is always discarded.
-												// Gravity magnitude is a good pick.
-//	private static final double PEAKTHRESHFACTOR = 0.7;	// Multiplication factor to lower the step threshold
-														// Depends on the variance of intensity of each step
-														// i.e. if a step is a lot smaller than the previous,
-														// this value should be lower to accommodate it.
+	private static final double rearmThreshold = 9.44;	// Chosen heuristically. Should be computed?
+	private static final double stepThreshold = 11.5;	// Value before which a peak is always discarded.	
+														// Gravity magnitude is a good pick.
 	
 	private TreeMap<Integer, ReadingCircularBuffer> buffersByOrder = new TreeMap<Integer, ReadingCircularBuffer>();
 	private SignalPeakData peakData = new SignalPeakData();
@@ -159,7 +153,7 @@ public class StepAnalyser extends Analyser {
 					
 					double stepTimeRelaxationCoefficient = getStepTimeRelaxationCoefficient(r);
 					if(r.getExtremityType() == ExtremityType.PEAK
-							&& r.getReadingNorm() > KFACTOR
+							&& r.getReadingNorm() > stepThreshold
 							&& !wasDisarmedStepDetected
 							&& elapsedTime > stepTimeRelaxationCoefficient * elapsedStepTimeAverage
 //							&& isStepArmed
@@ -183,7 +177,7 @@ public class StepAnalyser extends Analyser {
 						// FIXME Remove after testing
 						executeRunnable();
 					} else if(r.getExtremityType() == ExtremityType.VALLEY
-							&& r.getReadingNorm() < GRAVITY
+							&& r.getReadingNorm() < rearmThreshold
 							&& !isStepArmed
 //							&& wasDisarmedStepDetected
 							){

@@ -3,7 +3,7 @@ package pt.utl.ist.thesis.acceldir;
 import java.io.File;
 import java.util.ArrayList;
 
-import pt.utl.ist.thesis.acceldir.R;
+import pt.utl.ist.thesis.sensordir.R;
 import pt.utl.ist.thesis.acceldir.exception.ExternalStorageUnavailableException;
 import pt.utl.ist.thesis.acceldir.exception.ExternalStorageWriteProtectedException;
 import pt.utl.ist.thesis.acceldir.sql.AutoGaitSegmentDataSource;
@@ -352,10 +352,10 @@ public class CollectionEntryActivity extends Activity {
 	 * 
 	 */
 	public void loadPreferences() {
-		isGPSFixDisabled = !getSharedPreferences(AccelerometerDirectionApplication.COLLECTION_PREFERENCES, MODE_PRIVATE).
-				getBoolean(AccelerometerDirectionApplication.fixPrefName, false);
-		sampleRate = getSharedPreferences(AccelerometerDirectionApplication.COLLECTION_PREFERENCES, MODE_PRIVATE).
-				getFloat(AccelerometerDirectionApplication.ratePrefName, 50F);
+		isGPSFixDisabled = !getSharedPreferences(SensorDirectionApplication.COLLECTION_PREFERENCES, MODE_PRIVATE).
+				getBoolean(SensorDirectionApplication.fixPrefName, false);
+		sampleRate = getSharedPreferences(SensorDirectionApplication.COLLECTION_PREFERENCES, MODE_PRIVATE).
+				getFloat(SensorDirectionApplication.ratePrefName, 50F);
 	}
 
 	@Override

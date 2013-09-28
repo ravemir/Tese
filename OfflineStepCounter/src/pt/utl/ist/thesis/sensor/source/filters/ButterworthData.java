@@ -1,4 +1,4 @@
-package pt.utl.ist.thesis.source.filters;
+package pt.utl.ist.thesis.sensor.source.filters;
 /**
  *	Copyright (c) 2009-2011
  *	        Speech Group at Informatik 5, Univ. Erlangen-Nuremberg, GERMANY

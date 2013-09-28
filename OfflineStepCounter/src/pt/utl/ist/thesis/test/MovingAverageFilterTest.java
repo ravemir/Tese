@@ -13,8 +13,8 @@ import org.junit.Test;
 import pt.utl.ist.thesis.sensor.reading.AccelReading;
 import pt.utl.ist.thesis.sensor.reading.SensorReading;
 import pt.utl.ist.thesis.sensor.source.RawReadingSource;
-import pt.utl.ist.thesis.source.filters.Filter;
-import pt.utl.ist.thesis.source.filters.MovingAverageFilter;
+import pt.utl.ist.thesis.sensor.source.filters.Filter;
+import pt.utl.ist.thesis.sensor.source.filters.MovingAverageFilter;
 
 public class MovingAverageFilterTest {
 

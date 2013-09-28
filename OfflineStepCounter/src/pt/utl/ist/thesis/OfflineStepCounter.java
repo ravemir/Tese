@@ -7,8 +7,8 @@ import java.io.IOException;
 
 import pt.utl.ist.thesis.sensor.reading.AccelReading;
 import pt.utl.ist.thesis.sensor.source.RawReadingSource;
+import pt.utl.ist.thesis.sensor.source.filters.ButterworthFilter;
 import pt.utl.ist.thesis.signalprocessor.StepAnalyser;
-import pt.utl.ist.thesis.source.filters.ButterworthFilter;
 import pt.utl.ist.thesis.util.PushThread;
 import pt.utl.ist.thesis.util.SensorReadingRunnable;
 

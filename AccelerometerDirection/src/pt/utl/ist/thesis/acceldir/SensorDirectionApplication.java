@@ -1,8 +1,9 @@
 package pt.utl.ist.thesis.acceldir;
 
 import android.app.Application;
+import pt.utl.ist.thesis.sensordir.R;
 
-public class AccelerometerDirectionApplication extends Application {
+public class SensorDirectionApplication extends Application {
 
 	// Application preference fields
 	protected static final String COLLECTION_PREFERENCES = "collection_preferences";
