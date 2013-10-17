@@ -106,6 +106,8 @@ public class CollectionActivity extends Activity {
 						accel[2] + LOGSEPARATOR +
 						event.accuracy + "\n";
 
+				Log.e("AccelDirection", "Acceleration received");
+				
 				// Push Acceleration reading
 				new PushThread(new AccelReading(tsString, 
 						new double[]{accel[0], accel[1], accel[2]})){
@@ -249,12 +251,13 @@ public class CollectionActivity extends Activity {
 			accelBWF.plugAnalyserIntoOutput(stepA);
 
 			// Attach an UnboundedOrientationFilter
-			oriRS.addUnboundedOrientationFilter(SAMPLERATE);
+//			oriRS.addUnboundedOrientationFilter(SAMPLERATE);
 			
 			// Attach the StepAnalyser and the Orientation
 			// MovingAverageFilter to the PositioningAnalyser
 			stepA.plugAnalyserIntoOutput(positioningA);
-			oriRS.getFilters().get(0).plugAnalyserIntoOutput(positioningA);
+//			oriRS.getFilters().get(0).plugAnalyserIntoOutput(positioningA);
+			oriRS.plugAnalyserIntoOutput(positioningA);
 			
 			// FIXME Remove after testing
 			stepA.setRunnable(new Runnable() {
