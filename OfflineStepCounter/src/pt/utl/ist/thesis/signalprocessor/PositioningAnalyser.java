@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Observer;
 
+import org.apache.commons.math.stat.descriptive.SynchronizedSummaryStatistics;
+
 import pt.utl.ist.thesis.sensor.exception.AutoGaitModelUninitializedException;
 import pt.utl.ist.thesis.sensor.exception.StepWithNoFrequencyException;
 import pt.utl.ist.thesis.sensor.reading.GPSReading;
@@ -13,6 +15,7 @@ import pt.utl.ist.thesis.sensor.reading.SensorReading;
 import pt.utl.ist.thesis.sensor.reading.StepReading;
 import pt.utl.ist.thesis.sensor.source.ReadingSource;
 import pt.utl.ist.thesis.sensor.source.filters.MovingAverageFilter;
+import pt.utl.ist.thesis.util.MathUtils;
 import pt.utl.ist.thesis.util.SensorReadingRunnable;
 
 /**
@@ -34,6 +37,8 @@ public class PositioningAnalyser extends Analyser implements Observer {
 	// Buffers and lists
 	private ArrayList<StepReading> stepBuffer = new ArrayList<StepReading>();
 	private MovingAverageFilter orientationFilter;
+	private SynchronizedSummaryStatistics[] stepOrientationAvg = {
+			new SynchronizedSummaryStatistics(), new SynchronizedSummaryStatistics()};
 	private ArrayList<RelativePositionReading> rprBuffer = new ArrayList<RelativePositionReading>();
 
 	// State and statistical variables
@@ -106,8 +111,10 @@ public class PositioningAnalyser extends Analyser implements Observer {
 		synchronized(this){
 			initializationCheck();
 			if(reading instanceof OrientationReading){
-				// Add either all or Azimuth values to an average
+				// Add either orientation values to the average
 				orientationFilter.pushReading(reading);
+				stepOrientationAvg[0].addValue(Math.cos(((OrientationReading) reading).getAzimuth()));
+				stepOrientationAvg[1].addValue(Math.sin(((OrientationReading) reading).getAzimuth()));
 			} else if (reading instanceof StepReading){
 				// Add step to list
 				StepReading stepRead = (StepReading) reading;
@@ -122,9 +129,14 @@ public class PositioningAnalyser extends Analyser implements Observer {
 						getLengthFromFrequency(stepRead.getStepFrequency());
 
 				// Get average Orientation value
-				OrientationReading lastOrientation = 
+				double stepOriAvg = Math.atan2(stepOrientationAvg[1].getMean(), stepOrientationAvg[0].getMean());
+				OrientationReading lastFilteredOri = 
 						(orientationFilter.getBuffer().getCurrentReading() instanceof OrientationReading?  // FIXME Returns AccelReading, should return null orientation reading
 								(OrientationReading) orientationFilter.getLastReading(): new OrientationReading());
+				double[] oriValues = new double[]{(Double.isNaN(stepOriAvg) ? lastFilteredOri.getAzimuth() : stepOriAvg), 0, 0};
+				OrientationReading lastOrientation = new OrientationReading(stepRead.getTimestampString(),
+						oriValues);
+				System.out.println(lastOrientation.getTimestampString() + ";" + stepRead.getStepIntensity() + ";" + lastOrientation.getAzimuth());
 
 				// Compute and store the RelativePositionReading
 				RelativePositionReading prev = rprBuffer.get(rprBuffer.size()-1);
@@ -147,6 +159,10 @@ public class PositioningAnalyser extends Analyser implements Observer {
 					readingRunnable.run(newRelPosRead);
 					readingRunnable.run(newAbsPosRead);
 				}
+				
+				// Clear the step average to start a new average
+				stepOrientationAvg[0].clear();
+				stepOrientationAvg[1].clear();
 			} else {
 				throw new UnsupportedOperationException("Tried to update Analyser from '" +
 						readingSource.getClass().getSimpleName() + "' observable type, with a '" +

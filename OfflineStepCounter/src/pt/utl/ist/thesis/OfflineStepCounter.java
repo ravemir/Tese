@@ -21,11 +21,11 @@ public class OfflineStepCounter {
 //	public static final String accelLogName = "2013-08-05_10h11.log.accel";
 //	public static final String accelLogName = "2013-08-05_10h05.log.accel";
 	
-//	public static final String baseFolder = "C:\\Users\\Carlos\\Dropbox\\Tese\\Dissertacao\\Dados\\16-08-2013\\logs\\conv\\";
-//	public static final String baseFilename = "2013-08-16_13h26.log";
-	public static final String baseFolder = "C:\\Users\\Carlos\\Dropbox\\Tese\\Dissertacao\\Dados\\24-08-2013\\logs\\conv\\";
-	public static final String baseFilename = "2013-08-24_12h56.log";
+
+	public static final String baseFolder = OfflineConstants.baseFolder;
+	public static final String baseFilename = OfflineConstants.baseFilename;
 	public static final String accelLogName = baseFilename + ".accel";
+	
 	private static RawReadingSource rs;
 	private static Object fileLock = new Object();
 	private static PushThread accelPushThread;
@@ -46,7 +46,7 @@ public class OfflineStepCounter {
 		
 		// Create buffer w/two average observers
 		int size = 50;
-		int sampleRate = 71;
+		int sampleRate = OfflineConstants.sampleRate;
 		rs = new RawReadingSource(size);	
 		ButterworthFilter bwf = new ButterworthFilter(10, 5, sampleRate, true);
 		rs.plugFilterIntoOutput(bwf);
@@ -105,17 +105,18 @@ public class OfflineStepCounter {
 		}
 		
 		// Output relevant states
-//		int i = 0;
+		int i = 0;
 //		for(AccelReading a :  sa.getNormPeaks()){
 //			System.out.print(a.getTimestampString() + "," + a.getReadingNorm() + ";");
-//			if (i==3) System.out.print("\n");
-//			i = (i+1)%4;
+//			if (i==50) 
+//			System.out.print("\n");
+//			i = (i+1)%51;
 //		}
-//		for(AccelReading a :  sa.getSteps()){
-//			System.out.print(a.getTimestampString() + ", " + a.getReadingNorm() + "; ");
-//			if (i==3) System.out.print("\n");
-//			i = (i+1)%4;
-//		}
+		for(AccelReading a :  sa.getSteps()){
+			System.out.print(a.getTimestampString() + ", " + a.getReadingNorm()+ ";");
+			if (i==3) System.out.print("\n");
+			i = (i+1)%4;
+		}
 		
 		// Close the line reader
 		try {

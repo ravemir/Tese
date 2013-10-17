@@ -29,8 +29,10 @@ public class OfflineCallibrator {
 //	public static final String baseFilename = "2013-08-05_10h06.log";
 //	public static final String baseFolder = "C:\\Users\\Carlos\\Dropbox\\Tese\\Dissertacao\\Dados\\10-08-2013\\logs\\conv\\";
 //	public static final String baseFilename = "2013-08-10_16h27.log";
-	public static final String baseFolder = "C:\\Users\\Carlos\\Dropbox\\Tese\\Dissertacao\\Dados\\16-08-2013\\logs\\conv\\";
-	public static final String baseFilename = "2013-08-16_12h42.log";
+//	public static final String baseFolder = "C:\\Users\\Carlos\\Dropbox\\Tese\\Dissertacao\\Dados\\16-08-2013\\logs\\conv\\";
+//	public static final String baseFilename = "2013-08-16_12h42.log";
+	public static final String baseFolder = "C:\\Users\\Carlos\\Dropbox\\Tese\\Dissertacao\\Dados\\24-08-2013\\logs\\conv\\";
+	public static final String baseFilename = "2013-08-24_13h05.log";
 	
 //	public static final String oriLogName = baseFilename + ".ori";
 	public static final String accelLogName = baseFilename + ".accel";

@@ -34,10 +34,12 @@ public class OfflinePositioning {
 	//	public static final String oriLogName = "2013-03-06_18h18.log.ori";
 	//	public static final String accelLogName = "2013-03-06_18h30.log.accel";
 	//	public static final String oriLogName = "2013-03-06_18h30.log.loc";
-	public static final String baseFolder = "C:\\Users\\Carlos\\Dropbox\\Tese\\Dissertacao\\Dados\\05-08-2013\\logs\\conv\\";
-	public static final String baseFilename = "2013-08-05_10h06.log";
-//	public static final String baseFolder = "C:\\Users\\Carlos\\Dropbox\\Tese\\Dissertacao\\Dados\\10-08-2013\\logs\\conv\\";
-//	public static final String baseFilename = "2013-08-10_16h27.log";
+//	public static final String baseFolder = "C:\\Users\\Carlos\\Dropbox\\Tese\\Dissertacao\\Dados\\16-08-2013\\logs\\conv\\";
+//	public static final String baseFilename = "2013-08-16_13h31.log";
+//	public static final String baseFolder = "C:\\Users\\Carlos\\Dropbox\\Tese\\Dissertacao\\Dados\\24-08-2013\\logs\\conv\\";
+//	public static final String baseFilename = "2013-08-24_12h49.log";
+	public static final String baseFolder = OfflineConstants.baseFolder;
+	public static final String baseFilename = OfflineConstants.baseFilename;
 		
 	public static final String oriLogName = baseFilename + ".ori";
 	public static final String accelLogName = baseFilename + ".accel";
@@ -66,14 +68,14 @@ public class OfflinePositioning {
 		}
 
 		// Create buffer w/two average observers
-		int sampleFreq = 50;
+		int sampleFreq = OfflineConstants.sampleRate;
 		int size = sampleFreq;
 		accelRs = new RawReadingSource(size);
 		ButterworthFilter bwF = new ButterworthFilter(10, 5, sampleFreq, true);
 		accelRs.plugFilterIntoOutput(bwF);
 
 		oriRs = new RawReadingSource();
-		oriRs.addUnboundedOrientationFilter(size);
+//		oriRs.addUnboundedOrientationFilter(size);
 //		MovingAverageFilter maf = new MovingAverageFilter(sampleFreq);
 //		maf.plugFilterIntoOutput(oriRs.getFilters().get(0));
 
@@ -82,14 +84,14 @@ public class OfflinePositioning {
 		bwF.plugAnalyserIntoOutput(sa);
 
 		// Create an initialized AutoGaitModel
-		AutoGaitModel agm = new AutoGaitModel(getSegmentSamples());
-		double[][] forged = forgeAGValues();
-		if(forged.length != 0) agm = new AutoGaitModel(forged);
+		AutoGaitModel agm = new AutoGaitModel(AutoGaitParameterGetter.getTargetSamples());
+//		double[][] forged = forgeAGValues();
+//		if(forged.length != 0) agm = new AutoGaitModel(forged);
 
 		// Create the PositioningAnalyser and attach the StepAnalyser
 		PositioningAnalyser pa = new PositioningAnalyser(sampleFreq, agm);
 		sa.plugAnalyserIntoOutput(pa);
-		oriRs.getFilters().get(0).plugAnalyserIntoOutput(pa);
+		oriRs.plugAnalyserIntoOutput(pa);
 
 		// Get the first lines
 		String accelLine = null; String oriLine = null;
@@ -141,11 +143,11 @@ public class OfflinePositioning {
 		pa.setSensorReadingUpdater(new SensorReadingRunnable() {
 			@Override
 			public void run() {
-				String s = "New Position event: ";
-				for(double d : reading.getReading())
-					s += d + ",";
-				s += "\n";
-				System.out.println(s);
+//				String s = "New Position event: ";
+//				for(double d : reading.getReading())
+//					s += d + ",";
+//				s += "\n";
+//				System.out.println(s);
 			}
 		});
 		
@@ -175,19 +177,19 @@ public class OfflinePositioning {
 //		}
 		double stepDistance = 0; 
 		for(StepReading s :  sa.getSteps()){		// Count steps
-			System.out.println("Step: " + s);
+//			System.out.println("Step: " + s);
 			stepDistance += agm.getLengthFromFrequency(s.getStepFrequency());
 		}
-		
+//		
 		List<RelativePositionReading> positions = pa.getPositions();
 		double distance = 0;
 		for (int i = 1; i < positions.size(); i++) 
 			distance += Math.sqrt(Math.pow(positions.get(i).getXCoord()-positions.get(i-1).getXCoord(), 2) +
 					Math.pow(positions.get(i).getYCoord()-positions.get(i-1).getYCoord(), 2));
 		
-		for(RelativePositionReading p :  positions){		// Count positions
-			System.out.println("Position: " + p);
-		}
+//		for(RelativePositionReading p :  positions){		// Count positions
+//			System.out.println(p.getTimestampString() + ";" + p.getXCoord() + ";" + p.getYCoord());
+//		}
 		
 		System.out.println("No. of positions: " + sa.getSteps().size());
 		System.out.println("Distance covered from steps: " + stepDistance);
